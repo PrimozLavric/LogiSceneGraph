@@ -29,9 +29,15 @@ public:
 
   void rotateOnAxis(float angle, const glm::vec3& axis);
 
+protected:
+	void updateWorldMatrix();
+
+	void markWorldMatrixDirty();
+
 private:
 	glm::mat4x4 world_matrix_;
-	mutable glm::mat4x4 loc_matrix_;
+	bool world_matrix_dirty_;
+	glm::mat4x4 loc_matrix_;
 
 	glm::vec3 loc_position_;
 	glm::quat loc_rotation_;

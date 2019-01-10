@@ -38,6 +38,15 @@ public:
   void addChild(const Ref<Object>& obj);
 
   /**
+   * @brief   Retrieves reference to the parent. If the object has no parent null reference is returned.
+   * 
+   * @tparam	T Parent type.
+   * @return	Reference to the parent or null reference.
+   */
+  template <typename T = Object>
+  Ref<T> getParent() const;
+
+  /**
    * @brief Remove child object with the given name
    *
    * @param	name  Name of the object that is to be removed.
@@ -51,15 +60,40 @@ public:
    * @param   name	Name of the object to is to be retrieved.
    * @return	Child object with the given name and of the given type or null if no child matches.
    */
-  template <typename T>
+  template <typename T = Object>
   const Ref<T>& getChild(std::string_view name) const;
 
   /**
-   * @brief Traverse the object hierarchy passing each object to the traversal function.
+   * @brief Traverse the hierarchy passing this and all descendant object to the traversal function.
+   *        Traversal can be stopped by returning false in traversal function.
    *
    * @param	traversal_fn  Traversal function.
    */
-  void traverse(const std::function<void(Ref<Object>)>& traversal_fn);
+  void traverseDown(const std::function<bool(Ref<Object>)>& traversal_fn);
+
+  /**
+   * @brief Traverse the hierarchy passing all descendant object to the traversal function.
+   *        Traversal can be stopped by returning false in traversal function.
+   *
+   * @param	traversal_fn  Traversal function.
+   */
+  void traverseDownExcl(const std::function<bool(Ref<Object>)>& traversal_fn);
+
+  /**
+   * @brief Traverse the hierarchy passing this and all ascendant object to the traversal function.
+   *        Traversal can be stopped by returning false in traversal function.
+   *
+   * @param	traversal_fn  Traversal function.
+   */
+  void traverseUp(const std::function<bool(Ref<Object>)>& traversal_fn);
+
+  /**
+   * @brief Traverse the hierarchy passing all ascendant object to the traversal function.
+   *        Traversal can be stopped by returning false in traversal function.
+   *
+   * @param	traversal_fn  Traversal function.
+   */
+  void traverseUpExcl(const std::function<bool(Ref<Object>)>& traversal_fn);
 
   /**
    * @brief   Add the component to the object.
@@ -100,6 +134,11 @@ private:
 	bool active_;
 
   /**
+   * Weak reference to the parent.
+   */
+	WeakRef<Object> parent_;
+
+  /**
    * Holds child objects mapped by their name.
    */
 	std::map<std::string_view, Ref<Object>> children_;
@@ -109,6 +148,15 @@ private:
    */
 	std::unordered_map<std::type_index, std::vector<Ref<Component>>> components_;
 };
+
+template <typename T>
+Ref<T> Object::getParent() const {
+	if constexpr (std::is_same<Object, T>()) {
+		return parent_.lock();
+	} else {
+		return std::dynamic_pointer_cast<T>(parent_.lock());
+	}
+}
 
 template <typename T>
 const Ref<T>& Object::getChild(const std::string_view name) const {
