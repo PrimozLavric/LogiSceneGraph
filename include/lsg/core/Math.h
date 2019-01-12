@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LSG_CORE_MATH_H
+#define LSG_CORE_MATH_H
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -32,3 +33,5 @@ inline void decomposeMatrix(const glm::mat4x4& mat, glm::vec3& pos, glm::quat& r
 }
 
 }
+
+#endif  // LSG_CORE_MATH_H

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LSG_CORE_IDENTIFIABLE_H
+#define LSG_CORE_IDENTIFIABLE_H
 
 #include <string>
 #include <atomic>
@@ -31,3 +32,5 @@ private:
 };
 
 }
+
+#endif  // LSG_CORE_IDENTIFIABLE_H

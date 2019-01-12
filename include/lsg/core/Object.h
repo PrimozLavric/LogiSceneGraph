@@ -1,13 +1,16 @@
-#pragma once
+#ifndef LSG_CORE_OBJECT_H
+#define LSG_CORE_OBJECT_H
+
 #include <string>
 #include <string_view>
 #include <map>
 #include <unordered_map>
 #include <functional>
 #include <typeindex>
-#include "Identifiable.h"
-#include "Component.h"
-#include "Common.h"
+
+#include "lsg/core/Identifiable.h"
+#include "lsg/core/Component.h"
+#include "lsg/core/Common.h"
 
 namespace lsg {
 
@@ -172,7 +175,7 @@ void Object::addComponent(Args... args) {
 template <typename T>
 const Ref<T>& Object::getComponent() const {
   const auto it = components_.find(std::type_index(typeid(T)));
-	return (it == components_.end() || it->second.empty()) ? nullptr : it->second[0];
+	return (it == components_.end() || it->second.empty()) ? nullptr : std::dynamic_pointer_cast<T>(it->second[0]);
 }
 
 template <typename T>
@@ -182,3 +185,5 @@ const std::vector<Ref<T>>& Object::getComponents() const {
 }
 
 }
+
+#endif  // LSG_CORE_OBJECT_H

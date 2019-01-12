@@ -1,4 +1,6 @@
-#pragma once
+#ifndef LSG_CORE_COMMON_H
+#define LSG_CORE_COMMON_H
+
 #include <memory>
 
 namespace lsg {
@@ -15,3 +17,5 @@ auto make_ref(Args&&... args) -> decltype(std::make_shared<T>(std::forward<Args>
 }
 
 }
+
+#endif  // LSG_CORE_COMMON_H

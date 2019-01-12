@@ -1,9 +1,10 @@
-#pragma once
+#ifndef LSG_COMPONENTS_TRANSFORM_H
+#define LSG_COMPONENTS_TRANSFORM_H
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include "Component.h"
+#include "lsg/core/Component.h"
 
 namespace lsg {
 
@@ -45,3 +46,5 @@ private:
 };
 
 }
+
+#endif // LSG_COMPONENTS_TRANSFORM_H

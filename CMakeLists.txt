@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.10)
+set(CMAKE_CXX_STANDARD 17)
 
 # Metadata
 project(LogiSceneGraph VERSION 0.1.0 LANGUAGES CXX)
@@ -21,8 +22,6 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/libs)
 file(GLOB_RECURSE SRC_LIST "src/*.cpp")
 
 add_library(logi_scene_graph STATIC ${SRC_LIST})
-set_property(TARGET logi_scene_graph PROPERTY CXX_STANDARD 17)
-set_property(TARGET logi_scene_graph PROPERTY CXX_STANDARD_REQUIRED ON)
 
 target_include_directories(logi_scene_graph PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

@@ -13,13 +13,14 @@
 macro(create_test TEST_NAME SOURCES INCLUDES DEPENDENCIES)
 
     add_executable(${TEST_NAME} ${SOURCES})
-
     target_include_directories(${TEST_NAME} PRIVATE
         "$<BUILD_INTERFACE:${INCLUDES}>"
         $<INSTALL_INTERFACE:include>
     )
-    target_link_libraries(${TEST_NAME} ${DEPENDENCIES} ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(${TEST_NAME} ${DEPENDENCIES} gtest gmock gtest_main)
 
-    add_test(${TEST_NAME} ${TEST_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    add_test(NAME ${TEST_NAME}
+			 COMMAND ${TEST_NAME}
+			 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 endmacro()

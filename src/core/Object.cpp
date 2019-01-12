@@ -1,4 +1,4 @@
-#include "Object.h"
+#include "lsg/core/Object.h"
 
 namespace lsg {
 

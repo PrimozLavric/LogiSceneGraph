@@ -1,7 +1,9 @@
-#pragma once
+#ifndef LSG_CORE_COMPONENT_H
+#define LSG_CORE_COMPONENT_H
+
 #include <string>
 
-#include "Identifiable.h"
+#include "lsg/core/Identifiable.h"
 
 namespace lsg {
 
@@ -18,3 +20,5 @@ protected:
 };
 
 }
+
+#endif  //LSG_CORE_COMPONENT_H

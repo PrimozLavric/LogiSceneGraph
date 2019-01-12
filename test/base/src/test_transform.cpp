@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
+#include "lsg/core/Object.h"
 
-TEST(TestUtility, Subtuple) {
-
+TEST(Object, Hierarchy) {
+	
 }
 
 

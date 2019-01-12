@@ -1,6 +1,6 @@
-#include "Transform.h"
-#include "Object.h"
-#include "LSGMath.h"
+#include "lsg/components/Transform.h"
+#include "lsg/core/Object.h"
+#include "lsg/core/Math.h"
 
 namespace lsg {
 
