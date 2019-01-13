@@ -14,7 +14,7 @@
 
 namespace lsg {
 
-class Object : public Identifiable, std::enable_shared_from_this<Object> {
+class Object : public Identifiable, public std::enable_shared_from_this<Object> {
 public:
 
   explicit Object(std::string name, bool active = true);
@@ -25,6 +25,16 @@ public:
    * @param	value	Activate - true, Deactivate - false.
    */
   void setActive(bool value);
+  
+  /**
+   * @brief   Search for object with the given name.
+   *
+   * @tparam  T     Object type. 
+   * @param   name  Name of the searched object.
+   * @return  Reference to the searched object or null ref if not found.
+   */
+  template <typename T = Object>
+  Ref<T> find(std::string_view name);
 
   /**
    * @brief   Check if the object is active.
@@ -114,7 +124,7 @@ public:
    * @return	First component of type T or null if there is no component of the given type T.
    */
   template <typename T>
-  const Ref<T>& getComponent() const;
+  Ref<T> getComponent() const;
 
   /**
    * @brief   Retrieve all components of type T
@@ -164,16 +174,35 @@ Ref<T> Object::getParent() const {
 template <typename T>
 const Ref<T>& Object::getChild(const std::string_view name) const {
   const auto it = children_.find(name);
-  return (it == children_.end()) ? nullptr : std::dynamic_pointer_cast<T>(*it);
+  return (it == children_.end()) ? nullptr : std::dynamic_pointer_cast<T>(it->second);
 }
 
+template <typename T>
+Ref<T> Object::find(const std::string_view name) {
+	// Check if this object matches the search.
+	std::cout << this->name() << typeid(*this).name() << std::endl;
+	std::cout << typeid(T).name() << std::endl;
+	if (typeid(*this) == typeid(T) && this->name() == name) {
+		return std::dynamic_pointer_cast<T>(shared_from_this());
+	}
+
+	// Search in child objects.
+	for (auto& child : children_) {
+		Ref<T> search_rez = child.second->find<T>(name);
+		if (search_rez) {
+			return search_rez;
+		}
+	}
+
+	return nullptr;
+}
 template <typename T, typename ... Args>
 void Object::addComponent(Args... args) {
 	components_[std::type_index(typeid(T))].emplace_back(make_ref<T>(this, args...));
 }
 
 template <typename T>
-const Ref<T>& Object::getComponent() const {
+Ref<T> Object::getComponent() const {
   const auto it = components_.find(std::type_index(typeid(T)));
 	return (it == components_.end() || it->second.empty()) ? nullptr : std::dynamic_pointer_cast<T>(it->second[0]);
 }
