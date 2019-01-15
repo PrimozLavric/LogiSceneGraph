@@ -13,18 +13,30 @@ bool Object::isActive() const {
 	return active_;
 }
 
-void Object::addChild(const Ref<Object>& obj) {
-	obj->parent_ = weak_from_this();
-  children_.insert_or_assign(obj->name(), obj);
+bool Object::isActiveInHierarchy() const {
+	const auto parent = parent_.lock();
+	return active_ && (!parent || parent->isActiveInHierarchy());
 }
 
-void Object::removeChild(const std::string_view name) {
-	auto it = children_.find(name);
+void Object::addChild(const Ref<Object>& obj) {
+	obj->detachInternal();
+	obj->parent_ = weak_from_this();
+  children_.emplace(obj->name(), obj);
+  obj->notifyParentChange();
+}
 
-  if (it != children_.end()) {
-	  it->second->parent_.reset();
-	  children_.erase(it);
-  }
+void Object::setOnParentChangeCallback(const Ref<Identifiable>& object,
+  const std::function<void(Ref<Object>)>& callback) {
+	on_parent_change_callbacks_.insert_or_assign(object->id(), callback);
+}
+
+void Object::removeOnParentChangeCallback(const Ref<Identifiable>& object) {
+	on_parent_change_callbacks_.erase(object->id());
+}
+
+void Object::detach() {
+	detachInternal();
+	notifyParentChange();
 }
 
 void Object::traverseDown(const std::function<bool(Ref<Object>)>& traversal_fn) {
@@ -61,6 +73,34 @@ void Object::traverseUpExcl(const std::function<bool(Ref<Object>)>& traversal_fn
   if (parent_ref && traversal_fn(parent_ref)) {
 		parent_ref->traverseUpExcl(traversal_fn);
 	}
+}
+
+void Object::detachInternal() {
+	auto parent_ref = parent_.lock();
+
+	// Proceed if the object has parent
+	if (parent_ref) {
+		// Find the object among parent children.
+		const auto child_range = parent_ref->children_.equal_range(name());
+		for (auto it = child_range.first; it != child_range.second; ++it) {
+			// Remove this object form parent children.
+			if (it->second.get() == this) {
+				parent_ref->children_.erase(it);
+				parent_.reset();
+				return;
+			}
+		}
+
+		static_assert("Child object was not found among parent object children.");
+	}
+}
+
+void Object::notifyParentChange() {
+  const auto parent_ref = parent_.lock();
+
+  for (auto callback : on_parent_change_callbacks_) {
+	  callback.second(parent_ref);
+  }
 }
 
 }

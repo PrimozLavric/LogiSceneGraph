@@ -12,23 +12,68 @@ class Transform : public Component {
 public:
   explicit Transform(Object* owner);
 
+  /**
+   * @brief Apply the given matrix to the object.
+   * 
+   * @param	matrix  Matrix to be applied.
+   */
   void applyMatrix(const glm::mat4x4& matrix);
 
-  void applyQuaternion(const glm::quat& quat);
+  /**
+   * @brief Apply the quaternion rotation to the object.
+   * 
+   * @param	quaternion  Quaternion to be applied. 
+   */
+  void applyQuaternion(const glm::quat& quaternion);
+
 
   glm::mat4x4 matrix() const;
 
   glm::vec3 position() const;
 
+  /**
+   * @brief Set object position.
+   * 
+   * @param position  New position. 
+   */
   void setPosition(const glm::vec3& position);
 
+  /**
+   * @brief Rotate an object along an axis in object space.
+   *
+   * @param	axis  Axis. The axis is assumed to be normalized.
+   * @param	angle The angle to rotate in radians.
+   */
+  void rotateOnAxis(const glm::vec3& axis, float angle);
+
+  /**
+   * @brief Rotates around x axis in local space.
+   * 
+   * @param	angle The angle to rotate in radians.
+   */
   void rotateX(float angle);
 
+  /**
+   * @brief Rotates around y axis in local space.
+   *
+   * @param angle The angle to rotate in radians.
+   */
   void rotateY(float angle);
 
+  /**
+   * @brief Rotates around z axis in local space.
+   *
+   * @param	angle The angle to rotate in radians.
+   */
   void rotateZ(float angle);
 
-  void rotateOnAxis(float angle, const glm::vec3& axis);
+  void translateOnAxis(const glm::vec3& axis, float distance);
+
+  void translateX(float distance);
+
+  void translateY(float distance);
+
+  void translateZ(float distance);
 
 protected:
 	void updateWorldMatrix();

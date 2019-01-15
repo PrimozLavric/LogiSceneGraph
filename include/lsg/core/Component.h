@@ -9,11 +9,11 @@ namespace lsg {
 
 class Object;
 
-class Component : public Identifiable {
+class Component : public Identifiable, public std::enable_shared_from_this<Component> {
 public:
   explicit Component(const std::string& name, Object* owner);
 
-  virtual ~Component() = default;
+  virtual ~Component() = 0;
 
 protected:
 	Object* owner_;

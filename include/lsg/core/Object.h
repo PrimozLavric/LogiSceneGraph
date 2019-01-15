@@ -44,11 +44,33 @@ public:
   bool isActive() const;
 
   /**
+   * @brief   Check if the object and all its ancestors are active.
+   *
+   * @return	True if the object and all its ancestors are active.
+   */
+  bool isActiveInHierarchy() const;
+
+  /**
    * @brief Add child object to this object.
    *
    * @param	obj Child object.
    */
   void addChild(const Ref<Object>& obj);
+
+  /**
+   * @brief Sets on parent change callback for the given object.
+   * 
+   * @param object    Object to which the callback is bound. 
+   * @param	callback  Callback.
+   */
+  void setOnParentChangeCallback(const Ref<Identifiable>& object, const std::function<void(Ref<Object>)>& callback);
+
+  /**
+   * @brief Removes on parent change callback registered under the given object.
+   * 
+   * @param	object  Object to which the callback is bound. 
+   */
+  void removeOnParentChangeCallback(const Ref<Identifiable>& object);
 
   /**
    * @brief   Retrieves reference to the parent. If the object has no parent null reference is returned.
@@ -60,11 +82,9 @@ public:
   Ref<T> getParent() const;
 
   /**
-   * @brief Remove child object with the given name
-   *
-   * @param	name  Name of the object that is to be removed.
+   * @brief Detach this object from parent if it has one.
    */
-  void removeChild(std::string_view name);
+  void detach();
 
   /**
    * @brief   Retrieve child object with the given name.
@@ -74,7 +94,7 @@ public:
    * @return	Child object with the given name and of the given type or null if no child matches.
    */
   template <typename T = Object>
-  const Ref<T>& getChild(std::string_view name) const;
+  Ref<T> getChild(std::string_view name) const;
 
   /**
    * @brief Traverse the hierarchy passing this and all descendant object to the traversal function.
@@ -130,15 +150,27 @@ public:
    * @brief   Retrieve all components of type T
    *
    * @tparam	T	Components type.
-   * @return	Vector of components of the given type.
+   * @return	List of components of the given type.
    */
   template <typename T>
-  const std::vector<Ref<T>>& getComponents() const;
+  const std::list<Ref<T>>& getComponents() const;
 
   /**
    * @brief Default virtual destructor (this object is intended to be inherited).
    */
   virtual ~Object() = default;
+
+protected:
+
+  /**
+   * @brief Implementation of detach function.
+   */
+	void detachInternal();
+
+  /**
+   * @brief Invoke on parent change callbacks.
+   */
+	void notifyParentChange();
 
 private:
   /**
@@ -154,12 +186,17 @@ private:
   /**
    * Holds child objects mapped by their name.
    */
-	std::map<std::string_view, Ref<Object>> children_;
+	std::unordered_multimap<std::string_view, Ref<Object>> children_;
 
   /**
    * Holds components of the object mapped by their type (type index).
    */
-	std::unordered_map<std::type_index, std::vector<Ref<Component>>> components_;
+	std::unordered_map<std::type_index, std::list<Ref<Component>>> components_;
+
+  /**
+   * Callbacks that are invoked once the object parent changes.
+   */
+	std::unordered_map<size_t, std::function<void(Ref<Object>)>> on_parent_change_callbacks_;
 };
 
 template <typename T>
@@ -172,18 +209,26 @@ Ref<T> Object::getParent() const {
 }
 
 template <typename T>
-const Ref<T>& Object::getChild(const std::string_view name) const {
-  const auto it = children_.find(name);
-  return (it == children_.end()) ? nullptr : std::dynamic_pointer_cast<T>(it->second);
+Ref<T> Object::getChild(const std::string_view name) const {
+  const auto range = children_.equal_range(name);
+  for (auto it = range.first; it != range.second; ++it) {
+	  Ref<T> ref = std::dynamic_pointer_cast<T>(it->second);
+    if (ref) {
+		  return ref;
+    }
+  }
+
+  return nullptr;
 }
 
 template <typename T>
 Ref<T> Object::find(const std::string_view name) {
 	// Check if this object matches the search.
-	std::cout << this->name() << typeid(*this).name() << std::endl;
-	std::cout << typeid(T).name() << std::endl;
-	if (typeid(*this) == typeid(T) && this->name() == name) {
-		return std::dynamic_pointer_cast<T>(shared_from_this());
+	if (this->name() == name) {
+		Ref<T> obj = std::dynamic_pointer_cast<T>(shared_from_this());
+	  if (obj) {
+		  return obj;
+	  }
 	}
 
 	// Search in child objects.
@@ -204,11 +249,11 @@ void Object::addComponent(Args... args) {
 template <typename T>
 Ref<T> Object::getComponent() const {
   const auto it = components_.find(std::type_index(typeid(T)));
-	return (it == components_.end() || it->second.empty()) ? nullptr : std::dynamic_pointer_cast<T>(it->second[0]);
+	return (it == components_.end() || it->second.empty()) ? nullptr : std::dynamic_pointer_cast<T>(it->second.front());
 }
 
 template <typename T>
-const std::vector<Ref<T>>& Object::getComponents() const {
+const std::list<Ref<T>>& Object::getComponents() const {
 	const auto it = components_.find(std::type_index(typeid(T)));
 	return (it == components_.end()) ? std::vector<Ref<T>>() : it->second;
 }

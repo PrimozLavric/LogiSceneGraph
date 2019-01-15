@@ -25,6 +25,11 @@ Transform::Transform(Object* owner)
 
 	  return true;
   });
+
+  // When the parent changes mark the world matrix dirty.
+  owner->setOnParentChangeCallback(shared_from_this(), [this] (Ref<Object>) {
+	  this->markWorldMatrixDirty();
+  });
 }
 
 void Transform::applyMatrix(const glm::mat4x4& matrix) {
@@ -33,9 +38,9 @@ void Transform::applyMatrix(const glm::mat4x4& matrix) {
 	markWorldMatrixDirty();
 }
 
-void Transform::applyQuaternion(const glm::quat& quat) {
-	loc_rotation_ *= quat;
-	loc_matrix_ = glm::mat4_cast(quat) * loc_matrix_;
+void Transform::applyQuaternion(const glm::quat& quaternion) {
+	loc_rotation_ *= quaternion;
+	loc_matrix_ = glm::mat4_cast(quaternion) * loc_matrix_;
 	markWorldMatrixDirty();
 }
 
@@ -55,26 +60,46 @@ void Transform::setPosition(const glm::vec3& position) {
 	markWorldMatrixDirty();
 }
 
+void Transform::rotateOnAxis(const glm::vec3& axis, const float angle) {
+	const auto quaternion = glm::quat(axis * angle);
+	loc_rotation_ *= quaternion;
+	loc_matrix_ = glm::mat4_cast(quaternion) * loc_matrix_;
+	markWorldMatrixDirty();
+}
+
 void Transform::rotateX(const float angle) {
 	const static glm::vec3 axis(1.0f, 0.0f, 0.0f);
-  rotateOnAxis(angle, axis);
+  rotateOnAxis(axis, angle);
 }
 
 void Transform::rotateY(const float angle) {
 	const static glm::vec3 axis(0.0f, 1.0f, 0.0f);
-  rotateOnAxis(angle, axis);
+  rotateOnAxis(axis, angle);
 }
 
 void Transform::rotateZ(const float angle) {
 	const static glm::vec3 axis(0.0f, 0.0f, 1.0f);
-	rotateOnAxis(angle, axis);
+	rotateOnAxis(axis, angle);
 }
 
-void Transform::rotateOnAxis(const float angle, const glm::vec3& axis) {
-  const auto quaternion = glm::quat(axis * angle);
-	loc_rotation_ *= quaternion;
-	loc_matrix_ = glm::mat4_cast(quaternion) * loc_matrix_;
-	markWorldMatrixDirty();
+void Transform::translateOnAxis(const glm::vec3& axis, float distance) {
+	const glm::vec3 loc_axis = loc_rotation_ * axis;
+	setPosition(loc_axis * distance);
+}
+
+void Transform::translateX(const float distance) {
+	const static glm::vec3 axis(1.0f, 0.0f, 0.0f);
+	translateOnAxis(axis, distance);
+}
+
+void Transform::translateY(const float distance) {
+	const static glm::vec3 axis(0.0f, 1.0f, 0.0f);
+	translateOnAxis(axis, distance);
+}
+
+void Transform::translateZ(const float distance) {
+	const static glm::vec3 axis(0.0f, 0.0f, 1.0f);
+	translateOnAxis(axis, distance);
 }
 
 void Transform::updateWorldMatrix() {
