@@ -32,6 +32,22 @@ Transform::Transform(Object* owner)
   });
 }
 
+const glm::mat4x4& Transform::matrix() const {
+	return loc_matrix_;
+}
+
+const glm::vec3& Transform::position() const {
+	return loc_position_;
+}
+
+const glm::quat& Transform::rotation() const {
+	return loc_rotation_;
+}
+
+const glm::vec3& Transform::scale() const {
+	return loc_scale_;
+}
+
 void Transform::applyMatrix(const glm::mat4x4& matrix) {
 	loc_matrix_ = matrix * loc_matrix_;
 	decomposeMatrix(loc_matrix_, loc_position_, loc_rotation_, loc_scale_);
@@ -44,12 +60,12 @@ void Transform::applyQuaternion(const glm::quat& quaternion) {
 	markWorldMatrixDirty();
 }
 
-glm::mat4x4 Transform::matrix() const {
-  return loc_matrix_;
-}
-
-glm::vec3 Transform::position() const {
-	return loc_position_;
+void Transform::setScale(const glm::vec3& scale) {
+	loc_matrix_[0][0] *= scale[0] / loc_scale_[0];
+	loc_matrix_[1][1] *= scale[1] / loc_scale_[1];
+  loc_matrix_[2][2] *= scale[2] / loc_scale_[2];
+	loc_scale_ = scale;
+	markWorldMatrixDirty();
 }
 
 void Transform::setPosition(const glm::vec3& position) {
@@ -58,6 +74,26 @@ void Transform::setPosition(const glm::vec3& position) {
 	loc_matrix_[3][1] = position[1];
 	loc_matrix_[3][2] = position[2];
 	markWorldMatrixDirty();
+}
+
+void Transform::translateOnAxis(const glm::vec3& axis, const float distance) {
+	const glm::vec3 loc_axis = loc_rotation_ * axis;
+	setPosition(loc_position_ + (loc_axis * distance));
+}
+
+void Transform::translateX(const float distance) {
+	const static glm::vec3 axis(1.0f, 0.0f, 0.0f);
+	translateOnAxis(axis, distance);
+}
+
+void Transform::translateY(const float distance) {
+	const static glm::vec3 axis(0.0f, 1.0f, 0.0f);
+	translateOnAxis(axis, distance);
+}
+
+void Transform::translateZ(const float distance) {
+	const static glm::vec3 axis(0.0f, 0.0f, 1.0f);
+	translateOnAxis(axis, distance);
 }
 
 void Transform::rotateOnAxis(const glm::vec3& axis, const float angle) {
@@ -80,26 +116,6 @@ void Transform::rotateY(const float angle) {
 void Transform::rotateZ(const float angle) {
 	const static glm::vec3 axis(0.0f, 0.0f, 1.0f);
 	rotateOnAxis(axis, angle);
-}
-
-void Transform::translateOnAxis(const glm::vec3& axis, float distance) {
-	const glm::vec3 loc_axis = loc_rotation_ * axis;
-	setPosition(loc_axis * distance);
-}
-
-void Transform::translateX(const float distance) {
-	const static glm::vec3 axis(1.0f, 0.0f, 0.0f);
-	translateOnAxis(axis, distance);
-}
-
-void Transform::translateY(const float distance) {
-	const static glm::vec3 axis(0.0f, 1.0f, 0.0f);
-	translateOnAxis(axis, distance);
-}
-
-void Transform::translateZ(const float distance) {
-	const static glm::vec3 axis(0.0f, 0.0f, 1.0f);
-	translateOnAxis(axis, distance);
 }
 
 void Transform::updateWorldMatrix() {

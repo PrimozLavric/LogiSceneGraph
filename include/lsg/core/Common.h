@@ -16,6 +16,15 @@ auto make_ref(Args&&... args) -> decltype(std::make_shared<T>(std::forward<Args>
 	return std::make_shared<T>(std::forward<Args>(args)...);
 }
 
+template <typename T>
+class Observer {
+public:
+
+
+private:
+	T& ref;
+};
+
 }
 
 #endif  // LSG_CORE_COMMON_H
