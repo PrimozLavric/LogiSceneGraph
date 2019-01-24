@@ -10,7 +10,7 @@
 
 #include "lsg/core/Identifiable.h"
 #include "lsg/core/Component.h"
-#include "lsg/core/Common.h"
+#include "lsg/core/Shared.h"
 
 namespace lsg {
 
@@ -34,7 +34,7 @@ public:
    * @return  Reference to the searched object or null ref if not found.
    */
   template <typename T = Object>
-  Ref<T> find(std::string_view name);
+  Ref<T> find(std::string_view name) const;
 
   /**
    * @brief   Check if the object is active.
@@ -55,7 +55,7 @@ public:
    *
    * @param	obj Child object.
    */
-  void addChild(const Ref<Object>& obj);
+  void addChild(const Shared<Object>& obj);
 
   /**
    * @brief Sets on parent change callback for the given object.
@@ -102,7 +102,7 @@ public:
    *
    * @param	traversal_fn  Traversal function.
    */
-  void traverseDown(const std::function<bool(Ref<Object>)>& traversal_fn);
+  void traverseDown(const std::function<bool(Ref<Object>)>& traversal_fn) const;
 
   /**
    * @brief Traverse the hierarchy passing all descendant object to the traversal function.
@@ -110,7 +110,7 @@ public:
    *
    * @param	traversal_fn  Traversal function.
    */
-  void traverseDownExcl(const std::function<bool(Ref<Object>)>& traversal_fn);
+  void traverseDownExcl(const std::function<bool(Ref<Object>)>& traversal_fn) const;
 
   /**
    * @brief Traverse the hierarchy passing this and all ascendant object to the traversal function.
@@ -118,7 +118,7 @@ public:
    *
    * @param	traversal_fn  Traversal function.
    */
-  void traverseUp(const std::function<bool(Ref<Object>)>& traversal_fn);
+  void traverseUp(const std::function<bool(Ref<Object>)>& traversal_fn) const;
 
   /**
    * @brief Traverse the hierarchy passing all ascendant object to the traversal function.
@@ -126,7 +126,7 @@ public:
    *
    * @param	traversal_fn  Traversal function.
    */
-  void traverseUpExcl(const std::function<bool(Ref<Object>)>& traversal_fn);
+  void traverseUpExcl(const std::function<bool(Ref<Object>)>& traversal_fn) const;
 
   /**
    * @brief   Add the component to the object.
@@ -181,17 +181,17 @@ private:
   /**
    * Weak reference to the parent.
    */
-	WeakRef<Object> parent_;
+	Ref<Object> parent_;
 
   /**
    * Holds child objects mapped by their name.
    */
-	std::unordered_multimap<std::string_view, Ref<Object>> children_;
+	std::unordered_multimap<std::string_view, Shared<Object>> children_;
 
   /**
    * Holds components of the object mapped by their type (type index).
    */
-	std::unordered_map<std::type_index, std::list<Ref<Component>>> components_;
+	std::unordered_map<std::type_index, std::list<Shared<Component>>> components_;
 
   /**
    * Callbacks that are invoked once the object parent changes.
@@ -202,9 +202,9 @@ private:
 template <typename T>
 Ref<T> Object::getParent() const {
 	if constexpr (std::is_same<Object, T>()) {
-		return parent_.lock();
+		return parent_;
 	} else {
-		return std::dynamic_pointer_cast<T>(parent_.lock());
+		return parent_.dynamicCast<T>();
 	}
 }
 
@@ -212,50 +212,51 @@ template <typename T>
 Ref<T> Object::getChild(const std::string_view name) const {
   const auto range = children_.equal_range(name);
   for (auto it = range.first; it != range.second; ++it) {
-	  Ref<T> ref = std::dynamic_pointer_cast<T>(it->second);
+	  Ref<T> ref = it->second;
     if (ref) {
 		  return ref;
     }
   }
 
-  return nullptr;
+  return Ref<T>();
 }
 
 template <typename T>
-Ref<T> Object::find(const std::string_view name) {
+Ref<T> Object::find(const std::string_view name) const {
 	// Check if this object matches the search.
 	if (this->name() == name) {
-		Ref<T> obj = std::dynamic_pointer_cast<T>(shared_from_this());
+		Ref<T> obj(dynamic_cast<T*>(const_cast<Object*>(this)));
 	  if (obj) {
 		  return obj;
 	  }
 	}
 
 	// Search in child objects.
+	Ref<T> search_res;
 	for (auto& child : children_) {
-		Ref<T> search_rez = child.second->find<T>(name);
-		if (search_rez) {
-			return search_rez;
+		search_res = child.second->find<T>(name);
+		if (search_res) {
+			break;
 		}
 	}
 
-	return nullptr;
+	return search_res;
 }
 template <typename T, typename ... Args>
 void Object::addComponent(Args... args) {
-	components_[std::type_index(typeid(T))].emplace_back(make_ref<T>(this, args...));
+	components_[std::type_index(typeid(T))].push_back(Shared<T>(Ref<Object>(this), args...));
 }
 
 template <typename T>
 Ref<T> Object::getComponent() const {
   const auto it = components_.find(std::type_index(typeid(T)));
-	return (it == components_.end() || it->second.empty()) ? nullptr : std::dynamic_pointer_cast<T>(it->second.front());
+	return (it == components_.end() || it->second.empty()) ? Ref<T>() : Ref<T>(it->second.front());
 }
 
 template <typename T>
 const std::list<Ref<T>>& Object::getComponents() const {
 	const auto it = components_.find(std::type_index(typeid(T)));
-	return (it == components_.end()) ? std::vector<Ref<T>>() : it->second;
+	return (it == components_.end()) ? std::list<Ref<T>>() : it->second;
 }
 
 }

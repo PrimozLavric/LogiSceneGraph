@@ -5,6 +5,7 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include "lsg/core/Component.h"
+#include "lsg/core/Shared.h"
 
 namespace lsg {
 
@@ -16,28 +17,42 @@ public:
    * 
    * @param	owner Owner of the transform component.
    */
-  explicit Transform(Object* owner);
+  explicit Transform(Ref<Object> owner);
 
   /**
    * @brief   Retrieve local transform matrix.
    *
    * @return	Local transform matrix.
    */
-  const glm::mat4x4& matrix() const;
+  const glm::mat4x4& matrix();
 
   /**
-   * @brief	  Retrieve the object position in object space.
+   * @brief   Retrieve world transform matrix.
+   *
+   * @return	World transform matrix.
+   */
+  const glm::mat4x4& worldMatrix();
+
+  /**
+   * @brief	  Retrieve object position in object space.
    *
    * @return	Position in object space.
    */
   const glm::vec3& position() const;
 
   /**
-   * @brief   Retrieve the object rotation in object space
+   * @brief   Retrieve object rotation in object space
    * 
    * @return	Rotation in object space.
    */
   const glm::quat& rotation() const;
+
+  /**
+   * @brief	  Retrieve euler rotation in object space.
+   * 
+   * @return	Euler rotation in object space.
+   */
+  glm::vec3 eulerRotation() const;
 
   /**
    * @brief   Retrieve the object local scale.
@@ -49,9 +64,9 @@ public:
   /**
    * @brief Apply the given matrix to the object.
    * 
-   * @param	matrix  Matrix to be applied.
+   * @param	mat  Matrix to be applied.
    */
-  void applyMatrix(const glm::mat4x4& matrix);
+  void applyMatrix(const glm::mat4& mat);
 
   /**
    * @brief Apply the quaternion rotation to the object.
@@ -59,6 +74,13 @@ public:
    * @param	quaternion  Quaternion to be applied. 
    */
   void applyQuaternion(const glm::quat& quaternion);
+
+  /**
+   * @brief Set object rotation.
+   * 
+   * @param	quaternion  Quaternion specifying object rotation.
+   */
+  void setRotation(const glm::quat& quaternion);
 
   /**
    * @brief Set object local scale.
@@ -138,13 +160,16 @@ public:
   void updateWorldMatrix();
 
 protected:
-	
+
+	void markLocalMatrixDirty();
+
 	void markWorldMatrixDirty();
 
 private:
 	glm::mat4x4 world_matrix_;
 	bool world_matrix_dirty_;
 	glm::mat4x4 loc_matrix_;
+	bool loc_matrix_dirty_;
 
 	glm::vec3 loc_position_;
 	glm::quat loc_rotation_;

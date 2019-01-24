@@ -17,11 +17,11 @@ public:
 };
 
 TEST(Object, BasicHierarchy) {
-  auto a = make_ref<Object>("A");
-  auto b = make_ref<Object>("B");
-  const auto c = make_ref<Object>("C");
-  auto d1 = make_ref<ObjTypeA>("D");
-  const auto d2 = make_ref<ObjTypeB>("D");
+  auto a = Shared<Object>("A");
+  auto b = Shared<Object>("B");
+  const auto c = Shared<Object>("C");
+  auto d1 = Shared<ObjTypeA>("D");
+  const auto d2 = Shared<ObjTypeB>("D");
 	
   /* Hierarchy
 		     A
@@ -42,14 +42,14 @@ TEST(Object, BasicHierarchy) {
 	EXPECT_TRUE(b->getChild<ObjTypeB>("D") == d2);
 
   // Get parent test.
-	EXPECT_EQ(a->getParent(), nullptr);
+	EXPECT_FALSE(a->getParent());
 	EXPECT_EQ(b->getParent(), a);
 	EXPECT_EQ(c->getParent(), a);
 	EXPECT_EQ(d1->getParent(), b);
 	EXPECT_EQ(d2->getParent(), b);
 
 	// D is not a direct descendant of object A
-	EXPECT_EQ(a->getChild("D"), nullptr);
+	EXPECT_FALSE(a->getChild("D"));
 
   // Find object in hierarchy of object A.
 	EXPECT_EQ(a->find("A"), a);
@@ -79,20 +79,20 @@ TEST(Object, BasicHierarchy) {
 	d1->detach();
 	EXPECT_EQ(a->find("D"), d2);
 
-	EXPECT_EQ(a->find<ObjTypeA>("C"), nullptr);
-	EXPECT_EQ(a->find("DoesNotExist"), nullptr);
+	EXPECT_FALSE(a->find<ObjTypeA>("C"));
+	EXPECT_FALSE(a->find("DoesNotExist"));
 
   // After detaching B, D should no longer be accessible via find on A.
   b->detach();
-  EXPECT_EQ(a->find("D"), nullptr);
+  EXPECT_FALSE(a->find("D"));
 }
 
 TEST(Object, OnParentChangeCallbacks) {
-	auto a = make_ref<Object>("A");
-	auto b = make_ref<Object>("B");
-	auto c = make_ref<Object>("B");
+	auto a = Shared<Object>("A");
+	auto b = Shared<Object>("B");
+	auto c = Shared<Object>("B");
 
-  const auto id = make_ref<Identifiable>("test");
+  const auto id = Shared<Identifiable>("test");
   size_t invocation_num = 0;
 
   // New parent should be A
@@ -118,7 +118,7 @@ TEST(Object, OnParentChangeCallbacks) {
 
   // New parent should be null
   b->setOnParentChangeCallback(id, [&](Ref<Object> new_parent) {
-	  EXPECT_EQ(new_parent, nullptr);
+	  EXPECT_FALSE(new_parent);
 	  invocation_num++;
   });
   b->detach();
@@ -131,11 +131,11 @@ TEST(Object, OnParentChangeCallbacks) {
 
 
 TEST(Object, HierarchyTraversal) {
-	auto a = make_ref<Object>("A");
-	auto b = make_ref<Object>("B");
-	const auto c = make_ref<Object>("C");
-	auto d = make_ref<Object>("D");
-	const auto e = make_ref<Object>("E");
+	auto a = Shared<Object>("A");
+	auto b = Shared<Object>("B");
+	const auto c = Shared<Object>("C");
+	auto d = Shared<Object>("D");
+	const auto e = Shared<Object>("E");
 
 	/* Hierarchy
 			   A

@@ -14,13 +14,12 @@ bool Object::isActive() const {
 }
 
 bool Object::isActiveInHierarchy() const {
-	const auto parent = parent_.lock();
-	return active_ && (!parent || parent->isActiveInHierarchy());
+	return active_ && (!parent_ || parent_->isActiveInHierarchy());
 }
 
-void Object::addChild(const Ref<Object>& obj) {
+void Object::addChild(const Shared<Object>& obj) {
 	obj->detachInternal();
-	obj->parent_ = weak_from_this();
+	obj->parent_ = Ref<Object>(this);
   children_.emplace(obj->name(), obj);
   obj->notifyParentChange();
 }
@@ -39,8 +38,8 @@ void Object::detach() {
 	notifyParentChange();
 }
 
-void Object::traverseDown(const std::function<bool(Ref<Object>)>& traversal_fn) {
-	if (!traversal_fn(shared_from_this())) {
+void Object::traverseDown(const std::function<bool(Ref<Object>)>& traversal_fn) const {
+	if (!traversal_fn(Ref<Object>(const_cast<Object*>(this)))) {
 		return;
 	}
 
@@ -49,7 +48,7 @@ void Object::traverseDown(const std::function<bool(Ref<Object>)>& traversal_fn) 
   }
 }
 
-void Object::traverseDownExcl(const std::function<bool(Ref<Object>)>& traversal_fn) {
+void Object::traverseDownExcl(const std::function<bool(Ref<Object>)>& traversal_fn) const {
 	for (const auto& child : children_) {
 		if (traversal_fn(child.second)) {
 			child.second->traverseDownExcl(traversal_fn);
@@ -57,35 +56,31 @@ void Object::traverseDownExcl(const std::function<bool(Ref<Object>)>& traversal_
 	}
 }
 
-void Object::traverseUp(const std::function<bool(Ref<Object>)>& traversal_fn) {
-	if (!traversal_fn(shared_from_this())) {
+void Object::traverseUp(const std::function<bool(Ref<Object>)>& traversal_fn) const {
+	if (!traversal_fn(Ref<Object>(const_cast<Object*>(this)))) {
 		return;
 	}
 
-  auto parent_ref = parent_.lock();
-  if (parent_ref) {
-	  parent_ref->traverseUp(traversal_fn);
+  if (parent_) {
+	  parent_->traverseUp(traversal_fn);
   }
 }
 
-void Object::traverseUpExcl(const std::function<bool(Ref<Object>)>& traversal_fn) {
-  auto parent_ref = parent_.lock();
-  if (parent_ref && traversal_fn(parent_ref)) {
-		parent_ref->traverseUpExcl(traversal_fn);
+void Object::traverseUpExcl(const std::function<bool(Ref<Object>)>& traversal_fn) const {
+  if (parent_ && traversal_fn(parent_)) {
+	  parent_->traverseUpExcl(traversal_fn);
 	}
 }
 
 void Object::detachInternal() {
-	auto parent_ref = parent_.lock();
-
 	// Proceed if the object has parent
-	if (parent_ref) {
+	if (parent_) {
 		// Find the object among parent children.
-		const auto child_range = parent_ref->children_.equal_range(name());
+		const auto child_range = parent_->children_.equal_range(name());
 		for (auto it = child_range.first; it != child_range.second; ++it) {
 			// Remove this object form parent children.
 			if (it->second.get() == this) {
-				parent_ref->children_.erase(it);
+				parent_->children_.erase(it);
 				parent_.reset();
 				return;
 			}
@@ -96,10 +91,8 @@ void Object::detachInternal() {
 }
 
 void Object::notifyParentChange() {
-  const auto parent_ref = parent_.lock();
-
-  for (auto callback : on_parent_change_callbacks_) {
-	  callback.second(parent_ref);
+  for (const auto& callback : on_parent_change_callbacks_) {
+	  callback.second(parent_);
   }
 }
 

@@ -4,9 +4,9 @@
 
 namespace lsg {
 
-Transform::Transform(Object* owner)
+Transform::Transform(Ref<Object> owner)
   : Component("Transform", owner), world_matrix_(), world_matrix_dirty_(false), 
-    loc_matrix_(), loc_position_(), loc_rotation_(), loc_scale_(1.0f) {
+    loc_matrix_(), loc_matrix_dirty_(false), loc_position_(), loc_rotation_(), loc_scale_(1.0f) {
 
   // Traverse ancestors.
   owner->traverseUpExcl([this](const Ref<Object> object) {
@@ -27,13 +27,29 @@ Transform::Transform(Object* owner)
   });
 
   // When the parent changes mark the world matrix dirty.
-  owner->setOnParentChangeCallback(shared_from_this(), [this] (Ref<Object>) {
+  owner->setOnParentChangeCallback(Ref<Identifiable>(this), [this] (Ref<Object>) {
 	  this->markWorldMatrixDirty();
   });
 }
 
-const glm::mat4x4& Transform::matrix() const {
+const glm::mat4x4& Transform::matrix() {
+  if (loc_matrix_dirty_) {
+	  loc_matrix_ = glm::mat4_cast(loc_rotation_);
+	  for (size_t i = 0; i < 3; i++) {
+		  loc_matrix_[i][i] *= loc_scale_[i];
+		  loc_matrix_[3][i] = loc_position_[i];
+	  }
+  }
+
 	return loc_matrix_;
+}
+
+const glm::mat4x4& Transform::worldMatrix() {
+  if (world_matrix_dirty_) {
+	  updateWorldMatrix();
+  }
+
+  return world_matrix_;
 }
 
 const glm::vec3& Transform::position() const {
@@ -44,36 +60,38 @@ const glm::quat& Transform::rotation() const {
 	return loc_rotation_;
 }
 
+glm::vec3 Transform::eulerRotation() const {
+	return glm::eulerAngles(loc_rotation_);
+}
+
 const glm::vec3& Transform::scale() const {
 	return loc_scale_;
 }
 
-void Transform::applyMatrix(const glm::mat4x4& matrix) {
-	loc_matrix_ = matrix * loc_matrix_;
+void Transform::applyMatrix(const glm::mat4& mat) {
+	loc_matrix_ = mat * matrix();
 	decomposeMatrix(loc_matrix_, loc_position_, loc_rotation_, loc_scale_);
 	markWorldMatrixDirty();
 }
 
 void Transform::applyQuaternion(const glm::quat& quaternion) {
 	loc_rotation_ *= quaternion;
-	loc_matrix_ = glm::mat4_cast(quaternion) * loc_matrix_;
-	markWorldMatrixDirty();
+	markLocalMatrixDirty();
+}
+
+void Transform::setRotation(const glm::quat& quaternion) {
+	loc_rotation_ = quaternion;
+	markLocalMatrixDirty();
 }
 
 void Transform::setScale(const glm::vec3& scale) {
-	loc_matrix_[0][0] *= scale[0] / loc_scale_[0];
-	loc_matrix_[1][1] *= scale[1] / loc_scale_[1];
-  loc_matrix_[2][2] *= scale[2] / loc_scale_[2];
 	loc_scale_ = scale;
-	markWorldMatrixDirty();
+	markLocalMatrixDirty();
 }
 
 void Transform::setPosition(const glm::vec3& position) {
 	loc_position_ = position;
-	loc_matrix_[3][0] = position[0];
-	loc_matrix_[3][1] = position[1];
-	loc_matrix_[3][2] = position[2];
-	markWorldMatrixDirty();
+	markLocalMatrixDirty();
 }
 
 void Transform::translateOnAxis(const glm::vec3& axis, const float distance) {
@@ -99,8 +117,7 @@ void Transform::translateZ(const float distance) {
 void Transform::rotateOnAxis(const glm::vec3& axis, const float angle) {
 	const auto quaternion = glm::quat(axis * angle);
 	loc_rotation_ *= quaternion;
-	loc_matrix_ = glm::mat4_cast(quaternion) * loc_matrix_;
-	markWorldMatrixDirty();
+	markLocalMatrixDirty();
 }
 
 void Transform::rotateX(const float angle) {
@@ -134,12 +151,17 @@ void Transform::updateWorldMatrix() {
   // Update ancestor transform and compute the world matrix.
   if (transform) {
 	  transform->updateWorldMatrix();
-	  world_matrix_ = transform->world_matrix_ * loc_matrix_;
+	  world_matrix_ = transform->world_matrix_ * matrix();
   } else {
-	  world_matrix_ = loc_matrix_;
+	  world_matrix_ = matrix();
   }
 
   world_matrix_dirty_ = false;
+}
+
+void Transform::markLocalMatrixDirty() {
+	loc_matrix_dirty_ = true;
+	markWorldMatrixDirty();
 }
 
 void Transform::markWorldMatrixDirty() {
