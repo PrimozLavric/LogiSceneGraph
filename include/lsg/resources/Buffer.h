@@ -16,28 +16,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_CORE_COMPONENT_H
-#define LSG_CORE_COMPONENT_H
+#ifndef LSG_RESOURCES_BUFFER_H
+#define LSG_RESOURCES_BUFFER_H
 
-#include <string>
+#include <memory>
+#include <vector>
+#include <cstddef>
 
-#include "lsg/core/Identifiable.h"
-#include "Shared.h"
+#include "lsg/core/Shared.h"
 
 namespace lsg {
 
-class Object;
-
-class Component : public Identifiable, public std::enable_shared_from_this<Component> {
+/**
+ * @brief 
+ */
+class Buffer : public std::enable_shared_from_this<Buffer> {
 public:
-  explicit Component(const std::string& name, Ref<Object> owner);
+	explicit Buffer(std::vector<std::byte> data);
 
-  virtual ~Component();
+  template <typename T>
+  explicit Buffer(const std::vector<T>& data);
 
-protected:
-	Ref<Object> owner_;
+	size_t size() const;
+
+	const std::byte* data() const;
+
+  virtual ~Buffer() = default;
+
+private:
+	std::vector<std::byte> data_;
 };
+
+template <typename T>
+Buffer::Buffer(const std::vector<T>& data) 
+  : data_(reinterpret_cast<const std::byte*>(data.data()), 
+	        reinterpret_cast<const std::byte*>(data.data()) + data.size() * sizeof(T)) { }
 
 }
 
-#endif  //LSG_CORE_COMPONENT_H
+#endif // LSG_RESOURCES_BUFFER_H

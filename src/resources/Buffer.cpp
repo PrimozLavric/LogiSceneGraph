@@ -16,28 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_CORE_COMPONENT_H
-#define LSG_CORE_COMPONENT_H
-
-#include <string>
-
-#include "lsg/core/Identifiable.h"
-#include "Shared.h"
+#include "lsg/resources/Buffer.h"
 
 namespace lsg {
 
-class Object;
+Buffer::Buffer(std::vector<std::byte> data) : data_(std::move(data)) { }
 
-class Component : public Identifiable, public std::enable_shared_from_this<Component> {
-public:
-  explicit Component(const std::string& name, Ref<Object> owner);
-
-  virtual ~Component();
-
-protected:
-	Ref<Object> owner_;
-};
-
+size_t Buffer::size() const {
+	return data_.size();
 }
 
-#endif  //LSG_CORE_COMPONENT_H
+const std::byte* Buffer::data() const {
+	return data_.data();
+}
+
+}

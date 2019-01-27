@@ -16,28 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_CORE_COMPONENT_H
-#define LSG_CORE_COMPONENT_H
+#ifndef LSG_LOADERS_GLTFLOADER_H
+#define LSG_LOADERS_GLTFLOADER_H
 
-#include <string>
-
-#include "lsg/core/Identifiable.h"
-#include "Shared.h"
+#include <tinygltf/tiny_gltf.h>
+#include "lsg/core/Shared.h"
+#include "lsg/core/Object.h"
 
 namespace lsg {
 
-class Object;
-
-class Component : public Identifiable, public std::enable_shared_from_this<Component> {
+class GLTFLoader {
 public:
-  explicit Component(const std::string& name, Ref<Object> owner);
+	Shared<Object> load(const std::string& filename);
 
-  virtual ~Component();
+	//Shared<Object> loadBinary();
 
 protected:
-	Ref<Object> owner_;
+	tinygltf::Model loadModelASCII(const std::string& filename);
+
+private:
+	tinygltf::TinyGLTF loader_;
+
 };
 
 }
 
-#endif  //LSG_CORE_COMPONENT_H
+#endif  // LSG_LOADERS_GLTFLOADER_H

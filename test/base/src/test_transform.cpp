@@ -11,7 +11,7 @@ void testVecNear(glm::vec3 actual, glm::vec3 expected, float epsilon) {
 		          (actual[2] - expected[2]) < epsilon);
 }
 TEST(Transform, Basic) {
-	Shared<Object> a = Shared<Object>("A");
+	Shared<Object> a = Shared<Object>::create("A");
 	a->addComponent<Transform>();
 	Ref<Transform> transform = a->getComponent<Transform>();
 

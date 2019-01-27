@@ -16,28 +16,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_CORE_COMPONENT_H
-#define LSG_CORE_COMPONENT_H
+#ifndef LSG_CORE_EXCEPTIONS_H
+#define LSG_CORE_EXCEPTIONS_H
 
-#include <string>
-
-#include "lsg/core/Identifiable.h"
-#include "Shared.h"
+#include <stdexcept>
+#include "lsg/util/StringUtil.h"
 
 namespace lsg {
 
-class Object;
+template <typename Exception, typename... Args>
+void throwIf(const bool condition, Args... args) {
+  if (condition) {
+	  throw Exception(util::generateString(args...));
+  }
+}
 
-class Component : public Identifiable, public std::enable_shared_from_this<Component> {
-public:
-  explicit Component(const std::string& name, Ref<Object> owner);
+class LSGException : public std::runtime_error {
+	using std::runtime_error::runtime_error;
+};
 
-  virtual ~Component();
+class OutOfRange final : public LSGException {
+	using LSGException::LSGException;
+};
 
-protected:
-	Ref<Object> owner_;
+class InitializationError final : public LSGException {
+	using LSGException::LSGException;
+};
+
+class InvalidArgument final : public LSGException {
+	using LSGException::LSGException;
 };
 
 }
 
-#endif  //LSG_CORE_COMPONENT_H
+#endif // LSG_CORE_EXCEPTIONS_H

@@ -1,3 +1,21 @@
+/**
+ * Project LogiSceneGraph source code
+ * Copyright (C) 2019 Primoz Lavric
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef LSG_CORE_SHARED_H
 #define LSG_CORE_SHARED_H
 
@@ -15,15 +33,6 @@ public:
   Shared();
 
   /**
-   * @brief   Constructs wrapped object of type T using the provided arguments.
-   *
-   * @tparam	Args	T constructor arguments types.
-   * @param   args	Constructor arguments.
-   */
-  template <typename... Args>
-  explicit Shared(Args ... args);
-
-  /**
    * @brief   Constructs the Shared object and initializes it with the given pointer.
    * @throws  If the given pointer is null or it cannot be cast to type T.
    *
@@ -32,6 +41,16 @@ public:
    */
   template <typename U, typename = std::enable_if<std::is_same<T, U>::value || std::is_base_of<T, U>::value>>
   explicit Shared(std::shared_ptr<U> ptr);
+
+  /**
+   * @brief   Creates shared object using the given arguments.
+   * 
+   * @tparam	Args  Argument types.
+   * @param	  args  Arguments.
+   * @return	Created shared object.
+   */
+  template <typename... Args>
+  static Shared<T> create(Args... args);
 
   /**
    * @brief   Implicit conversion from Shared of type T to a Shared of type U.
@@ -93,17 +112,18 @@ private:
 };
 
 template <typename T>
-Shared<T>::Shared() : ptr_(std::make_shared<T>()) {}
-
-template <typename T>
-template <typename... Args>
-Shared<T>::Shared(Args... args)
-  : ptr_(std::make_shared<T>(args...)) {}
+Shared<T>::Shared() : ptr_(nullptr) {}
 
 template <typename T>
 template <typename U, typename>
 Shared<T>::Shared(std::shared_ptr<U> ptr)
   : ptr_(std::move(std::static_pointer_cast<T>(std::move(ptr)))) { }
+
+template <typename T>
+template <typename ... Args>
+Shared<T> Shared<T>::create(Args... args) {
+	return Shared<T>(std::make_shared<T>(args...));
+}
 
 template <typename T>
 template <typename U, typename>

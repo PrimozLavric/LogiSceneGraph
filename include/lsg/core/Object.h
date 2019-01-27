@@ -1,3 +1,21 @@
+/**
+ * Project LogiSceneGraph source code
+ * Copyright (C) 2019 Primoz Lavric
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef LSG_CORE_OBJECT_H
 #define LSG_CORE_OBJECT_H
 
@@ -6,7 +24,6 @@
 #include <map>
 #include <unordered_map>
 #include <functional>
-#include <typeindex>
 
 #include "lsg/core/Identifiable.h"
 #include "lsg/core/Component.h"
@@ -90,7 +107,7 @@ public:
    * @brief   Retrieve child object with the given name.
    *
    * @tparam	T     Type to which the child object will be casted.
-   * @param   name	Name of the object to is to be retrieved.
+   * @param   name	Name of the object that is to be retrieved.
    * @return	Child object with the given name and of the given type or null if no child matches.
    */
   template <typename T = Object>
@@ -133,9 +150,10 @@ public:
    *
    * @tparam	T     Type of the component.
    * @param   args  Arguments used for component construction.
+   * @return  Reference to the component.
    */
   template <typename T, typename... Args>
-  void addComponent(Args... args);
+  Ref<T> addComponent(Args... args);
 
   /**
    * @brief   Retrieve first component of the given type T.
@@ -150,10 +168,10 @@ public:
    * @brief   Retrieve all components of type T
    *
    * @tparam	T	Components type.
-   * @return	List of components of the given type.
+   * @return	Vector of components of the given type.
    */
   template <typename T>
-  const std::list<Ref<T>>& getComponents() const;
+  const std::vector<Ref<T>>& getComponents() const;
 
   /**
    * @brief Default virtual destructor (this object is intended to be inherited).
@@ -189,9 +207,9 @@ private:
 	std::unordered_multimap<std::string_view, Shared<Object>> children_;
 
   /**
-   * Holds components of the object mapped by their type (type index).
+   * Holds components of the object.
    */
-	std::unordered_map<std::type_index, std::list<Shared<Component>>> components_;
+	std::list<Shared<Component>> components_;
 
   /**
    * Callbacks that are invoked once the object parent changes.
@@ -242,21 +260,36 @@ Ref<T> Object::find(const std::string_view name) const {
 
 	return search_res;
 }
+
 template <typename T, typename ... Args>
-void Object::addComponent(Args... args) {
-	components_[std::type_index(typeid(T))].push_back(Shared<T>(Ref<Object>(this), args...));
+Ref<T> Object::addComponent(Args... args) {
+	components_.emplace_back(Shared<T>::create(Ref<Object>(this), args...));
+	return components_.back();
 }
 
 template <typename T>
 Ref<T> Object::getComponent() const {
-  const auto it = components_.find(std::type_index(typeid(T)));
-	return (it == components_.end() || it->second.empty()) ? Ref<T>() : Ref<T>(it->second.front());
+  for (auto& component : components_) {
+	  Shared<T> casted = component.dynamicCast<T>();
+    if (casted) {
+		  return casted;
+    }
+  }
+
+  return Ref<T>();
 }
 
 template <typename T>
-const std::list<Ref<T>>& Object::getComponents() const {
-	const auto it = components_.find(std::type_index(typeid(T)));
-	return (it == components_.end()) ? std::list<Ref<T>>() : it->second;
+const std::vector<Ref<T>>& Object::getComponents() const {
+	std::vector<Ref<T>> matches;
+	for (auto& component : components_) {
+		Shared<T> casted = component.dynamicCast<T>();
+		if (casted) {
+			matches.emplace_back(casted);
+		}
+	}
+
+	return matches;
 }
 
 }

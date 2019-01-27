@@ -7,15 +7,18 @@
       "name": "x86-Debug",
       "includePath": [
         "${env.INCLUDE}",
+        "${env.VULKAN_SDK}\\Include",
         "${projectRoot}\\include",
         "${projectRoot}\\libs\\glm",
+        "${projectRoot}\\libs\\tinygltf",
         "${projectRoot}\\test\\libs\\googletest\\googletest\\include"
       ],
       "defines": [
         "WIN32",
         "_DEBUG",
         "UNICODE",
-        "_UNICODE"
+        "_UNICODE",
+        "ENABLE_WARNINGS"
       ],
       "intelliSenseMode": "windows-msvc-x86"
     },
@@ -26,15 +29,18 @@
       "name": "x86-Release",
       "includePath": [
         "${env.INCLUDE}",
+        "${env.VULKAN_SDK}\\Include",
         "${projectRoot}\\include",
         "${projectRoot}\\libs\\glm",
+        "${projectRoot}\\libs\\tinygltf",
         "${projectRoot}\\test\\libs\\googletest\\googletest\\include"
       ],
       "defines": [
         "WIN32",
         "NDEBUG",
         "UNICODE",
-        "_UNICODE"
+        "_UNICODE",
+        "ENABLE_WARNINGS"
       ],
       "intelliSenseMode": "windows-msvc-x86"
     },
@@ -44,12 +50,15 @@
         "WIN32",
         "_DEBUG",
         "UNICODE",
-        "_UNICODE"
+        "_UNICODE",
+        "ENABLE_WARNINGS"
       ],
       "includePath": [
         "${env.INCLUDE}",
+        "${env.VULKAN_SDK}\\Include",
         "${projectRoot}\\include",
         "${projectRoot}\\libs\\glm",
+        "${projectRoot}\\libs\\tinygltf",
         "${projectRoot}\\test\\libs\\googletest\\googletest\\include"
       ],
       "inheritEnvironments": [
@@ -65,15 +74,18 @@
       "name": "x64-Release",
       "includePath": [
         "${env.INCLUDE}",
+        "${env.VULKAN_SDK}\\Include",
         "${projectRoot}\\include",
         "${projectRoot}\\libs\\glm",
+        "${projectRoot}\\libs\\tinygltf",
         "${projectRoot}\\test\\libs\\googletest\\googletest\\include"
       ],
       "defines": [
         "WIN32",
         "NDEBUG",
         "UNICODE",
-        "_UNICODE"
+        "_UNICODE",
+        "ENABLE_WARNINGS"
       ],
       "intelliSenseMode": "windows-msvc-x64"
     }

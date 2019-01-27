@@ -16,39 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_CORE_IDENTIFIABLE_H
-#define LSG_CORE_IDENTIFIABLE_H
-
-#include <string>
-#include <atomic>
+#include "lsg/loaders/GLTFLoader.h"
+#include <iostream>
 
 namespace lsg {
 
-class Identifiable {
-public:
-  explicit Identifiable(std::string name);
-  
-  Identifiable(Identifiable&& other) noexcept;
-
-  Identifiable(const Identifiable& other);
-
-  Identifiable& operator=(Identifiable&& rhs) noexcept;
-
-  Identifiable& operator=(const Identifiable& rhs);
-
-  size_t id() const;
-
-  std::string_view name() const;
-
-  virtual ~Identifiable() = default;
-
-private:
-	static std::atomic<size_t> next_id_;
-
-	size_t id_;
-  std::string name_;
-};
-
+Shared<Object> GLTFLoader::load(const std::string& filename) {
+	tinygltf::Model model = loadModelASCII(filename);
+	return {};
 }
 
-#endif  // LSG_CORE_IDENTIFIABLE_H
+tinygltf::Model GLTFLoader::loadModelASCII(const std::string& filename) {
+	std::string error;
+	std::string warning;
+	tinygltf::Model model;
+
+	const bool res = loader_.LoadASCIIFromFile(&model, &error, &warning, filename);
+
+  // Print warning if any.
+	if (!warning.empty()) {
+		std::cout << "GLTFLoader Warning: " << warning << std::endl;
+	}
+
+  // Print error if any.
+	if (!error.empty()) {
+		std::cout << "GLTFLoader Error: " << error << std::endl;
+	}
+
+	if (!res) {
+		throw std::runtime_error("GLTFLoader failed to load file " + filename);
+	}
+
+	return model;
+}
+
+}

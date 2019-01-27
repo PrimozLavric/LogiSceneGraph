@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.10)
-set(CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 17)
 
 # Metadata
 project(LogiSceneGraph VERSION 0.1.0 LANGUAGES CXX)
@@ -28,7 +28,7 @@ target_include_directories(logi_scene_graph PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(logi_scene_graph glm)
+target_link_libraries(logi_scene_graph glm vulkan tinygltf)
 
 ##########################################################
 ####################### DOXYGEN ##########################

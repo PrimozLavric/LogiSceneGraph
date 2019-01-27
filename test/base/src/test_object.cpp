@@ -17,11 +17,11 @@ public:
 };
 
 TEST(Object, BasicHierarchy) {
-  auto a = Shared<Object>("A");
-  auto b = Shared<Object>("B");
-  const auto c = Shared<Object>("C");
-  auto d1 = Shared<ObjTypeA>("D");
-  const auto d2 = Shared<ObjTypeB>("D");
+  auto a = Shared<Object>::create("A");
+  auto b = Shared<Object>::create("B");
+  const auto c = Shared<Object>::create("C");
+  auto d1 = Shared<ObjTypeA>::create("D");
+  const auto d2 = Shared<ObjTypeB>::create("D");
 	
   /* Hierarchy
 		     A
@@ -88,11 +88,11 @@ TEST(Object, BasicHierarchy) {
 }
 
 TEST(Object, OnParentChangeCallbacks) {
-	auto a = Shared<Object>("A");
-	auto b = Shared<Object>("B");
-	auto c = Shared<Object>("B");
+	auto a = Shared<Object>::create("A");
+	auto b = Shared<Object>::create("B");
+	auto c = Shared<Object>::create("B");
 
-  const auto id = Shared<Identifiable>("test");
+  const auto id = Shared<Identifiable>::create("test");
   size_t invocation_num = 0;
 
   // New parent should be A
@@ -131,11 +131,11 @@ TEST(Object, OnParentChangeCallbacks) {
 
 
 TEST(Object, HierarchyTraversal) {
-	auto a = Shared<Object>("A");
-	auto b = Shared<Object>("B");
-	const auto c = Shared<Object>("C");
-	auto d = Shared<Object>("D");
-	const auto e = Shared<Object>("E");
+	auto a = Shared<Object>::create("A");
+	auto b = Shared<Object>::create("B");
+	const auto c = Shared<Object>::create("C");
+	auto d = Shared<Object>::create("D");
+	const auto e = Shared<Object>::create("E");
 
 	/* Hierarchy
 			   A

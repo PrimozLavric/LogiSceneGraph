@@ -16,28 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_CORE_COMPONENT_H
-#define LSG_CORE_COMPONENT_H
-
-#include <string>
-
-#include "lsg/core/Identifiable.h"
-#include "Shared.h"
+#include "lsg/components/GeometryReference.h"
 
 namespace lsg {
 
-class Object;
+GeometryReference::GeometryReference(Ref<Object> owner, Shared<Geometry> geometry) 
+  : Component("GeometryRference", owner), geometry_(std::move(geometry)) {}
 
-class Component : public Identifiable, public std::enable_shared_from_this<Component> {
-public:
-  explicit Component(const std::string& name, Ref<Object> owner);
-
-  virtual ~Component();
-
-protected:
-	Ref<Object> owner_;
-};
-
+const Shared<Geometry>& GeometryReference::getGeometry() const {
+	return geometry_;
 }
 
-#endif  //LSG_CORE_COMPONENT_H
+void GeometryReference::setGeometry(const Shared<Geometry>& geometry) {
+	geometry_ = geometry;
+}
+
+}
