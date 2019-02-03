@@ -22,13 +22,13 @@ AABB AABB::intersect(const AABB& aabb) const {
 
 void AABB::expand(const glm::vec3& point) {
 	min_ = glm::vec3(std::min(point.x, min_.x), std::min(point.y, min_.y), std::min(point.z, min_.z));
-	max_ = glm::vec3(std::max(point.x, min_.x), std::max(point.y, min_.y), std::max(point.z, min_.z));
+	max_ = glm::vec3(std::max(point.x, max_.x), std::max(point.y, max_.y), std::max(point.z, max_.z));
 }
 
 
 void AABB::expand(const AABB& aabb) {
 	expand(aabb.min_);
-	expand(aabb.max());
+	expand(aabb.max_);
 }
 
 bool AABB::valid() const {
@@ -62,6 +62,23 @@ float AABB::area() const {
 
   const glm::vec3 d = max_ - min_;
   return (d.x * d.y + d.y * d.z + d.z * d.x) * 2.0f;
+}
+
+glm::vec3 AABB::dimensions() const {
+	return max_ - min_;
+}
+
+void AABB::reset() {
+	min_ = glm::vec3(std::numeric_limits<float>::max());
+	max_ = glm::vec3(std::numeric_limits<float>::lowest());
+}
+
+std::ostream& operator<<(std::ostream& stream, const AABB& aabb) {
+  const glm::vec3& min = aabb.min();
+  const glm::vec3& max = aabb.max();
+
+  return stream << "[(" << min.x << ", " << min.y << ", " << min.z
+    << "), (" << max.x << ", " << max.y << ", " << max.z << ")]";
 }
 
 }

@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "lsg/accelerators/SBVH/Platform.h"
+#include "lsg/accelerators/BVH/Platform.h"
 
 namespace lsg {
+namespace bvh {
 
 Platform::Platform(const std::string& name, const float node_cost, const float primitive_cost, const size_t node_batch_size,
                    const size_t primitive_batch_size, const size_t min_leaf_size, const size_t max_leaf_size)
@@ -77,5 +78,5 @@ void Platform::setLeafPreferences(const size_t min_size, const size_t max_size) 
   max_leaf_size_ = max_size;
 }
 
-
+}
 }

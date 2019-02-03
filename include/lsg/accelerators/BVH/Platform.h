@@ -23,6 +23,7 @@
 #include "lsg/core/Identifiable.h"
 
 namespace lsg {
+namespace bvh {
 
 class Platform : public Identifiable {
 public:
@@ -32,63 +33,63 @@ public:
 		size_t min_leaf_size = 1u, size_t max_leaf_size = std::numeric_limits<size_t>::max());
 
 	// SAH weights
-  float getSAHPrimitiveCost() const;
-  float getSAHNodeCost() const;
+	float getSAHPrimitiveCost() const;
+	float getSAHNodeCost() const;
 
 	// SAH costs, raw and batched
-  float getCost(const size_t num_child_nodes, const size_t num_primitives) const;
-  float getPrimitiveCost(const size_t n) const;
-  float getNodeCost(const size_t n) const;
+	float getCost(const size_t num_child_nodes, const size_t num_primitives) const;
+	float getPrimitiveCost(const size_t n) const;
+	float getNodeCost(const size_t n) const;
 
 	// batch processing (how many ops at the price of one)
-  size_t getPrimitiveBatchSize() const;
-  size_t getNodeBatchSize() const;
+	size_t getPrimitiveBatchSize() const;
+	size_t getNodeBatchSize() const;
 
-  size_t roundToPrimitiveBatchSize(size_t n) const;
-  size_t roundToNodeBatchSize(size_t n) const;
+	size_t roundToPrimitiveBatchSize(size_t n) const;
+	size_t roundToNodeBatchSize(size_t n) const;
 
-  size_t getMinLeafSize() const;
-  size_t getMaxLeafSize() const;
+	size_t getMinLeafSize() const;
+	size_t getMaxLeafSize() const;
 
-  void setPrimitiveBatchSize(const size_t primitive_batch_size);
-  void setNodeBatchSize(const size_t node_batch_size);
+	void setPrimitiveBatchSize(const size_t primitive_batch_size);
+	void setNodeBatchSize(const size_t node_batch_size);
 
 	// leaf preferences
-  void setLeafPreferences(const size_t min_size, const size_t max_size);
+	void setLeafPreferences(const size_t min_size, const size_t max_size);
 
 private:
-  /**
-   * Cost of node traversal.
-   */
+	/**
+	 * Cost of node traversal.
+	 */
 	float SAH_node_cost_;
 
-  /**
-   * Cost of primitive intersection.
-   */
+	/**
+	 * Cost of primitive intersection.
+	 */
 	float SAH_primitive_cost_;
 
-  /**
-   * Batch size used for rounding for node SAH computation.
-   */
+	/**
+	 * Batch size used for rounding for node SAH computation.
+	 */
 	size_t node_batch_size_;
 
 	/**
-   * Batch size used for rounding for primitive SAH computation.
-   */
+	 * Batch size used for rounding for primitive SAH computation.
+	 */
 	size_t primitive_batch_size_;
 
 	/**
-   * Minimum number of primitives in leaf.
-   */
+	 * Minimum number of primitives in leaf.
+	 */
 	size_t min_leaf_size_;
 
-  /**
-   * Maximum number of primitives in leaf.
-   */
+	/**
+	 * Maximum number of primitives in leaf.
+	 */
 	size_t max_leaf_size_;
 };
 
-
+}
 }
 
 #endif

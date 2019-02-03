@@ -16,34 +16,88 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_ACCELERATORS_BVH_H
-#define LSG_ACCELERATORS_BVH_H
-
+#ifndef LSG_ACCELERATORS_SBVH_NODE_H
+#define LSG_ACCELERATORS_SBVH_NODE_H
 #include "lsg/math/AABB.h"
+#include <vector>
+#include <glm/vec2.hpp>
 
 namespace lsg {
 
-struct BVHNode {
-	BVHNode(const AABB& bounds, size_t index);
+class BVH {
+public:
+  /**
+   * BVH Node.
+   */
+	struct Node {
+    
+		Node(const AABB& bounds, bool is_leaf);
 
-	AABB bounds;
-	size_t index;
-};
+    /**
+     * Node bounds.
+     */
+	  AABB bounds;
 
-struct InternalBVHNode final : public BVHNode {
-	InternalBVHNode(const AABB& bounds, size_t index, BVHNode* right = nullptr, BVHNode* left = nullptr);
+    /**
+     * True if node is a leaf.
+     */
+	  bool is_leaf;
 
-	BVHNode* right;
-	BVHNode* left;
-};
+	  union {
+		  /**
+		   * Indices of child nodes (if inner node).
+		   */
+		  glm::uvec2 child_indices;
 
-struct LeafBVHNode final : public BVHNode {
-	LeafBVHNode(const AABB& bounds, const size_t index, size_t start_idx, size_t num_primitives);
+		  /**
+		   * Primitive indices range (if leaf node)
+		   */
+		  glm::uvec2 indices_range;
+	  };
+	};
 
-	size_t start_idx;
-	size_t num_primitives;
+  /**
+	 * @brief 
+	 *
+	 * @param	nodes	
+	 * @param	prim_indices	
+	 */
+	BVH(std::vector<Node> nodes, std::vector<uint32_t> prim_indices);
+
+  /**
+	 * @brief 
+	 *
+	 * @param	nodes	
+	 * @param	prim_indices	
+	 */
+	BVH(std::vector<Node>&& nodes, std::vector<uint32_t>&& prim_indices);
+
+  /**
+	 * @brief 
+	 *
+	 * @return	
+	 */
+	const std::vector<Node>& getNodes() const;
+
+  /**
+	 * @brief 
+	 *
+	 * @return	
+	 */
+	const std::vector<uint32_t>& getPrimitiveIndices() const;
+  
+private:
+  /**
+   * BVH tree nodes.
+   */
+	std::vector<Node> nodes_;
+
+  /**
+   * Primitive indices.
+   */
+	std::vector<uint32_t> prim_indices_;
 };
 
 }
 
-#endif // LSG_ACCELERATORS_BVH_H
+#endif  // LSG_ACCELERATORS_SBVH_NODE_H

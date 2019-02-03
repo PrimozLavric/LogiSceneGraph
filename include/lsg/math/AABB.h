@@ -20,6 +20,7 @@
 #define LSG_MATH_AABB_H
 
 #include <glm/vec3.hpp>
+#include <ostream>
 
 namespace lsg {
 
@@ -103,6 +104,18 @@ public:
    */
   float area() const;
 
+  /**
+   * @brief   Compute dimensions of the bounding box along each axis.
+   *
+   * @return	Dimensions of the bounding box.
+   */
+  glm::vec3 dimensions() const;
+
+  /**
+   * @brief Reset bounding box.
+   */
+  void reset();
+
 private:
   /**
 	 * Minimum bounding box point.
@@ -114,6 +127,8 @@ private:
    */
 	glm::vec3 max_;
 };
+
+std::ostream& operator<<(std::ostream& stream, const AABB& aabb);
 
 }
 
