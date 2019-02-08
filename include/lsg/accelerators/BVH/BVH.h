@@ -24,6 +24,7 @@
 
 namespace lsg {
 
+template <typename T>
 class BVH {
 public:
   /**
@@ -31,12 +32,12 @@ public:
    */
 	struct Node {
     
-		Node(const AABB& bounds, bool is_leaf);
+		Node(const AABB<T>& bounds, bool is_leaf);
 
     /**
      * Node bounds.
      */
-	  AABB bounds;
+		AABB<T> bounds;
 
     /**
      * True if node is a leaf.
@@ -97,6 +98,29 @@ private:
    */
 	std::vector<uint32_t> prim_indices_;
 };
+
+template <typename T>
+BVH<T>::Node::Node(const AABB<T>& bounds, const bool is_leaf)
+	: bounds(bounds), is_leaf(is_leaf) {}
+
+template <typename T>
+BVH<T>::BVH(std::vector<Node> nodes, std::vector<uint32_t> prim_indices)
+	: nodes_(std::move(nodes)), prim_indices_(std::move(prim_indices)) {}
+
+template <typename T>
+BVH<T>::BVH(std::vector<Node>&& nodes, std::vector<uint32_t>&& prim_indices)
+	: nodes_(std::move(nodes)), prim_indices_(std::move(prim_indices)) {}
+
+template <typename T>
+const std::vector<typename BVH<T>::Node>& BVH<T>::getNodes() const {
+	return nodes_;
+}
+
+template <typename T>
+const std::vector<uint32_t>& BVH<T>::getPrimitiveIndices() const {
+	return prim_indices_;
+}
+
 
 }
 

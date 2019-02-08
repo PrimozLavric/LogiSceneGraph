@@ -21,12 +21,13 @@
 
 #include <glm/vec3.hpp>
 #include <ostream>
+#include <algorithm>
 
 namespace lsg {
 
+template <typename T>
 class AABB {
 public:
-  
   /**
 	 * @brief Initializes max point to minimum values and min point to maximum float values. 
 	 */
@@ -38,7 +39,7 @@ public:
 	 * @param	min Minimum bounding box point.
 	 * @param	max Maximum bounding box point
 	 */
-	AABB(const glm::vec3& min, const glm::vec3& max);
+	AABB(const glm::tvec3<T>& min, const glm::tvec3<T>& max);
 
   /**
 	 * @brief   Computes intersection between this and the given bounding box.
@@ -46,14 +47,14 @@ public:
 	 * @param   aabb  Bounding box with which the intersection will be computed. 
 	 * @return	Intersection bounding box.
 	 */
-	AABB intersect(const AABB& aabb) const;
+	AABB<T> intersect(const AABB<T>& aabb) const;
 
   /**
 	 * @brief Expand bounding box to include the given point.
 	 * 
 	 * @param point Point to be included.
 	 */
-	void expand(const glm::vec3& point);
+	void expand(const glm::tvec3<T>& point);
 
   /**
 	 * @brief Expand bounding box to include the given bounding box.
@@ -74,42 +75,42 @@ public:
 	 *
 	 * @return	Minimum bounding box point.
 	 */
-	const glm::vec3& min() const;
+	const glm::tvec3<T>& min() const;
 
   /**
 	 * @brief   Retrieve maximum bounding box point.
 	 * 
 	 * @return	Maximum bounding box point.
 	 */
-	const glm::vec3& max() const;
+	const glm::tvec3<T>& max() const;
 
   /**
 	 * @brief	  Compute center of the bounding box.
 	 * 
 	 * @return	Center of the bounding box.
 	 */
-	glm::vec3 center() const;
+	glm::tvec3<T> center() const;
 
   /**
    * @brief	  Compute volume of the bounding box.
    * 
    * @return	Volume of the bounding box.
    */
-  float volume() const;
+  T volume() const;
 
   /**
    * @brief   Compute area of the bounding box.
    * 
    * @return	Area of the bounding box.
    */
-  float area() const;
+  T area() const;
 
   /**
    * @brief   Compute dimensions of the bounding box along each axis.
    *
    * @return	Dimensions of the bounding box.
    */
-  glm::vec3 dimensions() const;
+  glm::tvec3<T> dimensions() const;
 
   /**
    * @brief Reset bounding box.
@@ -120,15 +121,102 @@ private:
   /**
 	 * Minimum bounding box point.
 	 */
-	glm::vec3 min_;
+	glm::tvec3<T> min_;
 
 	/**
    * Maximum bounding box point.
    */
-	glm::vec3 max_;
+	glm::tvec3<T> max_;
 };
 
-std::ostream& operator<<(std::ostream& stream, const AABB& aabb);
+template <typename T>
+AABB<T>::AABB()
+	: min_(std::numeric_limits<T>::max()),
+	  max_(std::numeric_limits<T>::lowest()) {}
+
+template <typename T>
+AABB<T>::AABB(const glm::tvec3<T>& min, const glm::tvec3<T>& max)
+	: min_(min),
+	  max_(max) {}
+
+template <typename T>
+AABB<T> AABB<T>::intersect(const AABB<T>& aabb) const {
+	const glm::tvec3<T> min(std::max(aabb.min_.x, min_.x), std::max(aabb.min_.y, min_.y), std::max(aabb.min_.z, min_.z));
+	const glm::tvec3<T> max(std::min(aabb.max_.x, max_.x), std::min(aabb.max_.y, max_.y), std::min(aabb.max_.z, max_.z));
+
+	return { min, max };
+}
+
+template <typename T>
+void AABB<T>::expand(const glm::tvec3<T>& point) {
+	min_ = glm::tvec3<T>(std::min(point.x, min_.x), std::min(point.y, min_.y), std::min(point.z, min_.z));
+	max_ = glm::tvec3<T>(std::max(point.x, max_.x), std::max(point.y, max_.y), std::max(point.z, max_.z));
+}
+
+template <typename T>
+void AABB<T>::expand(const AABB& aabb) {
+	expand(aabb.min_);
+	expand(aabb.max_);
+}
+
+template <typename T>
+bool AABB<T>::valid() const {
+	return min_.x <= max_.x && min_.y <= max_.y && min_.z <= max_.z;
+}
+
+template <typename T>
+const glm::tvec3<T>& AABB<T>::min() const {
+	return min_;
+}
+
+template <typename T>
+const glm::tvec3<T>& AABB<T>::max() const {
+	return max_;
+}
+
+template <typename T>
+glm::tvec3<T> AABB<T>::center() const {
+	return (max_ + min_) * 0.5;
+}
+
+template <typename T>
+T AABB<T>::volume() const {
+	if (!valid()) {
+		return 0;
+	}
+
+	return (max_.x - min_.x) * (max_.y - min_.y) * (max_.z - min_.z);
+}
+
+template <typename T>
+T AABB<T>::area() const {
+	if (!valid()) {
+		return 0;
+	}
+
+	const glm::tvec3<T> d = max_ - min_;
+	return (d.x * d.y + d.y * d.z + d.z * d.x) * 2.0f;
+}
+
+template <typename T>
+glm::tvec3<T> AABB<T>::dimensions() const {
+	return max_ - min_;
+}
+
+template <typename T>
+void AABB<T>::reset() {
+	min_ = glm::tvec3<T>(std::numeric_limits<float>::max());
+	max_ = glm::tvec3<T>(std::numeric_limits<float>::lowest());
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, const AABB<T>& aabb) {
+	const glm::tvec3<T>& min = aabb.min();
+	const glm::tvec3<T>& max = aabb.max();
+
+	return stream << "[(" << min.x << ", " << min.y << ", " << min.z
+		<< "), (" << max.x << ", " << max.y << ", " << max.z << ")]";
+}
 
 }
 

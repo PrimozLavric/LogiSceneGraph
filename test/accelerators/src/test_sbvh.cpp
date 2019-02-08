@@ -1,17 +1,19 @@
 #include <gtest/gtest.h>
-#include "lsg/accelerators/BVH/Builder.h"
+#include "lsg/accelerators/BVH/BVHBuilder.h"
+#include "lsg/accelerators/BVH/SplitBVHBuilder.h"
 
 using namespace lsg;
 
 TEST(SBVH, Basic) {
-  std::vector<AABB> primitives;
+  std::vector<AABB<float>> primitives;
 
   for (size_t i = 1; i <= 10; i++) {
 	  primitives.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f) * static_cast<float>(i - 1), glm::vec3(1.0f, 1.0f, 1.0f) * static_cast<float>(i) + glm::vec3(0.25f));
   }
 
-	bvh::Builder builder;
-	Shared<BVH> bvh = builder.process(primitives);
+	bvh::BVHBuilder<float> builder;
+	Shared<BVH<float>> bvh = builder.process(primitives);
+	bvh::SplitBVHBuilder<float> builder2;
 	
   /*
   std::deque<Ref<bvh::Node>> stack = { root };
