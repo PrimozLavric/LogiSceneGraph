@@ -29,7 +29,7 @@ struct SplitBVHConfig {
   /**
    * Maximum depth of the BVH where spatial split will still be used.
    */
-  float split_alpha = 1.0e-5;;
+  double split_alpha = 1.0e-5;;
 
   /**
    * Maximum depth of the BVH where spatial split will still be used.
@@ -46,31 +46,33 @@ struct SplitBVHConfig {
 /**
  * @brief Holds information about an object split of the BVH node.
  */
+template <typename T>
 struct SpatialSplit final {
 	/**
 	 * SAH cost of the split.
 	 */
-	float sah;
+	float sah = std::numeric_limits<float>::max();
 
 	/**
 	 * Axis of the split.
 	 */
-	size_t axis;
+	size_t axis = 0u;
 
 	/**
 	 * Position of the split.
 	 */
-	size_t position;
+	T position = T(0.0);
 };
 
 /**
  * @brief Holds info about a spatial bin.
  */
+template <typename T>
 struct SpatialBin final {
 	/**
 	 * Bounding box of the bin.
 	 */
-	AABB bounds;
+	AABB<T> bounds;
 
 	/**
 	 * Number of triangles entering the bin.
@@ -106,68 +108,20 @@ protected:
   using BVHBuilder<T>::findObjectSplit;
   using BVHBuilder<T>::performObjectSplit;
 
-  using BVHBuilder<T>::sha_function_;
+  using BVHBuilder<T>::sah_function_;
   using BVHBuilder<T>::config_;
   using BVHBuilder<T>::t_reference_stack_;
   using BVHBuilder<T>::t_right_bounds_;
   using BVHBuilder<T>::t_nodes_;
   using BVHBuilder<T>::t_prim_indices_;
 
-  uint32_t buildNode(const NodeSpec& spec, size_t level) override {
-	  // If we have a small enough set or we've reached max allowed depth - Create a leaf.
-	  if (spec.num_refs <= config_.min_leaf_size || level >= config_.max_depth) {
-		  return createLeaf(spec);
-	  }
+  uint32_t buildNode(const NodeSpec<T>& spec, size_t level) override;
 
-	  const float area = spec.bounds.area();
-	  const float leaf_sah = area * sha_function_.getPrimitiveCost(spec.num_refs);
-	  const float node_sah = area * sha_function_.getNodeCost(2);
+  SpatialSplit<T> findSpatialSplit(const NodeSpec<T>& spec, float node_sah);
 
-	  // Find best object split.
-	  const ObjectSplit obj_split = findObjectSplit(spec, node_sah);
-	  SpatialSplit spatial_split;
+  std::pair<Reference<T>, Reference<T>> splitReference(const Reference<T>& ref, size_t axis, T split_pos) const;
 
-	  if (level < split_config_.max_spatial_depth) {
-		  AABB overlap = obj_split.leftBounds;
-		  overlap.intersect(obj_split.rightBounds);
-		  if (overlap.area() >= t_min_overlap_) {
-			  spatial_split = findSpatialSplit(spec, node_sah);
-		  }
-	  }
-
-	  const float min_sah = std::min({ leaf_sah, obj_split.sah, spatial_split.sah });
-	  // Create leaf if leaf SAH is the lowest and number of references does not exceed max leaf size.
-	  if (min_sah == leaf_sah && spec.num_refs <= config_.max_leaf_size) {
-		  return createLeaf(spec);
-	  }
-
-	  // Perform the split.
-	  const std::pair<NodeSpec<T>, NodeSpec<T>> child_spec;
-	  if (min_sah == spatial_split.sah) {
-		  child_spec = performSpatialSplit(spec, spatial_split);
-	  }
-
-	  if ((child_spec.first.num_refs == 0u) || (child_spec.second.num_refs == 0u)) {
-		  child_spec = performObjectSplit(spec, obj_split);
-	  }
-
-	  // Create internal node.
-	  t_nodes_.emplace_back(spec.bounds, false);
-	  const uint32_t parent_idx = t_nodes_.size() - 1u;
-
-	  // Right child needs to be built first so that references are retrieved from stack in correct order.
-	  const uint32_t right_idx = buildNode(child_spec.second, level + 1);
-	  const uint32_t left_idx = buildNode(child_spec.first, level + 1);
-
-	  t_nodes_[parent_idx].child_indices[0] = left_idx;
-	  t_nodes_[parent_idx].child_indices[1] = right_idx;
-
-	  return parent_idx;
-  }
-
-  SpatialSplit findSpatialSplit(const NodeSpec<T>& spec, float node_sah);
-
-  std::pair<Reference<T>, Reference<T>> splitReference(const Reference<T>& ref, size_t axis, T position) const;
+  std::pair<NodeSpec<T>, NodeSpec<T>> performSpatialSplit(const NodeSpec<T>& spec, const SpatialSplit<T>& split);
 
   /**
    * SplitBVH configuration.
@@ -177,12 +131,12 @@ protected:
   /**
    * Minimum overlap of the left and right bounding box of the object split needed to make spatial split worth finding.
    */
-  float t_min_overlap_;
+  T t_min_overlap_;
 
   /**
    * Spatial bins.
    */
-  std::array<std::vector<SpatialBin>, 3> t_spatial_bins_;
+  std::array<std::vector<SpatialBin<T>>, 3> t_spatial_bins_;
 
   /**
    * Triangle accessor.
@@ -194,7 +148,7 @@ protected:
 template <typename T>
 SplitBVHBuilder<T>::SplitBVHBuilder(SAHFunction sha_function, const BVHConfig& bvh_config,
                                     const SplitBVHConfig& split_config)
-  : BVHBuilder(sha_function, bvh_config),
+  : BVHBuilder(std::move(sha_function), bvh_config),
     split_config_(split_config),
     t_min_overlap_(), 
     t_triangle_accessor_(nullptr) {
@@ -206,23 +160,24 @@ SplitBVHBuilder<T>::SplitBVHBuilder(SAHFunction sha_function, const BVHConfig& b
 template <typename T>
 Shared<BVH<T>> SplitBVHBuilder<T>::process(const TriangleAccessor<T>& triangle_accessor) {
 	t_triangle_accessor_ = &triangle_accessor;
-  t_reference_stack_.resize(t_triangle_accessor_->count());
 
   // Generate references and compute root node bounding box.
   NodeSpec<T> root_spec(t_triangle_accessor_->count());
 
   for (uint32_t i = 0; i < t_triangle_accessor_->count(); i++) {
-    Triangle<T> tri = t_triangle_accessor_->getTriangle();
-    t_reference_stack_[i].index = i;
-    // Compute triangle bounding box.
-    t_reference_stack_[i].bounds.expand(tri.a);
-    t_reference_stack_[i].bounds.expand(tri.b);
-    t_reference_stack_[i].bounds.expand(tri.c);
+    Triangle<T> tri = (*t_triangle_accessor_)[i];
+	  AABB<T> bounds;
 
-    root_spec.bounds.expand(t_reference_stack_[i].bounds);
+    // Compute triangle bounding box.
+    bounds.expand(tri[0]);
+	  bounds.expand(tri[1]);
+	  bounds.expand(tri[2]);
+
+	  t_reference_stack_.emplace_back(bounds, i);
+    root_spec.bounds.expand(bounds);
   }
 
-  t_min_overlap_ = root_spec.bounds.area() * split_config_.split_alpha;
+  t_min_overlap_ = T(root_spec.bounds.area() * split_config_.split_alpha);
 
   // We need cache for at most max(N - 1, num_spatial_bins) right bounds.
   t_right_bounds_.resize(std::max(root_spec.num_refs, split_config_.num_spatial_bins) - 1);
@@ -238,13 +193,69 @@ Shared<BVH<T>> SplitBVHBuilder<T>::process(const TriangleAccessor<T>& triangle_a
 }
 
 template <typename T>
-SpatialSplit SplitBVHBuilder<T>::findSpatialSplit(const NodeSpec<T>& spec, float node_sah) {
+uint32_t SplitBVHBuilder<T>::buildNode(const NodeSpec<T>& spec, size_t level) {
+  // If we have a small enough set or we've reached max allowed depth - Create a leaf.
+  if (spec.num_refs <= config_.min_leaf_size || level >= config_.max_depth) {
+    return createLeaf(spec);
+  }
+
+  const float area = spec.bounds.area();
+  const float leaf_sah = area * sah_function_.getPrimitiveCost(spec.num_refs);
+  const float node_sah = area * sah_function_.getNodeCost(2);
+
+  // Find best object split.
+  const ObjectSplit obj_split = findObjectSplit(spec, node_sah);
+  SpatialSplit<T> spatial_split;
+
+  if (level < split_config_.max_spatial_depth) {
+    // Check if there is a sufficiently large bounds overlap.
+    AABB<T> overlap = obj_split.left_bounds;
+    overlap.intersect(obj_split.right_bounds);
+
+    if (overlap.area() >= t_min_overlap_) {
+      spatial_split = findSpatialSplit(spec, node_sah);
+    }
+  }
+
+  const float min_sah = std::min({leaf_sah, obj_split.sah, spatial_split.sah});
+  // Create leaf if leaf SAH is the lowest and number of references does not exceed max leaf size.
+  if (min_sah == leaf_sah && spec.num_refs <= config_.max_leaf_size) {
+    return createLeaf(spec);
+  }
+
+  // Perform the split.
+  std::pair<NodeSpec<T>, NodeSpec<T>> child_spec;
+  if (min_sah == spatial_split.sah) {
+    child_spec = performSpatialSplit(spec, spatial_split);
+  }
+
+  // If spatial split is not performed or all the references are un-split either in left or right node.
+  if ((child_spec.first.num_refs == 0u) || (child_spec.second.num_refs == 0u)) {
+    child_spec = performObjectSplit(spec, obj_split);
+  }
+
+  // Create internal node.
+  t_nodes_.emplace_back(spec.bounds, false);
+  const uint32_t parent_idx = t_nodes_.size() - 1u;
+
+  // Right child needs to be built first so that references are retrieved from stack in correct order.
+  const uint32_t right_idx = buildNode(child_spec.second, level + 1);
+  const uint32_t left_idx = buildNode(child_spec.first, level + 1);
+
+  t_nodes_[parent_idx].child_indices[0] = left_idx;
+  t_nodes_[parent_idx].child_indices[1] = right_idx;
+
+  return parent_idx;
+}
+
+template <typename T>
+SpatialSplit<T> SplitBVHBuilder<T>::findSpatialSplit(const NodeSpec<T>& spec, float node_sah) {
 	glm::tvec3<T> origin = spec.bounds.min();
-	glm::tvec3<T> bin_size = (spec.bounds.max() - origin) * (1.0f / static_cast<float>(split_config_.num_spatial_bins));
-	glm::tvec3<T> inv_bin_size = 1.0f / bin_size;
+	glm::tvec3<T> bin_size = (spec.bounds.max() - origin) * (T(1.0) / static_cast<T>(split_config_.num_spatial_bins));
+	glm::tvec3<T> inv_bin_size = T(1.0) / bin_size;
 
   // Reset spatial bins.
-  for (size_t axis = 0; axis < 3u; axis++) {
+  for (size_t axis = 0u; axis < 3u; axis++) {
 	  t_spatial_bins_[axis].clear();
 	  t_spatial_bins_[axis].resize(split_config_.num_spatial_bins);
   }
@@ -256,24 +267,55 @@ SpatialSplit SplitBVHBuilder<T>::findSpatialSplit(const NodeSpec<T>& spec, float
 	  glm::tvec3<size_t> last_bin = glm::clamp(glm::tvec3<size_t>((ref.bounds.max() - origin) * inv_bin_size), 
 		                                      glm::tvec3<size_t>(0u), glm::tvec3<size_t>(split_config_.num_spatial_bins - 1u));
 
+    // Chop and bin the references.
 	  for (size_t axis = 0u; axis < 3u; axis++) {
 		  Reference<T> current_ref = ref;
 
-		  for (int i = firstBin[dim]; i < lastBin[dim]; i++)
-		  {
-			  Reference leftRef, rightRef;
-			  splitReference(leftRef, rightRef, currRef, dim, origin[dim] + binSize[dim] * (F32)(i + 1));
-			  t_spatial_bins_[axis][i].bounds.grow(leftRef.bounds);
-			  //current_ref = rightRef;
+		  for (size_t i = first_bin[axis]; i < last_bin[axis]; i++) {
+			  std::pair<Reference<T>, Reference<T>> split_refs = splitReference(current_ref, axis, origin[axis] + bin_size[axis] * T(i + 1));
+			  t_spatial_bins_[axis][i].bounds.expand(split_refs.first.bounds);
+			  current_ref.bounds = split_refs.second.bounds;
 		  }
 
 		  t_spatial_bins_[axis][first_bin[axis]].enter++;
 		  t_spatial_bins_[axis][last_bin[axis]].exit++;
-		  t_spatial_bins_[axis][last_bin[axis]].bounds.grow(current_ref.bounds);
+		  t_spatial_bins_[axis][last_bin[axis]].bounds.expand(current_ref.bounds);
+	  }
+  }
+  
+  // Find the best split.
+  SpatialSplit<T> best_split;
+  for (size_t axis = 0u; axis < 3u; axis++) {
+	  std::vector<SpatialBin<T>>& axis_bins = t_spatial_bins_[axis];
+
+	  // Sweep right to left and compute bounds.
+	  AABB<T> bounds;
+	  for (size_t i = split_config_.num_spatial_bins - 1; i > 0u; i--) {
+		  bounds.expand(axis_bins[i].bounds);
+		  t_right_bounds_[i - 1] = bounds;
+	  }
+
+
+    // Sweep left to right and find the split with lowest sah.
+	  bounds.reset();
+	  size_t left_count = 0;
+	  size_t right_count = spec.num_refs;
+
+	  for (size_t i = 1u; i < split_config_.num_spatial_bins; i++) {
+		  bounds.expand(axis_bins[i - 1].bounds);
+		  left_count += axis_bins[i - 1].enter;
+		  right_count -= axis_bins[i - 1].exit;
+
+		  float sah = node_sah + bounds.area() * sah_function_.getPrimitiveCost(left_count) + t_right_bounds_[i - 1].area() * sah_function_.getPrimitiveCost(right_count);
+		  if (sah < best_split.sah) {
+			  best_split.sah = sah;
+			  best_split.axis = axis;
+			  best_split.position = origin[axis] + bin_size[axis] * T(i);
+		  }
 	  }
   }
 
-
+  return best_split;
 }
 
 template <typename T>
@@ -281,7 +323,7 @@ std::pair<Reference<T>, Reference<T>> SplitBVHBuilder<T>::splitReference(const R
 	Reference<T> left = ref;
 	Reference<T> right = ref;
 
-	Triangle<T> tri = t_triangle_accessor_->getTriangle(ref.index);
+	Triangle<T> tri = (*t_triangle_accessor_)[ref.index];
 
   // Loop over edges.
   for (size_t i = 0u; i < 3u; i++) {
@@ -298,13 +340,89 @@ std::pair<Reference<T>, Reference<T>> SplitBVHBuilder<T>::splitReference(const R
 
     // If edge intersects split plane insert interpolated vertex in both bounding boxes.
 	  if ((v0[axis] < split_pos && v1[axis] > split_pos) || (v0[axis] > split_pos && v1[axis] < split_pos)) {
-		  glm::tvec3<T> pt = glm::mix(v0, v1, glm::clamp((split_pos - v0[axis]) / (v1[axis] - v0[axis]), static_cast<T>(0.0), static_cast<T>(1.0));
+		  glm::tvec3<T> pt = glm::mix(v0, v1, glm::clamp((split_pos - v0[axis]) / (v1[axis] - v0[axis]), static_cast<T>(0.0), static_cast<T>(1.0)));
 		  left.bounds.expand(pt);
 		  right.bounds.expand(pt);
 	  }
   }
 
   return { left, right };
+}
+
+template <typename T>
+std::pair<NodeSpec<T>, NodeSpec<T>> SplitBVHBuilder<T>::performSpatialSplit(const NodeSpec<T>& spec, const SpatialSplit<T>& split) {
+
+	std::deque<Reference<T>>& refs = t_reference_stack_;
+	const size_t left_begin = refs.size() - spec.num_refs;
+	size_t left_end = left_begin;
+	size_t right_begin = refs.size();
+	AABB<T> left_bounds;
+	AABB<T> right_bounds;
+
+	// Sort references: [left_begin, left_end][...split refs...][right_begin, right_end]
+  for (size_t i = left_end; i < right_begin; i++) {
+	  if (refs[i].bounds.max()[split.axis] <= split.position) {
+      // Bounding box is entirely on the left side.
+		  left_bounds.expand(refs[i].bounds);
+		  std::swap(refs[i], refs[left_end++]);
+	  } else if (refs[i].bounds.min()[split.axis] >= split.position) {
+		  // Bounding box is entirely on the right side.
+		  right_bounds.expand(refs[i].bounds);
+		  std::swap(refs[i--], refs[--right_begin]);
+	  }
+  }
+
+  // Process references that intersect with the split plane.
+  while (left_end < right_begin) {
+	  std::pair<Reference<T>, Reference<T>> split_ref = splitReference(refs[left_end], split.axis, split.position);
+
+	  // Compute SAH for duplicate/un-split candidates.
+
+	  // Left bounds if we un-split to left.
+	  AABB lub = left_bounds;
+	  lub.expand(refs[left_end].bounds);
+	  // Right bounds if we un-split to right.
+	  AABB rub = right_bounds;
+	  rub.expand(refs[left_end].bounds);
+	  // Left bounds if we split (duplicate).
+	  AABB ldb = left_bounds;
+	  ldb.expand(split_ref.first.bounds);
+	  // Right bounds if we split (duplicate).
+	  AABB rdb = right_bounds;
+	  rdb.expand(split_ref.second.bounds);
+
+    // Primitive traversal cost with and without added reference.
+	  float left_cost_a = sah_function_.getPrimitiveCost(left_end - left_begin);
+	  float right_cost_a = sah_function_.getPrimitiveCost(refs.size() - right_begin);
+	  float left_cost_b = sah_function_.getPrimitiveCost(left_end - left_begin + 1);
+	  float right_cost_b = sah_function_.getPrimitiveCost(refs.size() - right_begin + 1);
+
+    // Compute un-split left/right cost and duplicate cost
+	  const float unsplit_left_sah = lub.area() * left_cost_b + right_bounds.area() * right_cost_a;
+	  const float unsplit_right_sah = left_bounds.area() * left_cost_a + rub.area() * right_cost_b;
+	  const float duplicate_sah = ldb.area() * left_cost_b + rdb.area() * right_cost_b;
+
+	  float min_sah = std::min({ unsplit_left_sah, unsplit_right_sah, duplicate_sah });
+
+    if (min_sah == unsplit_left_sah) {
+      // Un-split to left.
+		  left_bounds = lub;
+		  left_end++;
+    } else if (min_sah == unsplit_right_sah) {
+      // Un-split to right.
+		  right_bounds = rub;
+		  std::swap(refs[left_end], refs[--right_begin]);
+    } else {
+      // Duplicate reference.
+		  left_bounds = ldb;
+		  right_bounds = rdb;
+		  refs[left_end++] = split_ref.first;
+		  refs.emplace_back(split_ref.second);
+    }
+  }
+
+  // Produce child node specification.
+  return std::make_pair(NodeSpec<T>(left_end - left_begin, left_bounds), NodeSpec<T>(refs.size() - right_begin, right_bounds));
 }
 
 

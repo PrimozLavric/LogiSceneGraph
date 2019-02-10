@@ -16,28 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_COMPONENTS_GEOMETRY_REFERENCE_H
-#define LSG_COMPONENTS_GEOMETRY_REFERENCE_H
-
-#include "lsg/core/Component.h"
-#include "lsg/resources/Geometry.h"
+#include "lsg/components/Mesh.h"
 
 namespace lsg {
 
-class Mesh : public Component {
-public:
-	
-	explicit Mesh(Ref<Object> owner, Shared<Geometry> geometry = {});
+Mesh::Mesh(Ref<Object> owner, Shared<Geometry> geometry) 
+  : Component("GeometryRference", owner), geometry_(std::move(geometry)) {}
 
-	const Shared<Geometry>& getGeometry() const;
-
-	void setGeometry(const Shared<Geometry>& geometry);
-
-private:
-	Shared<Geometry> geometry_;
-};
-
-
+const Shared<Geometry>& Mesh::getGeometry() const {
+	return geometry_;
 }
 
-#endif // LSG_COMPONENTS_GEOMETRY_REFERENCE_H
+void Mesh::setGeometry(const Shared<Geometry>& geometry) {
+	geometry_ = geometry;
+}
+
+}

@@ -16,28 +16,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_COMPONENTS_GEOMETRY_REFERENCE_H
-#define LSG_COMPONENTS_GEOMETRY_REFERENCE_H
-
-#include "lsg/core/Component.h"
-#include "lsg/resources/Geometry.h"
+#include "lsg/resources/Image2D.h"
+#include "lsg/core/Exceptions.h"
 
 namespace lsg {
 
-class Mesh : public Component {
-public:
-	
-	explicit Mesh(Ref<Object> owner, Shared<Geometry> geometry = {});
-
-	const Shared<Geometry>& getGeometry() const;
-
-	void setGeometry(const Shared<Geometry>& geometry);
-
-private:
-	Shared<Geometry> geometry_;
-};
-
-
+Image2D::Image2D(const std::vector<std::byte>& data, const Format format, const size_t width, const size_t height)
+  : Image("Image2D", data, format), width_(width), height_(height) {
+	throwIf<InitializationError>(data.size() / getFormatInfo().size != width * height, "Width * height is not equal to pixel count.");
 }
 
-#endif // LSG_COMPONENTS_GEOMETRY_REFERENCE_H
+Image2D::Image2D(const Format format, const size_t width, const size_t height)
+  : Image("Image2D", format, width * height), width_(width), height_(height) {}
+
+size_t Image2D::width() const {
+	return width_;
+}
+
+size_t Image2D::height() const {
+	return height_;
+}
+
+size_t Image2D::depth() const {
+	return 1u;
+}
+
+ImageType Image2D::getType() const {
+	return ImageType::e2D;
+}
+
+}

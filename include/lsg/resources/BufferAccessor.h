@@ -19,26 +19,62 @@
 #ifndef LSG_RESOURCES_BUFFER_ACCESSOR_H
 #define LSG_RESOURCES_BUFFER_ACCESSOR_H
 
-#include <vulkan/vulkan.hpp>
-
 #include "lsg/resources/BufferView.h"
-#include "lsg/resources/FormatTable.h"
 #include "lsg/core/Exceptions.h"
 
 namespace lsg {
 
+enum class StructureType {
+	kScalar,
+	kVec2,
+	kVec3,
+	kVec4,
+	kMat2,
+	kMat3,
+	kMat4,
+  kUnspecified
+};
 
+enum class ComponentType {
+	kByte,
+	kUnsignedByte,
+	kShort,
+	kUnsignedShort,
+	kInt,
+	kUnsignedInt,
+	kLong,
+	kUnsignedLong,
+	kHalfFloat,
+	kFloat,
+	kDouble,
+	kUnspecified
+};
 
-class BufferAccessor {
+size_t sizeOf(const StructureType structure_type);
+
+size_t sizeOf(const ComponentType component_type);
+
+class BufferAccessor : std::enable_shared_from_this<BufferAccessor> {
 public:
   /**
-   * @brief	Creates BufferAccessor for the given buffer view with the given entry offset and format.
+   * @brief	Creates BufferAccessor for the given buffer view with the given element size and offset.
    * 
    * @param	buffer_view   Referenced buffer view.
-   * @param	offset        Byte offset from begging of an entry.
-   * @param	format        Vulkan format.
+   * @param element_size  Size of the individual element.
+   * @param	offset        Byte offset from beginning of an entry.
    */
-  explicit BufferAccessor(BufferView buffer_view, size_t offset = 0u, vk::Format format = vk::Format::eUndefined);
+  explicit BufferAccessor(BufferView buffer_view, size_t element_size, size_t offset = 0u);
+
+  /**
+   * @brief	Creates BufferAccessor for the given buffer view with the given structure and component type.
+   *
+   * @param	buffer_view     Referenced buffer view.
+   * @param structure_type  Structure type.
+   * @param component_type  Component type.
+   * @param	offset          Byte offset from beginning of an entry.
+   */
+  explicit BufferAccessor(BufferView buffer_view, StructureType structure_type, 
+	                        ComponentType component_type, size_t offset = 0u);
 
   /**
    * @brief	  Retrieve underlying buffer view.
@@ -55,6 +91,13 @@ public:
   size_t byteOffset() const;
 
   /**
+   * @brief   Retrieve size of the element.
+   *
+   * @return	Element size.
+   */
+  size_t elementSize() const;
+
+  /**
    * @brief	  Retrieve number of entries.
    * 
    * @return	Number of entries.
@@ -62,43 +105,31 @@ public:
   size_t count() const;
 
   /**
-   * @brief	  Retrieve currently set format.
-   * 
-   * @return	Currently set format.
+   * @brief   Retrieve structure type.
+   *
+   * @return	Structure type.
    */
-  vk::Format format() const;
+  StructureType structureType() const;
 
   /**
-   * @brief   Retrieve information about the format (size and channel count).
-   * 
-   * @return	Information about the format (size and channel count).
+   * @brief   Retrieve component type.
+   *
+   * @return	Retrieve component type.
    */
-  const FormatInfo& formatInfo() const;
+  ComponentType componentType() const;
 
-  /**
-   * @brief Set offset from the begging of an entry.
-   * 
-   * @param	byte_offset Offset in bytes.
-   */
-  void setByteOffset(size_t byte_offset);
-
-  /**
-   * @brief Set Vulkan format.
-   * 
-   * @param format  Vulkan format. 
-   */
-  void setFormat(vk::Format format);
+  virtual ~BufferAccessor() = default;
 
 private:
-	/**
-	 * @brief Validate that the format and offset are valid for the referenced buffer view.
-	 */
-	void validate() const;
-
   /**
    * Referenced buffer view.
    */
 	BufferView buffer_view_;
+
+	/**
+	 * Size of an element.
+	 */
+	size_t element_size_;
 
   /**
    * Byte offset from begging of an entry.
@@ -106,74 +137,83 @@ private:
 	size_t byte_offset_;
 
 	/**
-   * Vulkan format.
+   * Specifies how the components of an element are structured.
    */
-	vk::Format format_;
+	StructureType structure_type_;
 
-  /**
-   * Vulkan format info. Consists of element size and number of channels per element.
+	/**
+   * Specifies type of the component.
    */
-	FormatInfo format_info_;
+	ComponentType component_type_;
 };
 
+
 template <typename T>
-class TypedBufferAccessor : public BufferAccessor {
+class TBufferAccessor : public BufferAccessor {
 public:
 
 	/**
-	 * @brief	Creates BufferAccessor for the given buffer view with the given entry offset and format.
+	 * @brief	Creates Typed BufferAccessor for the given buffer view with the given offset.
 	 *
 	 * @param	buffer_view   Referenced buffer view.
 	 * @param	offset        Byte offset from begging of an entry.
-	 * @param	format        Vulkan format.
 	 */
-	explicit TypedBufferAccessor(BufferView buffer_view, size_t offset = 0u, vk::Format format = vk::Format::eUndefined);
+	explicit TBufferAccessor(const BufferView& buffer_view, size_t offset = 0u);
 
-  explicit TypedBufferAccessor(const BufferAccessor& other);
+	explicit TBufferAccessor(const BufferView& buffer_view, StructureType structure_type,
+		                       ComponentType component_type, size_t offset = 0u);
 
-  explicit TypedBufferAccessor(BufferAccessor&& other);
+	/**
+	 * @brief Copy constructor with BufferAccessor. Note: size of the BufferAccessor element must match sizeof(T).
+	 *
+	 * @param	other BufferAccessor.
+	 */
+	explicit TBufferAccessor(const BufferAccessor& other);
 
-  const T& operator[](const size_t index);
+  /**
+	 * @brief Move constructor with BufferAccessor. Note: size of the BufferAccessor element must match sizeof(T).
+	 *
+	 * @param	other BufferAccessor.
+	 */
+	explicit TBufferAccessor(BufferAccessor&& other);
 
-private:
-	void validate();
+  /**
+	 * @brief   Access element on the given index.
+	 *
+	 * @param	  index Element index.
+	 * @return	Element on the given index.
+	 */
+	const T& operator[](size_t index);
 };
 
 template <typename T>
-TypedBufferAccessor<T>::TypedBufferAccessor(const BufferView buffer_view, const size_t offset, const vk::Format format)
-  : BufferAccessor(buffer_view, offset, format) {
-	validate();
+TBufferAccessor<T>::TBufferAccessor(const BufferView& buffer_view, const size_t offset)
+	: BufferAccessor(buffer_view, sizeof(T), offset) {}
+
+template <typename T>
+TBufferAccessor<T>::TBufferAccessor(const BufferView& buffer_view, const StructureType structure_type, const ComponentType component_type, const size_t offset)
+  : BufferAccessor(buffer_view, structure_type, component_type, offset) {
+	throwIf<InvalidArgument>(elementSize() != sizeof(T), "Invalid TBufferAccessor size(T) != elementSize");
 }
 
 template <typename T>
-TypedBufferAccessor<T>::TypedBufferAccessor(const BufferAccessor& other) : BufferAccessor(other) {
-	validate();
+TBufferAccessor<T>::TBufferAccessor(const BufferAccessor& other) : BufferAccessor(other) {
+	throwIf<InvalidArgument>(elementSize() != sizeof(T), "Invalid TBufferAccessor size(T) != elementSize");
 }
 
 template <typename T>
-TypedBufferAccessor<T>::TypedBufferAccessor(BufferAccessor&& other) : BufferAccessor(std::move(other)) {
-	validate();
+TBufferAccessor<T>::TBufferAccessor(BufferAccessor&& other) : BufferAccessor(std::move(other)) {
+	throwIf<InvalidArgument>(elementSize() != sizeof(T), "Invalid TBufferAccessor size(T) != elementSize");
 }
 
 template <typename T>
-const T& TypedBufferAccessor<T>::operator[](const size_t index) {
+const T& TBufferAccessor<T>::operator[](const size_t index) {
 	throwIf<OutOfRange>(index >= count(),
-               "Tried to access element that is out of range.");
+		"Tried to access element that is out of range.");
 
-  return *reinterpret_cast<const T*>(bufferView().data() + bufferView().stride() * index + byteOffset());
+	return *reinterpret_cast<const T*>(bufferView().data() + bufferView().stride() * index + byteOffset());
 }
 
-template <typename T>
-void TypedBufferAccessor<T>::validate() {
-#if ENABLE_WARNINGS
-	if (formatInfo().size == 0u || sizeof(T) % formatInfo().size != 0u)) {
-	std::cout << "WARNING: Size of T (" << typeid(T).name() << " - " << sizeof(T) << "B) is not multiple of element size (" << formatInfo().size << ").";
-  }
-#endif
-
-  throwIf<OutOfRange>(byteOffset() + sizeof(T) > bufferView().stride(), 
-	              "TypedBufferAccessor out of bounds. Size exceeds BufferView stride.");
-}
 
 }
 

@@ -23,11 +23,11 @@
 
 namespace lsg {
 
-class BufferView {
+class BufferView : public std::enable_shared_from_this<BufferView> {
 public:
-  BufferView(Shared<Buffer> buffer, size_t offset, size_t stride, size_t range);
+  BufferView(Shared<Buffer> buffer, size_t stride, size_t offset, size_t range);
 
-  BufferView(Shared<Buffer> buffer, size_t offset, size_t stride);
+  BufferView(Shared<Buffer> buffer, size_t stride, size_t offset = 0u);
 
   /**
      * @brief	  Retrieve referenced buffer.
@@ -81,14 +81,9 @@ private:
   Shared<Buffer> buffer_;
 
   /**
-   * Buffer view data.
+   * Pointer to the beginning of the buffer view data.
    */
   const std::byte* data_;
-
-  /**
-   * Offset in bytes.
-   */
-  size_t offset_;
 
   /**
    * Entry size in bytes.
@@ -96,10 +91,85 @@ private:
   size_t stride_;
 
   /**
+   * Offset in bytes.
+   */
+  size_t offset_;
+
+  /**
    * Size of the buffer view in bytes.
    */
   size_t range_;
 };
+
+/**
+ * @brief   Buffer view that provides typed access to the data.
+ *
+ * @tparam	T Type of the data.
+ */
+template <typename T>
+class TBufferView : public BufferView, public std::enable_shared_from_this<TBufferView<T>> {
+public:
+  /**
+	 * @brief Used to construct typed buffer view with explicitly defined range.
+	 *
+	 * @param	buffer	Shared buffer object.
+	 * @param	offset	Offset from the beginning of the buffer.
+	 * @param	range	  Range of the buffer.
+	 */
+	TBufferView(const Shared<Buffer>& buffer, size_t offset, size_t range);
+
+  /**
+   * @brief Typed buffer view.
+   *
+   * @param	buffer	Shared buffer object.
+   * @param	offset	Offset from the beginning of the buffer.
+   */
+  explicit TBufferView(const Shared<Buffer>& buffer, size_t offset = 0u);
+
+  /**
+   * @brief Construct typed buffer view from regular buffer view.
+   *
+   * @param	buffer_view Regular buffer view.
+   */
+  explicit TBufferView(const BufferView& buffer_view);
+
+  /**
+   * @brief   Retrieve element on the given index.
+   *
+   * @param	  index Index of the element (index must be less than count())	
+   * @return  Reference to the element on the given index.
+   */
+  const T& operator[](size_t index);
+
+  /**
+   * @brief   Retrieve typed pointer to the data.
+   *
+   * @return	Typed pointer to the data.
+   */
+  const T* tData() const;
+};
+
+template <typename T>
+TBufferView<T>::TBufferView(const Shared<Buffer>& buffer, const size_t offset, const size_t range)
+  : BufferView(buffer, sizeof(T), offset, range) {}
+
+template <typename T>
+TBufferView<T>::TBufferView(const Shared<Buffer>& buffer, const size_t offset)
+	: BufferView(buffer, sizeof(T), offset) {}
+
+template <typename T>
+TBufferView<T>::TBufferView(const BufferView& buffer_view)
+  : BufferView(buffer_view.buffer(), sizeof(T), buffer_view.offset(), buffer_view.range()) {}
+
+template <typename T>
+const T& TBufferView<T>::operator[](const size_t index) {
+  return *reinterpret_cast<T*>(data()[index * stride()]);
+}
+
+template <typename T>
+const T* TBufferView<T>::tData() const {
+	return reinterpret_cast<T*>(data());
+}
 
 }
 

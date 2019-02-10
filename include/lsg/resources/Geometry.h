@@ -16,22 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_COMPONENTS_GEOMETRY_H
-#define LSG_COMPONENTS_GEOMETRY_H
+#ifndef LSG_RESOURCES_GEOMETRY_H
+#define LSG_RESOURCES_GEOMETRY_H
 
 #include <array>
 
-#include "lsg/core/Component.h"
 #include "lsg/core/Shared.h"
 #include "lsg/resources/BufferAccessor.h"
 #include <optional>
+#include <set>
 
 
 namespace lsg {
 
 class Geometry : public Identifiable, public std::enable_shared_from_this<Geometry> {
 public:
-	Geometry();
+  Geometry();
 
 	void setVertices(const BufferAccessor& vertices);
 
@@ -41,17 +41,13 @@ public:
 
 	void setUv(size_t index, const BufferAccessor& uv);
 
-  template <typename T>
-	TypedBufferAccessor<T> getVertices() const;
+	const BufferAccessor& getVertices() const;
 
-	template <typename T>
-	TypedBufferAccessor<T> getNormals() const;
+	const BufferAccessor& getNormals() const;
 
-	template <typename T>
-	TypedBufferAccessor<T> getIndices() const;
+	const BufferAccessor& getIndices() const;
 
-	template <typename T>
-	TypedBufferAccessor<T> getUv(size_t index) const;
+	const BufferAccessor& getUv(size_t index) const;
 
 	void clearVertices();
 
@@ -69,6 +65,10 @@ public:
 
 	bool hasUv(size_t index) const;
 
+	static std::set<ComponentType> k_vertex_component_types;
+	static std::set<ComponentType> k_normal_component_types;
+	static std::set<ComponentType> k_index_component_types;
+	static std::set<ComponentType> k_uv_component_types;
 private:
 	std::optional<BufferAccessor> vertices_;
 	std::optional<BufferAccessor> normals_;
@@ -76,26 +76,6 @@ private:
 	std::array<std::optional<BufferAccessor>, 8u> uv_;
 };
 
-template <typename T>
-TypedBufferAccessor<T> Geometry::getVertices() const {
-	return TypedBufferAccessor<T>(vertices_.value());
 }
 
-template <typename T>
-TypedBufferAccessor<T> Geometry::getNormals() const {
-	return TypedBufferAccessor<T>(normals_.value());
-}
-
-template <typename T>
-TypedBufferAccessor<T> Geometry::getIndices() const {
-	return TypedBufferAccessor<T>(indices_.value());
-}
-
-template <typename T>
-TypedBufferAccessor<T> Geometry::getUv(const size_t index) const {
-	return TypedBufferAccessor<T>(uv_[index].value());
-}
-
-}
-
-#endif // LSG_COMPONENTS_GEOMETRY_REFERENCE_H
+#endif // LSG_RESOURCES_GEOMETRY_H

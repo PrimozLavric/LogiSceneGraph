@@ -16,19 +16,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "lsg/components/GeometryReference.h"
+#ifndef LSG_CORE_VERSION_TRACKER_H
+#define LSG_CORE_VERSION_TRACKER_H
 
 namespace lsg {
 
-GeometryReference::GeometryReference(Ref<Object> owner, Shared<Geometry> geometry) 
-  : Component("GeometryRference", owner), geometry_(std::move(geometry)) {}
+/**
+ * @brief Tracks object version.
+ */
+class VersionTracker {
+public:
+  /**
+	 * @brief Initializes version to 0.
+	 */
+	VersionTracker();
 
-const Shared<Geometry>& GeometryReference::getGeometry() const {
-	return geometry_;
+  /**
+   * @brief Increment version by 1.
+   */
+	void incrementVersion();
+
+  /**
+   * @brief Retrieve object version.
+   */
+	size_t version() const;
+
+private:
+	size_t version_;
+};
+
 }
 
-void GeometryReference::setGeometry(const Shared<Geometry>& geometry) {
-	geometry_ = geometry;
-}
-
-}
+#endif // LSG_CORE_VERSION_TRACKER_H

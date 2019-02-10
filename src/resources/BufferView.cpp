@@ -21,18 +21,20 @@
 
 namespace lsg {
 
-BufferView::BufferView(Shared<Buffer> buffer, const size_t offset, const size_t stride, const size_t range)
-	: buffer_(std::move(buffer)), data_(nullptr), offset_(offset), stride_(stride), range_(range) {
+BufferView::BufferView(Shared<Buffer> buffer, const size_t stride, const size_t offset, const size_t range)
+	: buffer_(std::move(buffer)), data_(nullptr), stride_(stride), offset_(offset), range_(range) {
 
+	// Validate buffer view.
 	validate();
 
   // Pointer to data with offset applied.
 	data_ = buffer_->data() + offset_;
 }
 
-BufferView::BufferView(Shared<Buffer> buffer, const size_t offset, const size_t stride)
-	: buffer_(std::move(buffer)), data_(nullptr), offset_(offset), stride_(stride), range_(buffer_->size() - offset) {
+BufferView::BufferView(Shared<Buffer> buffer, const size_t stride, const size_t offset)
+	: buffer_(std::move(buffer)), data_(nullptr), stride_(stride), offset_(offset), range_(buffer_->size() - offset) {
 
+  // Validate buffer view.
 	validate();
 
 	// Pointer to data with offset applied.

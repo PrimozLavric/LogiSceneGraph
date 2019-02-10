@@ -20,42 +20,58 @@
 
 namespace lsg {
 
-Geometry::Geometry() : Identifiable("Geometry") {}
+std::set<ComponentType> k_vertex_component_types = { ComponentType::kHalfFloat, ComponentType::kFloat, ComponentType::kDouble };
+std::set<ComponentType> k_normal_component_types = { ComponentType::kHalfFloat, ComponentType::kFloat, ComponentType::kDouble };
+std::set<ComponentType> k_index_component_types = { ComponentType::kUnsignedShort, ComponentType::kUnsignedInt };
+std::set<ComponentType> k_uv_component_types = { ComponentType::kHalfFloat, ComponentType::kFloat, ComponentType::kDouble };
+
+
+Geometry::Geometry()
+	: Identifiable("Geometry") {}
 
 void Geometry::setVertices(const BufferAccessor& vertices) {
-	vertices_.emplace(vertices);
+	throwIf<InvalidArgument>(vertices.structureType() != StructureType::kVec3, "Invalid vertex structure type.");
+	throwIf<InvalidArgument>(k_vertex_component_types.find(vertices.componentType()) == k_vertex_component_types.end(), "Invalid vertex structure type.");
 
-  // Validate
-  throwIf<InvalidArgument>(vertices_->formatInfo().channel_count == 3,
-	                  "Tried to assign BufferAccessor with ", vertices_->formatInfo().channel_count, " channels (3 required).");
+	vertices_.emplace(vertices);
 }
 
 void Geometry::setNormals(const BufferAccessor& normals) {
-	normals_.emplace(normals);
+	throwIf<InvalidArgument>(normals.structureType() != StructureType::kVec3, "Invalid normal structure type.");
+	throwIf<InvalidArgument>(k_normal_component_types.find(normals.componentType()) == k_normal_component_types.end(), "Invalid normal structure type.");
 
-	// Validate
-	throwIf<InvalidArgument>(normals_->formatInfo().channel_count == 3,
-		                "Tried to assign BufferAccessor with ", normals_->formatInfo().channel_count, " channels (3 required).");
+	normals_.emplace(normals);
 }
 
 void Geometry::setIndices(const BufferAccessor& indices) {
+	throwIf<InvalidArgument>(indices.structureType() != StructureType::kVec3, "Invalid index structure type.");
+	throwIf<InvalidArgument>(k_index_component_types.find(indices.componentType()) == k_index_component_types.end(), "Invalid index structure type.");
+
 	indices_.emplace(indices);
-
-	throwIf<InvalidArgument>(indices_->formatInfo().channel_count == 1,
-		"Tried to assign BufferAccessor with ", indices_->formatInfo().channel_count, " channels (1 required).");
-
-	throwIf<InvalidArgument>(indices_->format() != vk::Format::eR16Uint && indices_->format() != vk::Format::eR32Uint,
-		"Tried to assign BufferAccessor with invalid format (uint16 or uint32 required).");
 }
 
 void Geometry::setUv(const size_t index, const BufferAccessor& uv) {
-	uv_[index].emplace(uv);
+	throwIf<InvalidArgument>(uv.structureType() != StructureType::kVec2, "Invalid uv structure type.");
+	throwIf<InvalidArgument>(k_uv_component_types.find(uv.componentType()) == k_uv_component_types.end(), "Invalid uv structure type.");
 
-	// Validate
-	throwIf<InvalidArgument>(uv_[index]->formatInfo().channel_count == 2,
-		"Tried to assign BufferAccessor with ", uv_[index]->formatInfo().channel_count, " channels (2 required).");
+	uv_[index].emplace(uv);
 }
 
+const BufferAccessor& Geometry::getVertices() const {
+	return vertices_.value();
+}
+
+const BufferAccessor& Geometry::getNormals() const {
+	return normals_.value();
+}
+
+const BufferAccessor& Geometry::getIndices() const {
+	return indices_.value();
+}
+
+const BufferAccessor& Geometry::getUv(const size_t index) const {
+	return uv_[index].value();
+}
 
 void Geometry::clearVertices() {
 	vertices_.reset();

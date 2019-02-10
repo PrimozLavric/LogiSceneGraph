@@ -24,10 +24,10 @@
 
 namespace lsg {
 
-class Mesh : public Component {
+class GeometryReference : public Component {
 public:
 	
-	explicit Mesh(Ref<Object> owner, Shared<Geometry> geometry = {});
+	explicit GeometryReference(Ref<Object> owner, Shared<Geometry> geometry = {});
 
 	const Shared<Geometry>& getGeometry() const;
 

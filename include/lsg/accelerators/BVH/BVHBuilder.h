@@ -121,7 +121,7 @@ struct NodeSpec final {
 	 * @param	num_refs  Number of references on the reference stack.
 	 * @param	bounds    Bounding box of this node.
 	 */
-	explicit NodeSpec(size_t num_refs, const AABB<T>& bounds = {});
+	explicit NodeSpec(size_t num_refs = 0, const AABB<T>& bounds = {});
 
 	/**
 	 * Number of references on the reference stack.
@@ -149,10 +149,10 @@ public:
   /**
    * @brief Initializes the builder with the given SHAFunction and configuration.
    * 
-   * @param	sha_function  Function used to compute SHA cost.
+   * @param	sah_function  Function used to compute SHA cost.
    * @param	config        BVH Builder configuration.
    */
-  explicit BVHBuilder(SAHFunction sha_function = SAHFunction(), const BVHConfig& config = BVHConfig());
+  explicit BVHBuilder(SAHFunction sah_function = SAHFunction(), const BVHConfig& config = BVHConfig());
 
   /**
    * @brief   Performs the build.
@@ -212,7 +212,7 @@ protected:
   /**
    * Function used to compute SHA cost.
    */
-	SAHFunction sha_function_;
+	SAHFunction sah_function_;
 
   /**
    * BVH builder configuration.
@@ -241,15 +241,15 @@ protected:
 };
 
 template <typename T>
-BVHBuilder<T>::BVHBuilder(SAHFunction sha_function, const BVHConfig& config)
-	: sha_function_(std::move(sha_function)), config_(config) {}
+BVHBuilder<T>::BVHBuilder(SAHFunction sah_function, const BVHConfig& config)
+	: sah_function_(std::move(sah_function)), config_(config) {}
 
 template <typename T>
 Shared<BVH<T>> BVHBuilder<T>::process(const std::vector<AABB<T>>& bounding_boxes) {
 	t_reference_stack_.clear();
 
 	// Generate references and compute root node bounding box.
-	NodeSpec root_spec(bounding_boxes.size());
+	NodeSpec<T> root_spec(bounding_boxes.size());
 
 	for (uint32_t i = 0; i < bounding_boxes.size(); i++) {
 		t_reference_stack_.emplace_back(bounding_boxes[i], i);
@@ -294,8 +294,8 @@ uint32_t BVHBuilder<T>::buildNode(const NodeSpec<T>& spec, const size_t level) {
 	}
 
 	const float area = spec.bounds.area();
-	const float leaf_sah = area * sha_function_.getPrimitiveCost(spec.num_refs);
-	const float node_sah = area * sha_function_.getNodeCost(2);
+	const float leaf_sah = area * sah_function_.getPrimitiveCost(spec.num_refs);
+	const float node_sah = area * sah_function_.getNodeCost(2);
 
 	// Find best object split.
 	const ObjectSplit obj_split = findObjectSplit(spec, node_sah);
@@ -353,7 +353,7 @@ ObjectSplit<T> BVHBuilder<T>::findObjectSplit(const NodeSpec<T>& spec, const flo
 		std::sort(ref_begin, t_reference_stack_.end(), std::bind(compareReferences, axis, std::placeholders::_1, std::placeholders::_2));
 
 		// Compute bounds right to left.
-		AABB bounds;
+		AABB<T> bounds;
 
 		for (size_t i = spec.num_refs - 1; i > 0; i--) {
 			bounds.expand((ref_begin + i)->bounds);
@@ -366,10 +366,10 @@ ObjectSplit<T> BVHBuilder<T>::findObjectSplit(const NodeSpec<T>& spec, const flo
 		for (size_t i = 1; i < spec.num_refs; i++) {
 			bounds.expand((ref_begin + i - 1)->bounds);
 			const float sah = node_sah
-				+ bounds.area() * sha_function_.getPrimitiveCost(i)
-				+ t_right_bounds_[i - 1].area() * sha_function_.getPrimitiveCost(spec.num_refs - i);
+				+ bounds.area() * sah_function_.getPrimitiveCost(i)
+				+ t_right_bounds_[i - 1].area() * sah_function_.getPrimitiveCost(spec.num_refs - i);
 
-			const float tie_break = std::pow(i, 2) + std::pow(static_cast<float>(spec.num_refs - i), 2);
+			const float tie_break = std::powf(float(i), 2.0f) + std::powf(float(spec.num_refs - i), 2.0f);
 
 			// Check if this division SAH is better than previous best.
 			if (sah < best_split.sah || (sah == best_split.sah && tie_break < best_tie_break)) {

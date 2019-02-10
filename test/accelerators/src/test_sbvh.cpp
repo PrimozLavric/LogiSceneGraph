@@ -1,20 +1,50 @@
 #include <gtest/gtest.h>
+#include <utility>
 #include "lsg/accelerators/BVH/BVHBuilder.h"
 #include "lsg/accelerators/BVH/SplitBVHBuilder.h"
 
 using namespace lsg;
 
-TEST(SBVH, Basic) {
-  std::vector<AABB<float>> primitives;
+class TriangleAccessorImpl : public bvh::TriangleAccessor<float> {
+public:
+  TriangleAccessorImpl(std::vector<glm::vec3> vertices, std::vector<glm::uvec3> indices)
+    : vertices_(std::move(vertices)),
+      indices_(std::move(indices)) {}
 
-  for (size_t i = 1; i <= 10; i++) {
-	  primitives.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f) * static_cast<float>(i - 1), glm::vec3(1.0f, 1.0f, 1.0f) * static_cast<float>(i) + glm::vec3(0.25f));
+  size_t count() const override {
+    return indices_.size();
   }
 
-	bvh::BVHBuilder<float> builder;
-	Shared<BVH<float>> bvh = builder.process(primitives);
-	bvh::SplitBVHBuilder<float> builder2;
-	
+  bvh::Triangle<float> operator[](size_t index) const override {
+    return bvh::Triangle<float>(vertices_[indices_[index].x], vertices_[indices_[index].y],
+                                vertices_[indices_[index].z]);
+  }
+
+private:
+  std::vector<glm::vec3> vertices_;
+  std::vector<glm::uvec3> indices_;
+};
+
+TEST(SBVH, Basic) {
+  std::vector<glm::vec3> vertices{
+    // Front face
+    {1.0, 1.0, 1.0},
+    {-1.0, -1.0, 1.0},
+    {-1.0, 1.0, -1.0},
+    {1.0, -1.0, -1.0}
+  };
+
+  std::vector<glm::uvec3> indices{
+    {0, 1, 2}, {1, 2, 3}, // front
+    {2, 3, 0}, {3, 0, 1}
+  };
+
+  TriangleAccessorImpl accessor(vertices, indices);
+  bvh::SplitBVHBuilder<float> builder;
+  Shared<BVH<float>> bvh = builder.process(accessor);
+
+  std::cout << "TEST" << std::endl;
+
   /*
   std::deque<Ref<bvh::Node>> stack = { root };
 

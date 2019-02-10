@@ -16,28 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_COMPONENTS_GEOMETRY_REFERENCE_H
-#define LSG_COMPONENTS_GEOMETRY_REFERENCE_H
-
-#include "lsg/core/Component.h"
-#include "lsg/resources/Geometry.h"
+#include "lsg/resources/Image1D.h"
+#include "lsg/core/Exceptions.h"
 
 namespace lsg {
 
-class Mesh : public Component {
-public:
-	
-	explicit Mesh(Ref<Object> owner, Shared<Geometry> geometry = {});
-
-	const Shared<Geometry>& getGeometry() const;
-
-	void setGeometry(const Shared<Geometry>& geometry);
-
-private:
-	Shared<Geometry> geometry_;
-};
-
-
+Image1D::Image1D(const std::vector<std::byte>& data, const Format format, const size_t width)
+  : Image("Image1D", data, format), width_(width) {
+	throwIf<InitializationError>((data.size() / getFormatInfo().size) != width, "Width is not equal to pixel count.");
 }
 
-#endif // LSG_COMPONENTS_GEOMETRY_REFERENCE_H
+Image1D::Image1D(const Format format, const size_t width)
+  : Image("Image1D", format, width) { }
+
+size_t Image1D::width() const {
+	return width_;
+}
+
+size_t Image1D::height() const {
+	return 1u;
+}
+
+size_t Image1D::depth() const {
+	return 1u;
+}
+
+ImageType Image1D::getType() const {
+	return ImageType::e1D;
+}
+}

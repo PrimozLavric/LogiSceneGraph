@@ -40,6 +40,8 @@ public:
 
   std::string_view name() const;
 
+  void setName(const std::string& name);
+
   virtual ~Identifiable() = default;
 
 private:

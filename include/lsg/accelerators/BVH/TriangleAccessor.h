@@ -46,16 +46,12 @@ struct Triangle {
    * @param   index Vertex index. 
    * @return	Vertex.
    */
-  const glm::vec3<T>& operator[](size_t index) {
-	  return *(&a + index);
-  }
+  const glm::tvec3<T>& operator[](size_t index);
 
   /**
    * Triangle vertices.
    */
-  const glm::tvec3<T>& a;
-  const glm::tvec3<T>& b;
-  const glm::tvec3<T>& c;
+  std::array<std::reference_wrapper<const glm::tvec3<T>>, 3> vertices;
 };
 
 /**
@@ -66,14 +62,6 @@ struct Triangle {
 template <typename T>
 class TriangleAccessor {
 public:
-  /**
-	 * @brief   Retrieve triangle on the given index.
-	 * 
-	 * @param   index Index of the triangle. 
-	 * @return	Triangle.
-	 */
-	virtual Triangle getTriangle(size_t index) const = 0;
-
   /**
 	 * @brief	  Get number of triangles.
 	 * 
@@ -87,7 +75,7 @@ public:
 	 * @param	  index Index of the triangle. 
 	 * @return	Triangle.
 	 */
-	Triangle operator[](size_t index);
+	virtual Triangle<T> operator[](size_t index) const = 0;
 
   /**
 	 * @brief This is an abstract class.
@@ -96,13 +84,12 @@ public:
 };
 
 template <typename T>
-Triangle<T>::Triangle(const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c): a(a),
-                                                                                               b(b),
-                                                                                               c(c) {}
+Triangle<T>::Triangle(const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c) 
+  : vertices({a, b, c}) {}
 
 template <typename T>
-Triangle TriangleAccessor<T>::operator[](size_t index) {
-	return getTriangle();
+const glm::tvec3<T>& Triangle<T>::operator[](size_t index) {
+  return vertices[index];
 }
 
 }

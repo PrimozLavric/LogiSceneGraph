@@ -16,28 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_COMPONENTS_GEOMETRY_REFERENCE_H
-#define LSG_COMPONENTS_GEOMETRY_REFERENCE_H
-
-#include "lsg/core/Component.h"
-#include "lsg/resources/Geometry.h"
+#include "lsg/core/VersionTracker.h"
 
 namespace lsg {
 
-class Mesh : public Component {
-public:
-	
-	explicit Mesh(Ref<Object> owner, Shared<Geometry> geometry = {});
+VersionTracker::VersionTracker()
+  : version_(0u) {}
 
-	const Shared<Geometry>& getGeometry() const;
-
-	void setGeometry(const Shared<Geometry>& geometry);
-
-private:
-	Shared<Geometry> geometry_;
-};
-
-
+void VersionTracker::incrementVersion() {
+	version_++;
 }
 
-#endif // LSG_COMPONENTS_GEOMETRY_REFERENCE_H
+size_t VersionTracker::version() const {
+	return version_;
+}
+
+}

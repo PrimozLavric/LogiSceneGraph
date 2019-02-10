@@ -16,28 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_COMPONENTS_GEOMETRY_REFERENCE_H
-#define LSG_COMPONENTS_GEOMETRY_REFERENCE_H
+#ifndef LSG_RESOURCES_IMAGE3D_H
+#define LSG_RESOURCES_IMAGE3D_H
 
-#include "lsg/core/Component.h"
-#include "lsg/resources/Geometry.h"
+#include "lsg/resources/Image.h"
 
 namespace lsg {
 
-class Mesh : public Component {
-public:
-	
-	explicit Mesh(Ref<Object> owner, Shared<Geometry> geometry = {});
+class Image3D : public Image, public std::enable_shared_from_this<Image3D> {
+	Image3D(const std::vector<std::byte>& data, Format format, size_t width, size_t height, size_t depth);
 
-	const Shared<Geometry>& getGeometry() const;
+	Image3D(Format format, size_t width, size_t height, size_t depth);
 
-	void setGeometry(const Shared<Geometry>& geometry);
+	size_t width() const override;
+
+	size_t height() const override;
+
+	size_t depth() const override;
+
+	ImageType getType() const override;
 
 private:
-	Shared<Geometry> geometry_;
+	size_t width_;
+	size_t height_;
+	size_t depth_;
 };
-
 
 }
 
-#endif // LSG_COMPONENTS_GEOMETRY_REFERENCE_H
+#endif

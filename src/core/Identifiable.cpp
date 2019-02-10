@@ -51,4 +51,8 @@ std::string_view Identifiable::name() const {
 	return std::string_view(name_.c_str(), name_.size());
 }
 
+void Identifiable::setName(const std::string& name) {
+	name_ = name;
+}
+
 }

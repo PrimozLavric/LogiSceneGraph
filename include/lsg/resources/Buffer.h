@@ -23,34 +23,64 @@
 #include <vector>
 #include <cstddef>
 
-#include "lsg/core/Shared.h"
+#include "lsg/core/Identifiable.h"
 
 namespace lsg {
 
 /**
- * @brief 
+ * @brief Buffer is an object that holds raw data.
  */
-class Buffer : public std::enable_shared_from_this<Buffer> {
+class Buffer : public Identifiable, public std::enable_shared_from_this<Buffer> {
 public:
+  /**
+	 * @brief Initialize buffer data.
+	 *
+	 * @param	data  Byte vector that will be used to initialize the buffer.
+	 */
 	explicit Buffer(std::vector<std::byte> data);
 
+  /**
+   * @brief Initialize buffer with vector of arbitrary type.
+	 *
+	 * @param	data  Vector of arbitrary type.
+   */
   template <typename T>
   explicit Buffer(const std::vector<T>& data);
 
+  /**
+	 * @brief   Size of the Buffer in bytes.
+	 *
+	 * @return	Size of the buffer.
+	 */
 	size_t size() const;
 
+  /**
+	 * @brief   Retrieve pointer to the beginning of the buffer data.
+	 *
+	 * @return  Retrieve pointer to the beginning of the buffer data.	
+	 */
 	const std::byte* data() const;
 
-  virtual ~Buffer() = default;
+  /**
+   * @brief May be extended.
+   */
+	virtual ~Buffer() = default;
 
 private:
+  /**
+   * Buffer data.
+   */
 	std::vector<std::byte> data_;
 };
 
 template <typename T>
-Buffer::Buffer(const std::vector<T>& data) 
-  : data_(reinterpret_cast<const std::byte*>(data.data()), 
-	        reinterpret_cast<const std::byte*>(data.data()) + data.size() * sizeof(T)) { }
+Buffer::Buffer(const std::vector<T>& data)
+  : Identifiable("Buffer"), 
+    data_(reinterpret_cast<const std::byte*>(data.data()), 
+		      reinterpret_cast<const std::byte*>(data.data()) + data.size() * sizeof(T)) { }
+
+
+
 
 }
 
