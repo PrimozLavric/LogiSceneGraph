@@ -42,6 +42,25 @@ public:
 	AABB(const glm::tvec3<T>& min, const glm::tvec3<T>& max);
 
   /**
+   * @brief   AABB conversion constructor.
+   * 
+   * @tparam	U     Component type of other AABB
+   * @param	  other Other AABB object.
+   */
+  template <typename U>
+  explicit AABB(const AABB<U>& other);
+
+  /**
+   * @brief   AABB conversion assignment operator.
+   * 
+   * @tparam	U   Component type of right hand side AABB 
+   * @param	  rhs Right hand side AABB
+   * @return	Reference to this AABB.
+   */
+  template <typename U>
+  AABB<T>& operator=(const AABB& rhs);
+
+  /**
 	 * @brief   Computes intersection between this and the given bounding box.
 	 * 
 	 * @param   aabb  Bounding box with which the intersection will be computed. 
@@ -128,6 +147,19 @@ private:
    */
 	glm::tvec3<T> max_;
 };
+
+template <typename T>
+template <typename U>
+AABB<T>::AABB(const AABB<U>& other)
+  : min_(other.min()), max_(other.max()) {}
+
+template <typename T>
+template <typename U>
+AABB<T>& AABB<T>::operator=(const AABB& rhs) {
+  min_ = rhs.min();
+  max_ = rhs.max();
+  return *this;
+}
 
 template <typename T>
 AABB<T>::AABB()

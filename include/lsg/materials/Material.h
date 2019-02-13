@@ -19,10 +19,15 @@
 #ifndef LSG_MATERIALS_MATERIAL_H
 #define LSG_MATERIALS_MATERIAL_H
 
+#include "lsg/core/Identifiable.h"
+#include "lsg/core/VersionTracker.h"
+
 namespace lsg {
 
-class Material {
-  
+class Material : public Identifiable, public VersionTracker {
+public:
+  explicit Material(const std::string& name);
+
 };
 
 }

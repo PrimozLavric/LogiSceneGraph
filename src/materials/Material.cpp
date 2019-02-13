@@ -20,4 +20,6 @@
 
 namespace lsg {
 
+Material::Material(const std::string& name) : Identifiable(name) {}
+
 }

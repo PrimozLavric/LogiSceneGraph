@@ -20,42 +20,33 @@
 
 namespace lsg {
 
-std::set<ComponentType> k_vertex_component_types = { ComponentType::kHalfFloat, ComponentType::kFloat, ComponentType::kDouble };
-std::set<ComponentType> k_normal_component_types = { ComponentType::kHalfFloat, ComponentType::kFloat, ComponentType::kDouble };
-std::set<ComponentType> k_index_component_types = { ComponentType::kUnsignedShort, ComponentType::kUnsignedInt };
-std::set<ComponentType> k_uv_component_types = { ComponentType::kHalfFloat, ComponentType::kFloat, ComponentType::kDouble };
-
-
 Geometry::Geometry()
 	: Identifiable("Geometry") {}
 
-void Geometry::setVertices(const BufferAccessor& vertices) {
-	throwIf<InvalidArgument>(vertices.structureType() != StructureType::kVec3, "Invalid vertex structure type.");
-	throwIf<InvalidArgument>(k_vertex_component_types.find(vertices.componentType()) == k_vertex_component_types.end(), "Invalid vertex structure type.");
-
-	vertices_.emplace(vertices);
+void Geometry::setIndices(const TBufferAccessor<uint32_t>& indices) {
+	indices_ = indices;
 }
 
-void Geometry::setNormals(const BufferAccessor& normals) {
-	throwIf<InvalidArgument>(normals.structureType() != StructureType::kVec3, "Invalid normal structure type.");
-	throwIf<InvalidArgument>(k_normal_component_types.find(normals.componentType()) == k_normal_component_types.end(), "Invalid normal structure type.");
-
-	normals_.emplace(normals);
+void Geometry::setVertices(const TBufferAccessor<glm::tvec3<float>>& vertices) {
+	vertices_ = vertices;
 }
 
-void Geometry::setIndices(const BufferAccessor& indices) {
-	throwIf<InvalidArgument>(indices.structureType() != StructureType::kVec3, "Invalid index structure type.");
-	throwIf<InvalidArgument>(k_index_component_types.find(indices.componentType()) == k_index_component_types.end(), "Invalid index structure type.");
-
-	indices_.emplace(indices);
+void Geometry::setNormals(const TBufferAccessor<glm::tvec3<float>>& normals) {
+	normals_ = normals;
 }
 
-void Geometry::setUv(const size_t index, const BufferAccessor& uv) {
-	throwIf<InvalidArgument>(uv.structureType() != StructureType::kVec2, "Invalid uv structure type.");
-	throwIf<InvalidArgument>(k_uv_component_types.find(uv.componentType()) == k_uv_component_types.end(), "Invalid uv structure type.");
-
-	uv_[index].emplace(uv);
+void Geometry::setTangents(const TBufferAccessor<glm::tvec4<float>>& tangents) {
+	tangents_ = tangents;
 }
+
+void Geometry::setColors(const TBufferAccessor<glm::tvec4<float>>& colors) {
+	colors_ = colors;
+}
+
+void Geometry::setUv(size_t index, const TBufferAccessor<glm::tvec2<float>>& uv) {
+	uv_[index] = uv;
+}
+
 
 const BufferAccessor& Geometry::getVertices() const {
 	return vertices_.value();
@@ -67,6 +58,14 @@ const BufferAccessor& Geometry::getNormals() const {
 
 const BufferAccessor& Geometry::getIndices() const {
 	return indices_.value();
+}
+
+const BufferAccessor& Geometry::getTangents() const {
+	return tangents_.value();
+}
+
+const BufferAccessor& Geometry::getColors() const {
+	return colors_.value();
 }
 
 const BufferAccessor& Geometry::getUv(const size_t index) const {
@@ -85,6 +84,14 @@ void Geometry::clearIndices() {
 	indices_.reset();
 }
 
+void Geometry::clearTangents() {
+	tangents_.reset();
+}
+
+void Geometry::clearColors() {
+	colors_.reset();
+}
+
 void Geometry::clearUv(const size_t index) {
 	uv_[index].reset();
 }
@@ -99,6 +106,14 @@ bool Geometry::hasNormals() const {
 
 bool Geometry::hasIndices() const {
 	return indices_.has_value();
+}
+
+bool Geometry::hasTangents() const {
+	return tangents_.has_value();
+}
+
+bool Geometry::hasColors() const {
+	return colors_.has_value();
 }
 
 bool Geometry::hasUv(const size_t index) const {

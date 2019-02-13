@@ -24,7 +24,7 @@
 #include "lsg/core/Shared.h"
 #include "lsg/resources/BufferAccessor.h"
 #include <optional>
-#include <set>
+#include "glm/detail/type_vec3.hpp"
 
 
 namespace lsg {
@@ -33,19 +33,27 @@ class Geometry : public Identifiable, public std::enable_shared_from_this<Geomet
 public:
   Geometry();
 
-	void setVertices(const BufferAccessor& vertices);
+  void setIndices(const TBufferAccessor<uint32_t>& indices);
 
-	void setNormals(const BufferAccessor& normals);
+	void setVertices(const TBufferAccessor<glm::tvec3<float>>& vertices);
 
-	void setIndices(const BufferAccessor& indices);
+	void setNormals(const TBufferAccessor<glm::tvec3<float>>& normals);
 
-	void setUv(size_t index, const BufferAccessor& uv);
+	void setTangents(const TBufferAccessor<glm::tvec4<float>>& tangents);
+
+	void setColors(const TBufferAccessor<glm::tvec4<float>>& colors);
+
+	void setUv(size_t index, const TBufferAccessor<glm::tvec2<float>>& uv);
 
 	const BufferAccessor& getVertices() const;
 
 	const BufferAccessor& getNormals() const;
 
 	const BufferAccessor& getIndices() const;
+
+	const BufferAccessor& getTangents() const;
+
+	const BufferAccessor& getColors() const;
 
 	const BufferAccessor& getUv(size_t index) const;
 
@@ -55,6 +63,10 @@ public:
 
 	void clearIndices();
 
+	void clearTangents();
+
+  void clearColors();
+
 	void clearUv(size_t index);
 
 	bool hasVertices() const;
@@ -63,17 +75,19 @@ public:
 
 	bool hasIndices() const;
 
+	bool hasTangents() const;
+
+	bool hasColors() const;
+
 	bool hasUv(size_t index) const;
 
-	static std::set<ComponentType> k_vertex_component_types;
-	static std::set<ComponentType> k_normal_component_types;
-	static std::set<ComponentType> k_index_component_types;
-	static std::set<ComponentType> k_uv_component_types;
 private:
-	std::optional<BufferAccessor> vertices_;
-	std::optional<BufferAccessor> normals_;
-	std::optional<BufferAccessor> indices_;
-	std::array<std::optional<BufferAccessor>, 8u> uv_;
+	std::optional<TBufferAccessor<uint32_t>> indices_;
+	std::optional<TBufferAccessor<glm::tvec3<float>>> vertices_;
+	std::optional<TBufferAccessor<glm::tvec3<float>>> normals_;
+	std::optional<TBufferAccessor<glm::tvec4<float>>> tangents_;
+	std::optional<TBufferAccessor<glm::tvec4<float>>> colors_;
+	std::array<std::optional<TBufferAccessor<glm::tvec2<float>>>, 8u> uv_;
 };
 
 }

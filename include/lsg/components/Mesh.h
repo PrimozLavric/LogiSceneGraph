@@ -16,25 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSG_COMPONENTS_GEOMETRY_REFERENCE_H
-#define LSG_COMPONENTS_GEOMETRY_REFERENCE_H
+#ifndef LSG_COMPONENTS_MESH_H
+#define LSG_COMPONENTS_MESH_H
 
 #include "lsg/core/Component.h"
-#include "lsg/resources/Geometry.h"
+#include "lsg/core/VersionTracker.h"
+#include "lsg/resources/SubMesh.h"
 
 namespace lsg {
 
-class GeometryReference : public Component {
+class Mesh : public Component, public VersionTracker, std::enable_shared_from_this<Mesh> {
 public:
-	
-	explicit GeometryReference(Ref<Object> owner, Shared<Geometry> geometry = {});
+	explicit Mesh(Ref<Object> owner, std::vector<Shared<SubMesh>> sub_meshes = {});
 
-	const Shared<Geometry>& getGeometry() const;
+	explicit Mesh(Ref<Object> owner, const std::string& name, std::vector<Shared<SubMesh>> sub_meshes = {});
 
-	void setGeometry(const Shared<Geometry>& geometry);
+	size_t subMeshCount() const;
+
+	void addSubMesh(const Shared<SubMesh>& sub_mesh);
+
+	const std::vector<Shared<SubMesh>>& subMeshes();
 
 private:
-	Shared<Geometry> geometry_;
+	std::vector<Shared<SubMesh>> sub_meshes_;
 };
 
 

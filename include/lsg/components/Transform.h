@@ -94,6 +94,13 @@ public:
   void applyQuaternion(const glm::quat& quaternion);
 
   /**
+   * @brief Sets local transformation matrix of the object.
+   *
+   * @param	matrix  Matrix to be set.
+   */
+  void setLocalMatrix(const glm::mat4& mat);
+
+  /**
    * @brief Set object rotation.
    * 
    * @param	quaternion  Quaternion specifying object rotation.

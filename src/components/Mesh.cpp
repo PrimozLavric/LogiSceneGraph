@@ -20,15 +20,22 @@
 
 namespace lsg {
 
-Mesh::Mesh(Ref<Object> owner, Shared<Geometry> geometry) 
-  : Component("GeometryRference", owner), geometry_(std::move(geometry)) {}
+Mesh::Mesh(const Ref<Object> owner, std::vector<Shared<SubMesh>> sub_meshes) 
+  : Component("Mesh", owner), sub_meshes_(std::move(sub_meshes)) {}
 
-const Shared<Geometry>& Mesh::getGeometry() const {
-	return geometry_;
+Mesh::Mesh(const Ref<Object> owner, const std::string& name, std::vector<Shared<SubMesh>> sub_meshes)
+	: Component(name, owner), sub_meshes_(std::move(sub_meshes)) {}
+
+size_t Mesh::subMeshCount() const {
+	return sub_meshes_.size();
 }
 
-void Mesh::setGeometry(const Shared<Geometry>& geometry) {
-	geometry_ = geometry;
+void Mesh::addSubMesh(const Shared<SubMesh>& sub_mesh) {
+	sub_meshes_.emplace_back(sub_mesh);
+}
+
+const std::vector<Shared<SubMesh>>& Mesh::subMeshes() {
+	return sub_meshes_;
 }
 
 }

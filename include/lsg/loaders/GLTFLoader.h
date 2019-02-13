@@ -22,22 +22,44 @@
 #include <tinygltf/tiny_gltf.h>
 #include "lsg/core/Shared.h"
 #include "lsg/core/Object.h"
+#include "lsg/core/Scene.h"
+#include "lsg/resources/BufferAccessor.h"
+#include <glm/detail/type_vec3.hpp>
 
 namespace lsg {
 
 class GLTFLoader {
 public:
-	Shared<Object> load(const std::string& filename);
+	std::vector<Shared<Scene>> load(const std::string& filename);
 
-	//Shared<Object> loadBinary();
 
 protected:
 	tinygltf::Model loadModelASCII(const std::string& filename);
+
+	static ComponentType parseType(int32_t type);
+
+	static StructureType parseStructure(int32_t structure);
+
+
+protected:
+	static std::vector<Shared<Object>> loadObjects(const tinygltf::Model& model);
+
+	static TBufferAccessor<uint32_t> loadIndices(const tinygltf::Model& model, size_t accessor_index);
+
+	static TBufferAccessor<glm::tvec3<float>> loadPosOrNormals(const tinygltf::Model& model, size_t accessor_index);
+
+	static TBufferAccessor<glm::tvec4<float>> loadTangents(const tinygltf::Model& model, size_t accessor_index);
+
+	static TBufferAccessor<glm::tvec4<float>> loadColors(const tinygltf::Model& model, size_t accessor_index);
+
+	static TBufferAccessor<glm::tvec2<float>> loadUvs(const tinygltf::Model& model, size_t accessor_index);
+
 
 private:
 	tinygltf::TinyGLTF loader_;
 
 };
+
 
 }
 

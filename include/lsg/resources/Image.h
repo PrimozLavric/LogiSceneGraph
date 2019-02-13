@@ -31,7 +31,7 @@ enum class ImageType {
   e3D
 };
 
-class Image : public Identifiable, public std::enable_shared_from_this<Image>{
+class Image : public Identifiable, public std::enable_shared_from_this<Image> {
 public:
 	Image(const std::string& name, std::vector<std::byte> data, Format format);
 

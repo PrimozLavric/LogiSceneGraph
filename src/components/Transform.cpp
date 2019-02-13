@@ -23,8 +23,8 @@
 namespace lsg {
 
 Transform::Transform(Ref<Object> owner)
-  : Component("Transform", owner), world_matrix_(), world_matrix_dirty_(false), 
-    loc_matrix_(), loc_matrix_dirty_(false), loc_position_(), loc_rotation_(), loc_scale_(1.0f) {
+  : Component("Transform", owner), world_matrix_(1.0), world_matrix_dirty_(false), 
+    loc_matrix_(1.0), loc_matrix_dirty_(false), loc_position_(), loc_rotation_(), loc_scale_(1.0f) {
 
   // Traverse ancestors.
   owner->traverseUpExcl([this](const Ref<Object> object) {
@@ -95,6 +95,12 @@ void Transform::applyMatrix(const glm::mat4& mat) {
 void Transform::applyQuaternion(const glm::quat& quaternion) {
 	loc_rotation_ *= quaternion;
 	markLocalMatrixDirty();
+}
+
+void Transform::setLocalMatrix(const glm::mat4& mat) {
+	loc_matrix_ = mat;
+	decomposeMatrix(loc_matrix_, loc_position_, loc_rotation_, loc_scale_);
+	markWorldMatrixDirty();
 }
 
 void Transform::setRotation(const glm::quat& quaternion) {

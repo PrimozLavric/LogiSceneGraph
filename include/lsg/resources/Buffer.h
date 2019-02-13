@@ -39,6 +39,22 @@ public:
 	 */
 	explicit Buffer(std::vector<std::byte> data);
 
+	/**
+	 * @brief Initialize buffer data.
+	 *
+	 * @param name  Buffer name.
+	 * @param	data  Byte vector that will be used to initialize the buffer.
+	 */
+	explicit Buffer(const std::string& name, std::vector<std::byte> data);
+
+	/**
+   * @brief Initialize buffer with vector of arbitrary type.
+   *
+   * @param	data  Vector of arbitrary type.
+   */
+	template <typename T>
+	explicit Buffer(const std::string& name, const std::vector<T>& data);
+
   /**
    * @brief Initialize buffer with vector of arbitrary type.
 	 *
@@ -72,6 +88,12 @@ private:
    */
 	std::vector<std::byte> data_;
 };
+
+template <typename T>
+Buffer::Buffer(const std::string& name, const std::vector<T>& data)
+	: Identifiable(name),
+	data_(reinterpret_cast<const std::byte*>(data.data()),
+		reinterpret_cast<const std::byte*>(data.data()) + data.size() * sizeof(T)) { }
 
 template <typename T>
 Buffer::Buffer(const std::vector<T>& data)

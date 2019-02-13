@@ -47,6 +47,10 @@ class InvalidArgument final : public LSGException {
 	using LSGException::LSGException;
 };
 
+class LoaderError final : public LSGException {
+	using LSGException::LSGException;
+};
+
 }
 
 #endif // LSG_CORE_EXCEPTIONS_H
