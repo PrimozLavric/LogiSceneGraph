@@ -163,14 +163,15 @@ std::vector<Shared<Object>> GLTFLoader::loadObjects(const tinygltf::Model& model
 			    tinygltf::Material material = model.materials[primitives.material];
 
           /**
-           * Set factors.
+           * Look for base color
            */
 				  auto it = material.values.find("baseColorFactor");
           if (it == material.values.end()) {
 			      lsg_material->setBaseColor(glm::make_vec4(it->second.ColorFactor().data()));
           }
 
-		  it = material.values.find("baseColorTexture");
+		      it = material.values.find("baseColorTexture");
+
 
 		      it = material.values.find("metalicFactor");
 		      if (it == material.values.end()) {

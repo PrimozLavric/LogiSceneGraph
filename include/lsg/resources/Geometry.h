@@ -26,7 +26,6 @@
 #include <optional>
 #include "glm/detail/type_vec3.hpp"
 
-
 namespace lsg {
 
 class Geometry : public Identifiable, public std::enable_shared_from_this<Geometry> {
@@ -82,7 +81,7 @@ public:
 	bool hasUv(size_t index) const;
 
 private:
-	std::optional<TBufferAccessor<uint32_t>> indices_;
+	std::optional<BufferAccessor> indices_;
 	std::optional<TBufferAccessor<glm::tvec3<float>>> vertices_;
 	std::optional<TBufferAccessor<glm::tvec3<float>>> normals_;
 	std::optional<TBufferAccessor<glm::tvec4<float>>> tangents_;
