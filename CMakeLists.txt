@@ -5,7 +5,7 @@ set (CMAKE_CXX_STANDARD 17)
 project(LogiSceneGraph VERSION 0.1.0 LANGUAGES CXX)
 
 # Add path to CMake custom modules.
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake_modules")
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules")
 
 # C++ Google Test
 option(BUILD_TESTS "Build tests." OFF)
