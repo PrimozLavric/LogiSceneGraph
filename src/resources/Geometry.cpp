@@ -23,7 +23,8 @@ namespace lsg {
 Geometry::Geometry()
 	: Identifiable("Geometry") {}
 
-void Geometry::setIndices(const TBufferAccessor<uint32_t>& indices) {
+void Geometry::setIndices(const BufferAccessor& indices) {
+	throwIf<InvalidArgument>(indices.count() % 3u != 0u, "Tried to set triangle indices that are not multiple of 3.");
 	indices_ = indices;
 }
 
@@ -39,28 +40,28 @@ void Geometry::setTangents(const TBufferAccessor<glm::tvec4<float>>& tangents) {
 	tangents_ = tangents;
 }
 
-void Geometry::setColors(const TBufferAccessor<glm::tvec4<float>>& colors) {
+void Geometry::setColors(const BufferAccessor& colors) {
 	colors_ = colors;
 }
 
-void Geometry::setUv(size_t index, const TBufferAccessor<glm::tvec2<float>>& uv) {
+void Geometry::setUv(size_t index, const BufferAccessor& uv) {
+	throwIf<OutOfRange>(index > uv_.size(), "Cannot bind uv-s on index (" + std::to_string(index) + "). Max index is " + std::to_string(uv_.size() - 1) + ".");
 	uv_[index] = uv;
-}
-
-
-const BufferAccessor& Geometry::getVertices() const {
-	return vertices_.value();
-}
-
-const BufferAccessor& Geometry::getNormals() const {
-	return normals_.value();
 }
 
 const BufferAccessor& Geometry::getIndices() const {
 	return indices_.value();
 }
 
-const BufferAccessor& Geometry::getTangents() const {
+const TBufferAccessor<glm::tvec3<float>>& Geometry::getVertices() const {
+	return vertices_.value();
+}
+
+const TBufferAccessor<glm::tvec3<float>>& Geometry::getNormals() const {
+	return normals_.value();
+}
+
+const TBufferAccessor<glm::tvec4<float>>& Geometry::getTangents() const {
 	return tangents_.value();
 }
 
@@ -93,6 +94,7 @@ void Geometry::clearColors() {
 }
 
 void Geometry::clearUv(const size_t index) {
+	throwIf<OutOfRange>(index > uv_.size(), "Cannot bind uv-s on index (" + std::to_string(index) + "). Max index is " + std::to_string(uv_.size() - 1) + ".");
 	uv_[index].reset();
 }
 
@@ -117,8 +119,8 @@ bool Geometry::hasColors() const {
 }
 
 bool Geometry::hasUv(const size_t index) const {
+	throwIf<OutOfRange>(index > uv_.size(), "Cannot bind uv-s on index (" + std::to_string(index) + "). Max index is " + std::to_string(uv_.size() - 1) + ".");
 	return uv_[index].has_value();
 }
-
 
 }

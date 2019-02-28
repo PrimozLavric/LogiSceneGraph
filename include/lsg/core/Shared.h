@@ -93,6 +93,13 @@ public:
   T* operator->() const;
 
   /**
+   * @brief   Dereferences wrapped object.
+   *
+   * @return	Const reference to the wrapped object.
+   */
+  const T& operator*() const;
+
+  /**
    * @brief   Retrieve pointer to wrapped object.
    *
    * @return	Pointer to wrapped object.
@@ -151,6 +158,11 @@ Shared<T>::operator bool() const {
 template <typename T>
 T* Shared<T>::operator->() const {
   return ptr_.get();
+}
+
+template <typename T>
+const T& Shared<T>::operator*() const {
+	return *ptr_;
 }
 
 template <typename T>

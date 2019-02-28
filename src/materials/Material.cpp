@@ -20,6 +20,7 @@
 
 namespace lsg {
 
-Material::Material(const std::string& name) : Identifiable(name) {}
+TextureUV::TextureUV(Shared<Texture> texture, uint32_t uv_index)
+  : texture(std::move(texture)), uv_index(uv_index) {}
 
 }

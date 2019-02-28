@@ -20,7 +20,7 @@
 #define LSG_ACCELERATORS_BVH_SPLIT_BVH_BUILDER_H
 #include "lsg/accelerators/BVH/BVHBuilder.h"
 #include <array>
-#include "lsg/accelerators/BVH/TriangleAccessor.h"
+#include "lsg/resources/Triangle.h"
 
 namespace lsg {
 namespace bvh {
@@ -93,7 +93,7 @@ public:
                            const BVHConfig& bvh_config = BVHConfig(),
                            const SplitBVHConfig& split_config = SplitBVHConfig());
 
-  Shared<BVH<T>> process(const TriangleAccessor<T>& triangle_accessor);
+  Shared<BVH<T>> process(const Shared<TriangleAccessor<T>>& triangle_accessor);
 
 
   virtual ~SplitBVHBuilder() = default;
@@ -141,7 +141,7 @@ protected:
   /**
    * Triangle accessor.
    */
-  const TriangleAccessor<T>* t_triangle_accessor_;
+  Shared<TriangleAccessor<T>> t_triangle_accessor_;
 };
 
 
@@ -151,15 +151,15 @@ SplitBVHBuilder<T>::SplitBVHBuilder(SAHFunction sha_function, const BVHConfig& b
   : BVHBuilder(std::move(sha_function), bvh_config),
     split_config_(split_config),
     t_min_overlap_(), 
-    t_triangle_accessor_(nullptr) {
+    t_triangle_accessor_() {
   for (size_t i = 0; i < 3u; i++) {
     t_spatial_bins_[i].resize(split_config_.num_spatial_bins);
   }
 }
 
 template <typename T>
-Shared<BVH<T>> SplitBVHBuilder<T>::process(const TriangleAccessor<T>& triangle_accessor) {
-	t_triangle_accessor_ = &triangle_accessor;
+Shared<BVH<T>> SplitBVHBuilder<T>::process(const Shared<TriangleAccessor<T>>& triangle_accessor) {
+	t_triangle_accessor_ = triangle_accessor;
 
   // Generate references and compute root node bounding box.
   NodeSpec<T> root_spec(t_triangle_accessor_->count());

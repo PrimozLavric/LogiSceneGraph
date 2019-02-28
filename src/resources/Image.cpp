@@ -23,7 +23,12 @@ namespace lsg {
 
 Image::Image(const std::string& name, std::vector<std::byte> data, const Format format) 
   : Identifiable(name), format_(format), format_info_(kFormatTable.at(format)), data_(std::move(data)) {
-	throwIf<InitializationError>(data.size() % format_info_.size != 0, "Image data size is not multiple of format size.");
+	throwIf<InitializationError>(data_.size() % format_info_.size != 0, "Image data size is not multiple of format size.");
+}
+
+Image::Image(const std::string& name, const std::byte* data, const Format format, const size_t size)
+	: Identifiable(name), format_(format), format_info_(kFormatTable.at(format)), data_(data, data + size) {
+	throwIf<InitializationError>(data_.size() % format_info_.size != 0, "Image data size is not multiple of format size.");
 }
 
 Image::Image(const std::string& name, const Format format, const size_t pixel_count) 

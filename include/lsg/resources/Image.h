@@ -35,6 +35,8 @@ class Image : public Identifiable, public std::enable_shared_from_this<Image> {
 public:
 	Image(const std::string& name, std::vector<std::byte> data, Format format);
 
+	Image(const std::string& name, const std::byte* data, Format format, size_t size);
+
 	Image(const std::string& name, Format format, size_t pixel_count);
 
 	virtual size_t width() const = 0;
@@ -53,7 +55,7 @@ public:
 
 	void copyFrom(const std::byte* input_data);
 
-	virtual ~Image() = 0;
+	virtual ~Image() = default;
 
 private:
   Format format_;

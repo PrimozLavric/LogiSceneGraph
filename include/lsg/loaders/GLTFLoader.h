@@ -24,7 +24,8 @@
 #include "lsg/core/Object.h"
 #include "lsg/core/Scene.h"
 #include "lsg/resources/BufferAccessor.h"
-#include <glm/detail/type_vec3.hpp>
+#include "lsg/resources/Texture.h"
+#include "lsg/resources/Image2D.h"
 
 namespace lsg {
 
@@ -44,16 +45,17 @@ protected:
 protected:
 	static std::vector<Shared<Object>> loadObjects(const tinygltf::Model& model);
 
-	static TBufferAccessor<uint32_t> loadIndices(const tinygltf::Model& model, size_t accessor_index);
+	static BufferAccessor loadBuffer(const tinygltf::Model& model, size_t accessor_index);
 
-	static TBufferAccessor<glm::tvec3<float>> loadPosOrNormals(const tinygltf::Model& model, size_t accessor_index);
+	static Shared<Image2D> loadImage(const tinygltf::Model& model, size_t image_index);
 
-	static TBufferAccessor<glm::tvec4<float>> loadTangents(const tinygltf::Model& model, size_t accessor_index);
+	static std::pair<Filter, MipmapMode> parseFilterMode(int mode);
+    
+	static Wrapping parseWrapMode(int mode);
 
-	static TBufferAccessor<glm::tvec4<float>> loadColors(const tinygltf::Model& model, size_t accessor_index);
+	static Shared<Sampler> loadSampler(const tinygltf::Model& model, size_t sampler_index);
 
-	static TBufferAccessor<glm::tvec2<float>> loadUvs(const tinygltf::Model& model, size_t accessor_index);
-
+	static Shared<Texture> loadTexture(const tinygltf::Model& model, size_t texture_index);
 
 private:
 	tinygltf::TinyGLTF loader_;

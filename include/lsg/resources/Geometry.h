@@ -24,7 +24,7 @@
 #include "lsg/core/Shared.h"
 #include "lsg/resources/BufferAccessor.h"
 #include <optional>
-#include "glm/detail/type_vec3.hpp"
+#include <lsg/resources/Triangle.h>
 
 namespace lsg {
 
@@ -32,7 +32,7 @@ class Geometry : public Identifiable, public std::enable_shared_from_this<Geomet
 public:
   Geometry();
 
-  void setIndices(const TBufferAccessor<uint32_t>& indices);
+  void setIndices(const BufferAccessor& indices);
 
 	void setVertices(const TBufferAccessor<glm::tvec3<float>>& vertices);
 
@@ -40,21 +40,24 @@ public:
 
 	void setTangents(const TBufferAccessor<glm::tvec4<float>>& tangents);
 
-	void setColors(const TBufferAccessor<glm::tvec4<float>>& colors);
+	void setColors(const BufferAccessor& colors);
 
-	void setUv(size_t index, const TBufferAccessor<glm::tvec2<float>>& uv);
-
-	const BufferAccessor& getVertices() const;
-
-	const BufferAccessor& getNormals() const;
+	void setUv(size_t index, const BufferAccessor& uv);
 
 	const BufferAccessor& getIndices() const;
 
-	const BufferAccessor& getTangents() const;
+	const TBufferAccessor<glm::tvec3<float>>& getVertices() const;
+
+	const TBufferAccessor<glm::tvec3<float>>& getNormals() const;
+
+	const TBufferAccessor<glm::tvec4<float>>& getTangents() const;
 
 	const BufferAccessor& getColors() const;
 
 	const BufferAccessor& getUv(size_t index) const;
+
+	template <typename T>
+	Shared<TriangleAccessor<T>> getTriangleAccessor() const;
 
 	void clearVertices();
 
@@ -80,14 +83,100 @@ public:
 
 	bool hasUv(size_t index) const;
 
+protected:
+  template <typename IndexT, typename T>
+  class IndexedTriAccessor : public TriangleAccessor<T> {
+  public:
+    IndexedTriAccessor(TBufferAccessor<glm::tvec3<float>> vertices, TBufferAccessor<IndexT> indices)
+      : vertices_(std::move(vertices)),
+        indices_(std::move(indices)) {}
+
+	  size_t count() const override {
+		  return indices_.count() / 3;
+	  }
+
+    Triangle<T> operator[](size_t index) const override {
+	    return Triangle<T>([this, index] (const size_t vertex_idx) -> const glm::tvec3<T>& {
+			  return vertices_[indices_[index * 3u + vertex_idx]];
+		  });
+	  }
+
+  private:
+
+	  TBufferAccessor<glm::tvec3<float>> vertices_;
+	  TBufferAccessor<IndexT> indices_;
+  };
+
+  template <typename T>
+  class TriAccessor : public TriangleAccessor<T> {
+  public:
+    explicit TriAccessor(TBufferAccessor<glm::tvec3<float>> vertices)
+      : vertices_(std::move(vertices)) {}
+
+	  size_t count() const override {
+		  return vertices_.count() / 3;
+	  }
+
+	  Triangle<T> operator[](size_t index) const override {
+		  return Triangle<T>([this,  index](const size_t vertex_idx) {
+			  return vertices_[index * 3u + vertex_idx];
+		  });
+	  }
+
+  private:
+	  TBufferAccessor<glm::tvec3<float>> vertices_;
+  };
+
 private:
+  /**
+   * Indices. Must be unsigned short or unsigned int scalars.
+   */
 	std::optional<BufferAccessor> indices_;
+
+  /**
+   * Vertices.
+   */
 	std::optional<TBufferAccessor<glm::tvec3<float>>> vertices_;
-	std::optional<TBufferAccessor<glm::tvec3<float>>> normals_;
+	
+  /**
+   * Normals.
+   */
+  std::optional<TBufferAccessor<glm::tvec3<float>>> normals_;
+
+  /**
+   * Tangents.
+   */
 	std::optional<TBufferAccessor<glm::tvec4<float>>> tangents_;
-	std::optional<TBufferAccessor<glm::tvec4<float>>> colors_;
-	std::array<std::optional<TBufferAccessor<glm::tvec2<float>>>, 8u> uv_;
+
+  /**
+   * Vertex colors. Must have vec3 or vec4 structure and float or normalized component type. 
+   */
+	std::optional<BufferAccessor> colors_;
+
+  /**
+   * Uv coordinates. Must have components of float or normalized type.
+   */
+	std::array<std::optional<BufferAccessor>, 8u> uv_;
 };
+
+template <typename T>
+Shared<TriangleAccessor<T>> Geometry::getTriangleAccessor() const {
+	throwIf<IllegalInvocation>(!vertices_.has_value(), "Tried to create TriangleAccessor for geometry without vertices.");
+
+  if (indices_.has_value()) {
+    if (indices_.value().elementSize() == sizeof(uint16_t)) {
+		  return Shared<IndexedTriAccessor<uint16_t, T>>::create(vertices_.value(), TBufferAccessor<uint16_t>(indices_.value()));
+	  } 
+    
+    if (indices_.value().elementSize() == sizeof(uint32_t)) {
+		  return Shared<IndexedTriAccessor<uint32_t, T>>::create(vertices_.value(), TBufferAccessor<uint32_t>(indices_.value()));
+	  }
+
+		throw IllegalInvocation("Unknown index type.");
+  }
+
+  return Shared<TriAccessor<T>>::create(vertices_.value());
+}
 
 }
 

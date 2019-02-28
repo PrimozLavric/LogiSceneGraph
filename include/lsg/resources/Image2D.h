@@ -27,6 +27,8 @@ class Image2D : public Image, public std::enable_shared_from_this<Image2D> {
 public:
 	Image2D(const std::vector<std::byte>& data, Format format, size_t width, size_t height);
 
+	Image2D(const std::byte* data, Format format, size_t width, size_t height);
+
 	Image2D(Format format, size_t width, size_t height);
 
 	size_t width() const override;

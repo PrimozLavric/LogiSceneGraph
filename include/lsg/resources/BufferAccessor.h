@@ -77,6 +77,16 @@ public:
 	                        ComponentType component_type, size_t offset = 0u);
 
   /**
+   * @brief Creates BufferAccessor directly from the buffer. Buffer view with stride = StructureType * ComponentType is created in the process.
+   * 
+   * @param	buffer          Referenced buffer.
+   * @param	structure_type  Buffer entry structure type.
+   * @param	component_type  Buffer entry component type.
+   * @param	buffer_offset   Offset from the beginning of the buffer. Note: this is not an entry offset.
+   */
+  explicit BufferAccessor(Shared<Buffer> buffer, StructureType structure_type, ComponentType component_type, size_t buffer_offset = 0u);
+
+  /**
    * @brief	  Retrieve underlying buffer view.
    * 
    * @return	Underlying buffer view.
@@ -183,7 +193,7 @@ public:
 	 * @param	  index Element index.
 	 * @return	Element on the given index.
 	 */
-	const T& operator[](size_t index);
+	const T& operator[](size_t index) const;
 };
 
 template <typename T>
@@ -207,11 +217,10 @@ TBufferAccessor<T>::TBufferAccessor(BufferAccessor&& other) : BufferAccessor(std
 }
 
 template <typename T>
-const T& TBufferAccessor<T>::operator[](const size_t index) {
+const T& TBufferAccessor<T>::operator[](const size_t index) const {
 	throwIf<OutOfRange>(index >= count(),
 		"Tried to access element that is out of range.");
-
-	return *reinterpret_cast<const T*>(bufferView().data() + bufferView().stride() * index + byteOffset());
+	return reinterpret_cast<const T&>(bufferView().data()[bufferView().stride() * index + byteOffset()]);
 }
 
 

@@ -21,13 +21,46 @@
 
 #include "lsg/core/Identifiable.h"
 #include "lsg/core/VersionTracker.h"
+#include "lsg/core/Shared.h"
+#include "lsg/resources/Texture.h"
 
 namespace lsg {
 
+static constexpr uint32_t k_uv_index_unspecified = std::numeric_limits<uint32_t>::max();
+
+/**
+ * @brief Base class for all materials.
+ */
 class Material : public Identifiable, public VersionTracker {
 public:
-  explicit Material(const std::string& name);
+  /**
+   * Uses the same constructor as identifiable.
+   */
+	using Identifiable::Identifiable;
+};
 
+/**
+ * @brief Combines texture and UV coordinates index.
+ */
+struct TextureUV {
+
+	/**
+	 * @brief Initialize members.
+	 *
+	 * @param	texture   Texture.
+	 * @param	uv_index  Uv coordinates index.
+	 */
+	explicit TextureUV(Shared<Texture> texture = {}, uint32_t uv_index = k_uv_index_unspecified);
+
+  /**
+   * Texture.
+   */
+	Shared<Texture> texture;
+  
+  /**
+   * Index of UV coordinates (references geometry).
+   */
+	uint32_t uv_index;
 };
 
 }

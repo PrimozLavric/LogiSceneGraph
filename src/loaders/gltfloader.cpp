@@ -23,7 +23,7 @@
 #include "lsg/resources/Buffer.h"
 #include "lsg/components/Transform.h"
 #include "lsg/components/Mesh.h"
-#include "lsg/materials/MetalicRoughnessMaterial.h"
+#include "lsg/materials/MetallicRoughnessMaterial.h"
 
 namespace lsg {
 
@@ -124,67 +124,97 @@ std::vector<Shared<Object>> GLTFLoader::loadObjects(const tinygltf::Model& model
          */
 		    Shared<Geometry> geometry = Shared<Geometry>::create();
 
+        if (primitives.indices > 0) {
+		  	  geometry->setIndices(loadBuffer(model, primitives.indices));
+        }
+        
 			  auto it = primitives.attributes.find("POSITION");
         if (it != primitives.attributes.end()) {
-			    geometry->setVertices(loadPosOrNormals(model, it->second));
+			    geometry->setVertices(TBufferAccessor<glm::tvec3<float>>(loadBuffer(model, it->second)));
         }
 
 		    it = primitives.attributes.find("NORMAL");
 			  if (it != primitives.attributes.end()) {
-				  geometry->setNormals(loadPosOrNormals(model, it->second));
+				  geometry->setNormals(TBufferAccessor<glm::tvec3<float>>(loadBuffer(model, it->second)));
 			  }
 
 			  it = primitives.attributes.find("TANGENT");
 			  if (it != primitives.attributes.end()) {
-				  geometry->setTangents(loadTangents(model, it->second));
+				  geometry->setTangents(TBufferAccessor<glm::tvec4<float>>(loadBuffer(model, it->second)));
 			  }
 
 			  it = primitives.attributes.find("TEXCOORD_0");
 			  if (it != primitives.attributes.end()) {
-				  geometry->setUv(0, loadUvs(model, it->second));
+				  geometry->setUv(0, loadBuffer(model, it->second));
 			  }
 
 			  it = primitives.attributes.find("TEXCOORD_1");
 			  if (it != primitives.attributes.end()) {
-				  geometry->setUv(1, loadUvs(model, it->second));
+				  geometry->setUv(1, loadBuffer(model, it->second));
 			  }
 
 			  it = primitives.attributes.find("COLOR_0");
 			  if (it != primitives.attributes.end()) {
-				  geometry->setColors(loadColors(model, it->second));
+				  geometry->setColors(loadBuffer(model, it->second));
 			  }
 
 			  /**
 	       * MATERIAL
 	       */
-			  Shared<MetalicRoughnessMaterial> lsg_material = Shared<MetalicRoughnessMaterial>::create();
+			  Shared<MetallicRoughnessMaterial> lsg_material = Shared<MetallicRoughnessMaterial>::create();
 
+        // Check if the material is specified.
         if (primitives.material != -1) {
-			    tinygltf::Material material = model.materials[primitives.material];
+			    tinygltf::Material gltf_material = model.materials[primitives.material];
 
-          /**
-           * Look for base color
-           */
-				  auto it = material.values.find("baseColorFactor");
-          if (it == material.values.end()) {
+				  lsg_material->setName(gltf_material.name);
+
+				  if (auto it = gltf_material.values.find("baseColorFactor"); it != gltf_material.values.end()) {
 			      lsg_material->setBaseColor(glm::make_vec4(it->second.ColorFactor().data()));
+          } else {
+					  lsg_material->setBaseColor(glm::vec4(1.0f));
           }
 
-		      it = material.values.find("baseColorTexture");
+				  if (auto it = gltf_material.values.find("baseColorTexture"); it != gltf_material.values.end()) {
+					  Shared<Texture> tex = loadTexture(model, it->second.TextureIndex());
+					  lsg_material->setBaseColorTex(TextureUV(tex, (it->second.has_number_value) ? static_cast<uint32_t>(it->second.number_value) : 0u));
+				  }
 
-
-		      it = material.values.find("metalicFactor");
-		      if (it == material.values.end()) {
-			      lsg_material->setMetalicFactor(it->second.Factor());
+		      if (auto it = gltf_material.values.find("metalicFactor"); it != gltf_material.values.end()) {
+			      lsg_material->setMetalicFactor(static_cast<float>(it->second.Factor()));
+		      } else {
+				    lsg_material->setMetalicFactor(1.0f);
 		      }
 
-			    it = material.values.find("roughnessFactor");
-			    if (it == material.values.end()) {
-				    lsg_material->setRoughnessFactor(it->second.Factor());
+			    if (auto it = gltf_material.values.find("roughnessFactor"); it != gltf_material.values.end()) {
+				    lsg_material->setRoughnessFactor(static_cast<float>(it->second.Factor()));
+			    } else {
+					  lsg_material->setRoughnessFactor(1.0f);
 			    }
 
+				  if (auto it = gltf_material.values.find("metallicRoughnessTexture"); it != gltf_material.values.end()) {
+					  Shared<Texture> tex = loadTexture(model, it->second.TextureIndex());
+					  lsg_material->setMetalicRoughnessTex(TextureUV(tex, (it->second.has_number_value) ? static_cast<uint32_t>(it->second.number_value) : 0u));
+				  }
 
-        
+          /**
+           * Additional values.
+           */
+				  if (auto it = gltf_material.additionalValues.find("normalTexture"); it != gltf_material.additionalValues.end()) {
+					  Shared<Texture> tex = loadTexture(model, it->second.TextureIndex());
+					  lsg_material->setNormalTex(TextureUV(tex, (it->second.has_number_value) ? static_cast<uint32_t>(it->second.number_value) : 0u));
+				  }
+
+				  if (auto it = gltf_material.additionalValues.find("emissiveFactor"); it != gltf_material.additionalValues.end()) {
+					  lsg_material->setEmissiveFactor(static_cast<float>(it->second.Factor()));
+				  } else {
+					  lsg_material->setEmissiveFactor(0.0f);
+				  }
+
+				  if (auto it = gltf_material.additionalValues.find("emissiveTexture"); it != gltf_material.additionalValues.end()) {
+					  Shared<Texture> tex = loadTexture(model, it->second.TextureIndex());
+					  lsg_material->setEmissiveTex(TextureUV(tex, (it->second.has_number_value) ? static_cast<uint32_t>(it->second.number_value) : 0u));
+				  }
         }
 
 			  mesh->addSubMesh(Shared<SubMesh>::create(geometry, lsg_material));
@@ -200,6 +230,108 @@ std::vector<Shared<Object>> GLTFLoader::loadObjects(const tinygltf::Model& model
 	}
 
 	return objects;
+}
+
+BufferAccessor GLTFLoader::loadBuffer(const tinygltf::Model& model, size_t accessor_index) {
+	tinygltf::Accessor accessor = model.accessors[accessor_index];
+	tinygltf::BufferView view = model.bufferViews[accessor.bufferView];
+	tinygltf::Buffer buffer = model.buffers[view.buffer];
+
+	ComponentType component_type = parseType(accessor.componentType);
+	StructureType structure_type = parseStructure(accessor.type);
+
+  // I byte stride is not specified i.e. is 0 then set the stride to entry size.
+	size_t stride = (view.byteStride == 0) ? sizeOf(component_type) * sizeOf(structure_type) : view.byteStride;
+
+	// Un-interleave the buffer.
+	size_t entry_size = sizeOf(structure_type) * sizeOf(component_type);
+	std::vector<std::byte> buffer_data(accessor.count * entry_size);
+  for (size_t i = 0; i < accessor.count; i++) {
+	  std::byte* gltf_entry = reinterpret_cast<std::byte*>(buffer.data.data()) + view.byteOffset + i * stride + accessor.byteOffset;
+	  std::byte* logi_entry = buffer_data.data() + i * entry_size;
+	  std::memcpy(logi_entry, gltf_entry, entry_size);
+  }
+
+	return BufferAccessor(Shared<Buffer>::create(buffer.name, buffer_data), structure_type, component_type);
+}
+
+Shared<Image2D> GLTFLoader::loadImage(const tinygltf::Model& model, size_t image_index) {
+	tinygltf::Image gltf_img = model.images[image_index];
+	StructureType structure_type = parseStructure(gltf_img.component);
+
+  // Determine image format.
+	Format img_format;
+	switch (structure_type) {
+	  case lsg::StructureType::kScalar:
+		  img_format = Format::eR8Unorm;
+		  break;
+	  case lsg::StructureType::kVec2:
+		  img_format = Format::eR8G8Unorm;
+		  break;
+	  case lsg::StructureType::kVec3:
+		  img_format = Format::eR8G8B8Unorm;
+		  break;
+	  case lsg::StructureType::kVec4:
+		  img_format = Format::eR8G8B8A8Unorm;
+		  break;
+	  default:
+		  throw LoaderError("Failed to load image: " + gltf_img.name + ".");
+		  break;
+	}
+
+  // TODO: Include name.
+	return Shared<Image2D>::create(reinterpret_cast<std::byte*>(gltf_img.image.data()), img_format, gltf_img.width, gltf_img.height);
+}
+
+
+std::pair<Filter, MipmapMode> GLTFLoader::parseFilterMode(int mode) {
+	switch (mode) {
+	  case TINYGLTF_TEXTURE_FILTER_NEAREST:
+		  case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST:
+		  return { Filter::eNearest, MipmapMode::eNearest };
+    case TINYGLTF_TEXTURE_FILTER_LINEAR:
+	  case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST:
+	    return { Filter::eLinear, MipmapMode::eNearest };
+    case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR:
+	    return { Filter::eNearest, MipmapMode::eLinear };
+    case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR: 
+		  return { Filter::eLinear, MipmapMode::eLinear };;
+	  default:
+		  throw LoaderError("Encountered unknown filter mode.");
+	}
+}
+
+Wrapping GLTFLoader::parseWrapMode(int mode) {
+	switch (mode) {
+	  case TINYGLTF_TEXTURE_WRAP_REPEAT:
+		  return Wrapping::eRepeat;
+	  case TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE:
+		  return Wrapping::eClampToEdge;
+	  case TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT:
+		  return Wrapping::eMirroredRepeat;
+	  default:
+		  throw LoaderError("Encountered unknown wrap mode.");
+	}
+}
+
+
+Shared<Sampler> GLTFLoader::loadSampler(const tinygltf::Model& model, size_t sampler_index) {
+	tinygltf::Sampler gltf_sampler = model.samplers[sampler_index];
+	auto[min_filter, mipmap_mode] = parseFilterMode(gltf_sampler.minFilter);
+	Filter mag_filter = parseFilterMode(gltf_sampler.magFilter).first;
+	Wrapping wrap_u = parseWrapMode(gltf_sampler.wrapS);
+	Wrapping wrap_v = parseWrapMode(gltf_sampler.wrapT);
+	Wrapping wrap_w = parseWrapMode(gltf_sampler.wrapR);
+
+	return Shared<Sampler>::create(mag_filter, min_filter, wrap_u, wrap_v, wrap_w, mipmap_mode);
+}
+
+Shared<Texture> GLTFLoader::loadTexture(const tinygltf::Model& model, size_t texture_index) {
+	tinygltf::Texture gltf_tex = model.textures[texture_index];
+	Shared<Image2D> image = loadImage(model, gltf_tex.source);
+	Shared<Sampler> sampler = (gltf_tex.sampler < 0) ? Shared<Sampler>::create() : loadSampler(model, gltf_tex.sampler);
+
+	return Shared<Texture>::create(image, sampler);
 }
 
 
@@ -226,140 +358,5 @@ tinygltf::Model GLTFLoader::loadModelASCII(const std::string& filename) {
 
 	return model;
 }
-
-
-TBufferAccessor<uint32_t> GLTFLoader::loadIndices(const tinygltf::Model& model, size_t accessor_index) {
-	tinygltf::Accessor accessor = model.accessors[accessor_index];
-	tinygltf::BufferView view = model.bufferViews[accessor.bufferView];
-	tinygltf::Buffer buffer = model.buffers[view.buffer];
-
-  ComponentType component_type = parseType(accessor.componentType);
-	StructureType structure_type = parseStructure(accessor.type);
-	
-  throwIf<LoaderError>(structure_type != StructureType::kScalar, "Invalid index structure type.");
-
-  // Uninterleave buffer and convert to uint32_t type.
-	std::vector<uint32_t> data(accessor.count);
-
-  if (component_type == ComponentType::kShort) {
-	  // If uint16_t perform conversion to uint32
-    for (size_t i = 0u; i < accessor.count; i++) {
-		  data[i] = *reinterpret_cast<uint16_t*>(buffer.data.data() + (view.byteOffset + i * view.byteStride + accessor.byteOffset));
-    }
-
-  } else if (component_type == ComponentType::kUnsignedInt) {
-	  for (size_t i = 0u; i < accessor.count; i++) {
-		  data[i] = *reinterpret_cast<uint32_t*>(buffer.data.data() + (view.byteOffset + i * view.byteStride + accessor.byteOffset));
-	  }
-  } else {
-	  throw LoaderError("Invalid component type.");
-  }
-  
-  return TBufferAccessor<uint32_t>(BufferView(Shared<Buffer>::create(buffer.name, data), sizeof(uint32_t)), structure_type, component_type);
-}
-
-TBufferAccessor<glm::tvec3<float>> GLTFLoader::loadPosOrNormals(const tinygltf::Model& model, size_t accessor_index) {
-	tinygltf::Accessor accessor = model.accessors[accessor_index];
-	tinygltf::BufferView view = model.bufferViews[accessor.bufferView];
-	tinygltf::Buffer buffer = model.buffers[view.buffer];
-
-	ComponentType component_type = parseType(accessor.componentType);
-	StructureType structure_type = parseStructure(accessor.type);
-
-	throwIf<LoaderError>(structure_type != StructureType::kVec3, "Invalid uvs structure type.");
-
-	// Uninterleave buffer and convert to vec3<float> type.
-	std::vector<glm::tvec3<float>> data(accessor.count);
-
-	if (component_type == ComponentType::kFloat) {
-		for (size_t i = 0u; i < accessor.count; i++) {
-			data[i] = *reinterpret_cast<glm::tvec3<float>*>(buffer.data.data() + (view.byteOffset + i * view.byteStride + accessor.byteOffset));
-		}
-	}
-	else {
-		throw LoaderError("Invalid component type.");
-	}
-
-	return TBufferAccessor<glm::tvec3<float>>(BufferView(Shared<Buffer>::create(buffer.name, data), sizeof(glm::tvec3<float>)), structure_type, component_type);
-}
-
-TBufferAccessor<glm::tvec4<float>> GLTFLoader::loadTangents(const tinygltf::Model& model, size_t accessor_index) {
-	tinygltf::Accessor accessor = model.accessors[accessor_index];
-	tinygltf::BufferView view = model.bufferViews[accessor.bufferView];
-	tinygltf::Buffer buffer = model.buffers[view.buffer];
-
-	ComponentType component_type = parseType(accessor.componentType);
-	StructureType structure_type = parseStructure(accessor.type);
-
-	throwIf<LoaderError>(structure_type != StructureType::kVec4, "Invalid uvs structure type.");
-
-	// Uninterleave buffer and convert to vec4<float> type.
-	std::vector<glm::tvec4<float>> data(accessor.count);
-
-	if (component_type == ComponentType::kFloat) {
-		for (size_t i = 0u; i < accessor.count; i++) {
-			data[i] = *reinterpret_cast<glm::tvec4<float>*>(buffer.data.data() + (view.byteOffset + i * view.byteStride + accessor.byteOffset));
-		}
-	}
-	else {
-		throw LoaderError("Invalid component type.");
-	}
-
-	return TBufferAccessor<glm::tvec4<float>>(BufferView(Shared<Buffer>::create(buffer.name, data), sizeof(glm::tvec4<float>)), structure_type, component_type);
-}
-
-TBufferAccessor<glm::tvec4<float>> GLTFLoader::loadColors(const tinygltf::Model& model, size_t accessor_index) {
-	tinygltf::Accessor accessor = model.accessors[accessor_index];
-	tinygltf::BufferView view = model.bufferViews[accessor.bufferView];
-	tinygltf::Buffer buffer = model.buffers[view.buffer];
-
-	ComponentType component_type = parseType(accessor.componentType);
-	StructureType structure_type = parseStructure(accessor.type);
-
-	// Un-interleave buffer and convert to vec4<float> type.
-	std::vector<glm::tvec4<float>> data(accessor.count);
-
-	if (component_type == ComponentType::kFloat) {
-		if (structure_type == StructureType::kVec3) {
-			for (size_t i = 0u; i < accessor.count; i++) {
-				data[i] = *reinterpret_cast<glm::tvec4<float>*>(buffer.data.data() + (view.byteOffset + i * view.byteStride + accessor.byteOffset));
-			}
-		} else if (structure_type == StructureType::kVec4) {
-			for (size_t i = 0u; i < accessor.count; i++) {
-				data[i] = glm::tvec4<float>(*reinterpret_cast<glm::tvec3<float>*>(buffer.data.data() + (view.byteOffset + i * view.byteStride + accessor.byteOffset)), 1.0f);
-			}
-		}
-	}
-	else {
-		throw LoaderError("Invalid component type.");
-	}
-
-	return TBufferAccessor<glm::tvec4<float>>(BufferView(Shared<Buffer>::create(buffer.name, data), sizeof(glm::tvec4<float>)), structure_type, component_type);
-}
-
-TBufferAccessor<glm::tvec2<float>> GLTFLoader::loadUvs(const tinygltf::Model& model, size_t accessor_index) {
-	tinygltf::Accessor accessor = model.accessors[accessor_index];
-	tinygltf::BufferView view = model.bufferViews[accessor.bufferView];
-	tinygltf::Buffer buffer = model.buffers[view.buffer];
-
-	ComponentType component_type = parseType(accessor.componentType);
-	StructureType structure_type = parseStructure(accessor.type);
-
-	throwIf<LoaderError>(structure_type != StructureType::kVec2, "Invalid uvs structure type.");
-
-	// Uninterleave buffer and convert to vec2<float> type.
-	std::vector<glm::tvec2<float>> data(accessor.count);
-
-	if (component_type == ComponentType::kFloat) {
-		for (size_t i = 0u; i < accessor.count; i++) {
-			data[i] = *reinterpret_cast<glm::tvec2<float>*>(buffer.data.data() + (view.byteOffset + i * view.byteStride + accessor.byteOffset));
-		}
-	} else {
-		throw LoaderError("Invalid component type.");
-	}
-
-	return TBufferAccessor<glm::tvec2<float>>(BufferView(Shared<Buffer>::create(buffer.name, data), sizeof(glm::tvec2<float>)), structure_type, component_type);
-}
-
 
 }

@@ -26,6 +26,11 @@ Image2D::Image2D(const std::vector<std::byte>& data, const Format format, const 
 	throwIf<InitializationError>(data.size() / getFormatInfo().size != width * height, "Width * height is not equal to pixel count.");
 }
 
+Image2D::Image2D(const std::byte* data, Format format, size_t width, size_t height)
+  : Image("Image2D", data, format, width * height * kFormatTable.at(format).size), width_(width), height_(height) {
+  
+}
+
 Image2D::Image2D(const Format format, const size_t width, const size_t height)
   : Image("Image2D", format, width * height), width_(width), height_(height) {}
 

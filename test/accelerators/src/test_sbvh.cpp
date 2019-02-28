@@ -5,7 +5,7 @@
 
 using namespace lsg;
 
-class TriangleAccessorImpl : public bvh::TriangleAccessor<float> {
+class TriangleAccessorImpl : public TriangleAccessor<float> {
 public:
   TriangleAccessorImpl(std::vector<glm::vec3> vertices, std::vector<glm::uvec3> indices)
     : vertices_(std::move(vertices)),
@@ -15,9 +15,10 @@ public:
     return indices_.size();
   }
 
-  bvh::Triangle<float> operator[](size_t index) const override {
-    return bvh::Triangle<float>(vertices_[indices_[index].x], vertices_[indices_[index].y],
-                                vertices_[indices_[index].z]);
+  Triangle<float> operator[](size_t index) const override {
+	  return Triangle<float>([this, index](size_t vertex_index) {
+		  return vertices_[indices_[index][vertex_index]];
+		});
   }
 
 private:
@@ -39,7 +40,7 @@ TEST(SBVH, Basic) {
     {2, 3, 0}, {3, 0, 1}
   };
 
-  TriangleAccessorImpl accessor(vertices, indices);
+  Shared<TriangleAccessorImpl> accessor = Shared<TriangleAccessorImpl>::create(vertices, indices);
   bvh::SplitBVHBuilder<float> builder;
   Shared<BVH<float>> bvh = builder.process(accessor);
 
