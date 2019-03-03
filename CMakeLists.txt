@@ -17,7 +17,7 @@ option(BUILD_EXAMPLES "Build examples" ON)
 ############################################## 
 
 # Libraries path
-add_subdirectory(${PROJECT_SOURCE_DIR}/libs)
+include(ExternalDependencies.cmake)
 
 file(GLOB_RECURSE SRC_LIST "src/*.cpp")
 
