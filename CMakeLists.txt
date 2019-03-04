@@ -28,7 +28,7 @@ target_include_directories(logi_scene_graph PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(logi_scene_graph glm vulkan tinygltf)
+target_link_libraries(logi_scene_graph GLM::glm Vulkan::Vulkan tinygltf)
 
 ##########################################################
 ####################### DOXYGEN ##########################
