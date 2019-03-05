@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION 3.6)
+
 # GLM
 if (NOT TARGET GLM::glm)
 	if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm")
