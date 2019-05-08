@@ -17,37 +17,41 @@
  */
 
 #include "lsg/resources/Image.h"
+#include <cstring>
 #include "lsg/core/Exceptions.h"
 
 namespace lsg {
 
-Image::Image(const std::string& name, std::vector<std::byte> data, const Format format) 
+Image::Image(const std::string& name, std::vector<std::byte> data, const Format format)
   : Identifiable(name), format_(format), format_info_(kFormatTable.at(format)), data_(std::move(data)) {
-	throwIf<InitializationError>(data_.size() % format_info_.size != 0, "Image data size is not multiple of format size.");
+  throwIf<InitializationError>(data_.size() % format_info_.size != 0,
+                               "Image data size is not multiple of format size.");
 }
 
 Image::Image(const std::string& name, const std::byte* data, const Format format, const size_t size)
-	: Identifiable(name), format_(format), format_info_(kFormatTable.at(format)), data_(data, data + size) {
-	throwIf<InitializationError>(data_.size() % format_info_.size != 0, "Image data size is not multiple of format size.");
+  : Identifiable(name), format_(format), format_info_(kFormatTable.at(format)), data_(data, data + size) {
+  throwIf<InitializationError>(data_.size() % format_info_.size != 0,
+                               "Image data size is not multiple of format size.");
 }
 
-Image::Image(const std::string& name, const Format format, const size_t pixel_count) 
-  : Identifiable(name), format_(format), format_info_(kFormatTable.at(format)), data_(pixel_count * format_info_.size, std::byte(0)) {}
+Image::Image(const std::string& name, const Format format, const size_t pixel_count)
+  : Identifiable(name), format_(format), format_info_(kFormatTable.at(format)),
+    data_(pixel_count * format_info_.size, std::byte(0)) {}
 
 Format Image::getFormat() const {
-	return format_;
+  return format_;
 }
 
 FormatInfo Image::getFormatInfo() const {
-	return format_info_;
+  return format_info_;
 }
 
 const std::byte* Image::rawPixelData() const {
-	return data_.data();
+  return data_.data();
 }
 
 void Image::copyFrom(const std::byte* input_data) {
-	std::memcpy(data_.data(), input_data, data_.size());
+  std::memcpy(data_.data(), input_data, data_.size());
 }
 
-}
+} // namespace lsg

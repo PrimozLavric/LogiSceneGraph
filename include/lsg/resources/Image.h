@@ -19,50 +19,48 @@
 #ifndef LSG_RESOURCES_IMAGE_H
 #define LSG_RESOURCES_IMAGE_H
 
-#include <vector>
 #include "lsg/core/Identifiable.h"
 #include "lsg/resources/Format.h"
+#include <cstddef>
+#include <memory>
+#include <vector>
 
 namespace lsg {
 
-enum class ImageType {
-  e1D,
-  e2D,
-  e3D
-};
+enum class ImageType { e1D, e2D, e3D };
 
 class Image : public Identifiable, public std::enable_shared_from_this<Image> {
-public:
-	Image(const std::string& name, std::vector<std::byte> data, Format format);
+ public:
+  Image(const std::string& name, std::vector<std::byte> data, Format format);
 
-	Image(const std::string& name, const std::byte* data, Format format, size_t size);
+  Image(const std::string& name, const std::byte* data, Format format, size_t size);
 
-	Image(const std::string& name, Format format, size_t pixel_count);
+  Image(const std::string& name, Format format, size_t pixel_count);
 
-	virtual size_t width() const = 0;
+  virtual size_t width() const = 0;
 
-	virtual size_t height() const = 0;
+  virtual size_t height() const = 0;
 
-	virtual size_t depth() const = 0;
+  virtual size_t depth() const = 0;
 
-	virtual ImageType getType() const = 0;
+  virtual ImageType getType() const = 0;
 
-	Format getFormat() const;
+  Format getFormat() const;
 
-	FormatInfo getFormatInfo() const;
+  FormatInfo getFormatInfo() const;
 
-	const std::byte* rawPixelData() const;
+  const std::byte* rawPixelData() const;
 
-	void copyFrom(const std::byte* input_data);
+  void copyFrom(const std::byte* input_data);
 
-	virtual ~Image() = default;
+  virtual ~Image() = default;
 
-private:
+ private:
   Format format_;
-	FormatInfo format_info_;
-	std::vector<std::byte> data_;
+  FormatInfo format_info_;
+  std::vector<std::byte> data_;
 };
 
-}
+} // namespace lsg
 
 #endif

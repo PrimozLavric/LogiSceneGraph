@@ -19,21 +19,21 @@
 #ifndef LSG_CORE_OBJECT_H
 #define LSG_CORE_OBJECT_H
 
+#include <functional>
+#include <list>
+#include <map>
 #include <string>
 #include <string_view>
-#include <map>
 #include <unordered_map>
-#include <functional>
 
-#include "lsg/core/Identifiable.h"
 #include "lsg/core/Component.h"
+#include "lsg/core/Identifiable.h"
 #include "lsg/core/Shared.h"
 
 namespace lsg {
 
 class Object : public Identifiable, public std::enable_shared_from_this<Object> {
-public:
-
+ public:
   explicit Object(std::string name, bool active = true);
 
   /**
@@ -42,11 +42,11 @@ public:
    * @param	value	Activate - true, Deactivate - false.
    */
   void setActive(bool value);
-  
+
   /**
    * @brief   Search for object with the given name.
    *
-   * @tparam  T     Object type. 
+   * @tparam  T     Object type.
    * @param   name  Name of the searched object.
    * @return  Reference to the searched object or null ref if not found.
    */
@@ -76,22 +76,22 @@ public:
 
   /**
    * @brief Sets on parent change callback for the given object.
-   * 
-   * @param object    Object to which the callback is bound. 
+   *
+   * @param object    Object to which the callback is bound.
    * @param	callback  Callback.
    */
   void setOnParentChangeCallback(const Ref<Identifiable>& object, const std::function<void(Ref<Object>)>& callback);
 
   /**
    * @brief Removes on parent change callback registered under the given object.
-   * 
-   * @param	object  Object to which the callback is bound. 
+   *
+   * @param	object  Object to which the callback is bound.
    */
   void removeOnParentChangeCallback(const Ref<Identifiable>& object);
 
   /**
    * @brief   Retrieves reference to the parent. If the object has no parent null reference is returned.
-   * 
+   *
    * @tparam	T Parent type.
    * @return	Reference to the parent or null reference.
    */
@@ -178,61 +178,60 @@ public:
    */
   virtual ~Object() = default;
 
-protected:
-
+ protected:
   /**
    * @brief Implementation of detach function.
    */
-	void detachInternal();
+  void detachInternal();
 
   /**
    * @brief Invoke on parent change callbacks.
    */
-	void notifyParentChange();
+  void notifyParentChange();
 
-private:
+ private:
   /**
    * Active flag.
    */
-	bool active_;
+  bool active_;
 
   /**
    * Weak reference to the parent.
    */
-	Ref<Object> parent_;
+  Ref<Object> parent_;
 
   /**
    * Holds child objects mapped by their name.
    */
-	std::unordered_multimap<std::string_view, Shared<Object>> children_;
+  std::unordered_multimap<std::string_view, Shared<Object>> children_;
 
   /**
    * Holds components of the object.
    */
-	std::list<Shared<Component>> components_;
+  std::list<Shared<Component>> components_;
 
   /**
    * Callbacks that are invoked once the object parent changes.
    */
-	std::unordered_map<size_t, std::function<void(Ref<Object>)>> on_parent_change_callbacks_;
+  std::unordered_map<size_t, std::function<void(Ref<Object>)>> on_parent_change_callbacks_;
 };
 
 template <typename T>
 Ref<T> Object::getParent() const {
-	if constexpr (std::is_same<Object, T>()) {
-		return parent_;
-	} else {
-		return parent_.dynamicCast<T>();
-	}
+  if constexpr (std::is_same<Object, T>()) {
+    return parent_;
+  } else {
+    return parent_.dynamicCast<T>();
+  }
 }
 
 template <typename T>
 Ref<T> Object::getChild(const std::string_view name) const {
   const auto range = children_.equal_range(name);
   for (auto it = range.first; it != range.second; ++it) {
-	  Ref<T> ref = it->second;
+    Ref<T> ref = it->second;
     if (ref) {
-		  return ref;
+      return ref;
     }
   }
 
@@ -241,38 +240,38 @@ Ref<T> Object::getChild(const std::string_view name) const {
 
 template <typename T>
 Ref<T> Object::find(const std::string_view name) const {
-	// Check if this object matches the search.
-	if (this->name() == name) {
-		Ref<T> obj(dynamic_cast<T*>(const_cast<Object*>(this)));
-	  if (obj) {
-		  return obj;
-	  }
-	}
+  // Check if this object matches the search.
+  if (this->name() == name) {
+    Ref<T> obj(dynamic_cast<T*>(const_cast<Object*>(this)));
+    if (obj) {
+      return obj;
+    }
+  }
 
-	// Search in child objects.
-	Ref<T> search_res;
-	for (auto& child : children_) {
-		search_res = child.second->find<T>(name);
-		if (search_res) {
-			break;
-		}
-	}
+  // Search in child objects.
+  Ref<T> search_res;
+  for (auto& child : children_) {
+    search_res = child.second->find<T>(name);
+    if (search_res) {
+      break;
+    }
+  }
 
-	return search_res;
+  return search_res;
 }
 
-template <typename T, typename ... Args>
+template <typename T, typename... Args>
 Ref<T> Object::addComponent(Args... args) {
-	components_.emplace_back(Shared<T>::create(Ref<Object>(this), args...));
-	return components_.back();
+  components_.emplace_back(Shared<T>::create(Ref<Object>(this), args...));
+  return components_.back();
 }
 
 template <typename T>
 Ref<T> Object::getComponent() const {
   for (auto& component : components_) {
-	  Shared<T> casted = component.dynamicCast<T>();
+    Shared<T> casted = component.dynamicCast<T>();
     if (casted) {
-		  return casted;
+      return casted;
     }
   }
 
@@ -281,17 +280,17 @@ Ref<T> Object::getComponent() const {
 
 template <typename T>
 const std::vector<Ref<T>>& Object::getComponents() const {
-	std::vector<Ref<T>> matches;
-	for (auto& component : components_) {
-		Shared<T> casted = component.dynamicCast<T>();
-		if (casted) {
-			matches.emplace_back(casted);
-		}
-	}
+  std::vector<Ref<T>> matches;
+  for (auto& component : components_) {
+    Shared<T> casted = component.dynamicCast<T>();
+    if (casted) {
+      matches.emplace_back(casted);
+    }
+  }
 
-	return matches;
+  return matches;
 }
 
-}
+} // namespace lsg
 
-#endif  // LSG_CORE_OBJECT_H
+#endif // LSG_CORE_OBJECT_H

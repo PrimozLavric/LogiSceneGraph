@@ -19,32 +19,34 @@
 #ifndef LSG_CORE_VERSION_TRACKER_H
 #define LSG_CORE_VERSION_TRACKER_H
 
+#include <cstddef>
+
 namespace lsg {
 
 /**
  * @brief Tracks object version.
  */
 class VersionTracker {
-public:
+ public:
   /**
-	 * @brief Initializes version to 0.
-	 */
-	VersionTracker();
+   * @brief Initializes version to 0.
+   */
+  VersionTracker();
 
   /**
    * @brief Increment version by 1.
    */
-	void incrementVersion();
+  void incrementVersion();
 
   /**
    * @brief Retrieve object version.
    */
-	size_t version() const;
+  size_t version() const;
 
-private:
-	size_t version_;
+ private:
+  size_t version_;
 };
 
-}
+} // namespace lsg
 
 #endif // LSG_CORE_VERSION_TRACKER_H

@@ -1,17 +1,34 @@
 #include <gtest/gtest.h>
-#include "lsg/loaders/GLTFLoader.h"
-#include "lsg/core/Identifiable.h"
-#include "lsg/components/Mesh.h"
-#include "lsg/accelerators/BVH/SplitBVHBuilder.h"
 #include "glm/glm.hpp"
+#include "lsg/accelerators/BVH/SplitBVHBuilder.h"
+#include "lsg/components/Mesh.h"
+#include "lsg/core/Identifiable.h"
+#include "lsg/loaders/GLTFLoader.h"
 
 using namespace lsg;
 
 TEST(GLTFLoader, Basic) {
-	GLTFLoader loader;
-	std::vector<Shared<Scene>> scenes = loader.load("../testdata/sponza/Sponza.gltf");
-	/*auto accessor = scenes[0]->rootObjects()[0]->getChild("LanternPole_Lantern")->getComponent<Mesh>()->subMeshes()[0]->geometry()->getTriangleAccessor<float>();
+  GLTFLoader loader;
+  std::vector<Shared<Scene>> scenes = loader.load("./testdata/lantern/Lantern.gltf");
 
-	bvh::SplitBVHBuilder<float> builder;
-	Shared<BVH<float>> bvh = builder.process(accessor);*/
+  for (const auto& scene : scenes) {
+    for (const auto& root_object : scene->rootObjects()) {
+      root_object->traverseDown([](Ref<Object> obj) {
+        std::cout << obj->name() << std::endl;
+        Ref<Mesh> mesh = obj->getComponent<Mesh>();
+        if (mesh) {
+          for (const auto& subMesh : mesh->subMeshes()) {
+            Ref<Geometry> geometry = subMesh->geometry();
+            const AABB<float>& aabb = geometry->getBoundingBox();
+            glm::tvec3<float> min = aabb.min();
+            glm::tvec3<float> max = aabb.max();
+            std::cout << min.x << " " << min.y << " " << min.z << std::endl;
+            std::cout << max.x << " " << max.y << " " << max.z << std::endl;
+          }
+        }
+
+        return true;
+      });
+    }
+  }
 }
