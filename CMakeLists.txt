@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 3.10)
-set (CMAKE_CXX_STANDARD 17)
+cmake_minimum_required(VERSION 3.10)
+set(CMAKE_CXX_STANDARD 17)
 
 # Metadata
 project(LogiSceneGraph VERSION 0.1.0 LANGUAGES CXX)
@@ -20,41 +20,41 @@ include(ExternalDependencies.cmake)
 
 file(GLOB_RECURSE SRC_LIST "src/*.cpp")
 
-add_library(logi_scene_graph STATIC ${SRC_LIST})
+add_library(LogiSceneGraph STATIC ${SRC_LIST})
 
-target_include_directories(logi_scene_graph PUBLIC
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-)
+target_include_directories(LogiSceneGraph PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+        )
 
-target_link_libraries(logi_scene_graph GLM::glm Vulkan::Vulkan tinygltf)
+target_link_libraries(LogiSceneGraph GLM::glm Vulkan::Vulkan tinygltf)
 
 ##########################################################
 ####################### DOXYGEN ##########################
 ##########################################################
 
 if (BUILD_DOC)
-	# Check if Doxygen is installed
-	find_package(Doxygen)
+    # Check if Doxygen is installed
+    find_package(Doxygen)
 
-	if (DOXYGEN_FOUND)
-		# Set input and output files
-		set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
-		set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+    if (DOXYGEN_FOUND)
+        # Set input and output files
+        set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
+        set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
-		# Request to configure the file
-		configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-		message("Doxygen build started")
+        # Request to configure the file
+        configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+        message("Doxygen build started")
 
-		# Note the option ALL which allows to build the docs together with the application
-		add_custom_target(doc_doxygen ALL
-			COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include
-			COMMENT "Generating API documentation with Doxygen"
-			VERBATIM)
-	else (DOXYGEN_FOUND)
-	  message("Doxygen need to be installed to generate the doxygen documentation")
-	endif (DOXYGEN_FOUND)
+        # Note the option ALL which allows to build the docs together with the application
+        add_custom_target(doc_doxygen ALL
+                COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include
+                COMMENT "Generating API documentation with Doxygen"
+                VERBATIM)
+    else (DOXYGEN_FOUND)
+        message("Doxygen need to be installed to generate the doxygen documentation")
+    endif (DOXYGEN_FOUND)
 endif (BUILD_DOC)
 
 ##############################################
@@ -62,6 +62,6 @@ endif (BUILD_DOC)
 ##############################################
 
 if (BUILD_TESTS)
-	enable_testing()
-	add_subdirectory(test)
+    enable_testing()
+    add_subdirectory(test)
 endif (BUILD_TESTS)
