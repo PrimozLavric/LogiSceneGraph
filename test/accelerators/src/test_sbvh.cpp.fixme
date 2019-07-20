@@ -6,43 +6,38 @@
 using namespace lsg;
 
 class TriangleAccessorImpl : public TriangleAccessor<float> {
-public:
+ public:
   TriangleAccessorImpl(std::vector<glm::vec3> vertices, std::vector<glm::uvec3> indices)
-    : vertices_(std::move(vertices)),
-      indices_(std::move(indices)) {}
+    : vertices_(std::move(vertices)), indices_(std::move(indices)) {}
 
   size_t count() const override {
     return indices_.size();
   }
 
   Triangle<float> operator[](size_t index) const override {
-	  return Triangle<float>([this, index](size_t vertex_index) {
-		  return vertices_[indices_[index][vertex_index]];
-		});
+    return Triangle<float>([this, index](size_t vertex_index) { return vertices_[indices_[index][vertex_index]]; });
   }
 
-private:
+ private:
   std::vector<glm::vec3> vertices_;
   std::vector<glm::uvec3> indices_;
 };
 
 TEST(SBVH, Basic) {
-  std::vector<glm::vec3> vertices{
-    // Front face
-    {1.0, 1.0, 1.0},
-    {-1.0, -1.0, 1.0},
-    {-1.0, 1.0, -1.0},
-    {1.0, -1.0, -1.0}
-  };
+  std::vector<glm::vec3> vertices{// Front face
+                                  {1.0, 1.0, 1.0},
+                                  {-1.0, -1.0, 1.0},
+                                  {-1.0, 1.0, -1.0},
+                                  {1.0, -1.0, -1.0}};
 
-  std::vector<glm::uvec3> indices{
-    {0, 1, 2}, {1, 2, 3}, // front
-    {2, 3, 0}, {3, 0, 1}
-  };
+  std::vector<glm::uvec3> indices{{0, 1, 2},
+                                  {1, 2, 3}, // front
+                                  {2, 3, 0},
+                                  {3, 0, 1}};
 
-  Shared<TriangleAccessorImpl> accessor = Shared<TriangleAccessorImpl>::create(vertices, indices);
+  Shared<TriangleAccessorImpl> accessor = std::make_shared<TriangleAccessorImpl>(vertices, indices);
   bvh::SplitBVHBuilder<float> builder;
-  Shared<BVH<float>> bvh = builder.process(accessor);
+  std::shared_ptr<BVH<float>> bvh = builder.process(accessor);
 
   std::cout << "TEST" << std::endl;
 
@@ -50,21 +45,21 @@ TEST(SBVH, Basic) {
   std::deque<Ref<bvh::Node>> stack = { root };
 
   while (!stack.empty()) {
-	  if (stack.front()->isLeaf()) {
-		  auto leaf = stack.front().staticCast<bvh::LeafNode>();
-		  std::cout << "Leaf " << leaf->bounds << ":" << std::endl;
-		  std::cout << "\t[ ";
+    if (stack.front()->isLeaf()) {
+      auto leaf = stack.front().staticCast<bvh::LeafNode>();
+      std::cout << "Leaf " << leaf->bounds << ":" << std::endl;
+      std::cout << "\t[ ";
       for (auto idx : leaf->indices) {
-		    std::cout << idx << " ";
+        std::cout << idx << " ";
       }
-	    std::cout << "]" << std::endl;
-	  } else {
-		  auto inner = stack.front().staticCast<bvh::InnerNode>();
-		  stack.emplace_back(inner->left);
-		  stack.emplace_back(inner->right);
-		  std::cout << "Inner node " << inner->bounds << ":" << std::endl;
-	  }
-	  stack.pop_front();
+      std::cout << "]" << std::endl;
+    } else {
+      auto inner = stack.front().staticCast<bvh::InnerNode>();
+      stack.emplace_back(inner->left);
+      stack.emplace_back(inner->right);
+      std::cout << "Inner node " << inner->bounds << ":" << std::endl;
+    }
+    stack.pop_front();
   }
   */
 

@@ -17,66 +17,66 @@
  */
 
 #include "lsg/components/OrthographicCamera.h"
-
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace lsg {
 
-OrthographicCamera::OrthographicCamera(const Ref<Object>& owner, const float xmag, const float ymag, const float far, const float near)
+OrthographicCamera::OrthographicCamera(const std::weak_ptr<Object>& owner, const float xmag, const float ymag,
+                                       const float far, const float near)
   : Camera("OrthographicCamera", owner), xmag_(xmag), ymag_(ymag), far_(far), near_(near), dirty_(true) {}
 
 const glm::mat4x4& OrthographicCamera::projectionMatrix() {
-	updateProjectionMatrix();
-	return projection_matrix_;
+  updateProjectionMatrix();
+  return projection_matrix_;
 }
 
 float OrthographicCamera::xmag() const {
-	return xmag_;
+  return xmag_;
 }
 
 float OrthographicCamera::ymag() const {
-	return ymag_;
+  return ymag_;
 }
 
 float OrthographicCamera::far() const {
-	return far_;
+  return far_;
 }
 
 float OrthographicCamera::near() const {
-	return near_;
+  return near_;
 }
 
 void OrthographicCamera::setXmag(float xmag) {
-	xmag_ = xmag;
-	dirty_ = true;
+  xmag_ = xmag;
+  dirty_ = true;
 }
 
 void OrthographicCamera::setYmag(float ymag) {
-	ymag_ = ymag;
-	dirty_ = true;
+  ymag_ = ymag;
+  dirty_ = true;
 }
 
 void OrthographicCamera::setFar(float far) {
-	far_ = far;
-	dirty_ = true;
+  far_ = far;
+  dirty_ = true;
 }
 
 void OrthographicCamera::setNear(float near) {
-	near_ = near;
-	dirty_ = true;
+  near_ = near;
+  dirty_ = true;
 }
 
 void OrthographicCamera::updateProjectionMatrix() {
-	if (!dirty_) {
-		return;
-	}
+  if (!dirty_) {
+    return;
+  }
 
-	projection_matrix_[0][0] = 1.0f / xmag_;
-	projection_matrix_[1][1] = 1.0f / ymag_;
-	projection_matrix_[2][2] = 2.0f / (near_ - far_);
-	projection_matrix_[3][2] = (far_ + near_) / (near_ - far_);
+  projection_matrix_[0][0] = 1.0f / xmag_;
+  projection_matrix_[1][1] = 1.0f / ymag_;
+  projection_matrix_[2][2] = 2.0f / (near_ - far_);
+  projection_matrix_[3][2] = (far_ + near_) / (near_ - far_);
 
-	dirty_ = false;
+  dirty_ = false;
 }
 
-}
+} // namespace lsg

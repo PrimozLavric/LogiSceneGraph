@@ -23,7 +23,6 @@
 #include <lsg/math/AABB.h>
 #include <lsg/resources/Triangle.h>
 #include <optional>
-#include "lsg/core/Shared.h"
 #include "lsg/resources/BufferAccessor.h"
 
 namespace lsg {
@@ -59,7 +58,7 @@ class Geometry : public Identifiable, public std::enable_shared_from_this<Geomet
   const AABB<float>& getBoundingBox() const;
 
   template <typename T>
-  Shared<TriangleAccessor<T>> getTriangleAccessor() const;
+  std::shared_ptr<TriangleAccessor<T>> getTriangleAccessor() const;
 
   void clearVertices();
 
@@ -162,24 +161,24 @@ class Geometry : public Identifiable, public std::enable_shared_from_this<Geomet
 };
 
 template <typename T>
-Shared<TriangleAccessor<T>> Geometry::getTriangleAccessor() const {
+std::shared_ptr<TriangleAccessor<T>> Geometry::getTriangleAccessor() const {
   throwIf<IllegalInvocation>(!vertices_.has_value(), "Tried to create TriangleAccessor for geometry without vertices.");
 
   if (indices_.has_value()) {
     if (indices_.value().elementSize() == sizeof(uint16_t)) {
-      return Shared<IndexedTriAccessor<uint16_t, T>>::create(vertices_.value(),
-                                                             TBufferAccessor<uint16_t>(indices_.value()));
+      return std::make_shared<IndexedTriAccessor<uint16_t, T>>(vertices_.value(),
+                                                               TBufferAccessor<uint16_t>(indices_.value()));
     }
 
     if (indices_.value().elementSize() == sizeof(uint32_t)) {
-      return Shared<IndexedTriAccessor<uint32_t, T>>::create(vertices_.value(),
-                                                             TBufferAccessor<uint32_t>(indices_.value()));
+      return std::make_shared<IndexedTriAccessor<uint32_t, T>>(vertices_.value(),
+                                                               TBufferAccessor<uint32_t>(indices_.value()));
     }
 
     throw IllegalInvocation("Unknown index type.");
   }
 
-  return Shared<TriAccessor<T>>::create(vertices_.value());
+  return std::make_shared<TriAccessor<T>>(vertices_.value());
 }
 
 } // namespace lsg

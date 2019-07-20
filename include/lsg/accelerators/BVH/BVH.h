@@ -69,14 +69,6 @@ class BVH {
   /**
    * @brief
    *
-   * @param	nodes
-   * @param	prim_indices
-   */
-  BVH(std::vector<Node>&& nodes, std::vector<uint32_t>&& prim_indices);
-
-  /**
-   * @brief
-   *
    * @return
    */
   const std::vector<Node>& getNodes() const;
@@ -107,10 +99,6 @@ BVH<T>::Node::Node(const AABB<T>& bounds, const bool is_leaf) : bounds(bounds), 
 
 template <typename T>
 BVH<T>::BVH(std::vector<Node> nodes, std::vector<uint32_t> prim_indices)
-  : nodes_(std::move(nodes)), prim_indices_(std::move(prim_indices)) {}
-
-template <typename T>
-BVH<T>::BVH(std::vector<Node>&& nodes, std::vector<uint32_t>&& prim_indices)
   : nodes_(std::move(nodes)), prim_indices_(std::move(prim_indices)) {}
 
 template <typename T>

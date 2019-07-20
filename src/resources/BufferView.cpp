@@ -21,59 +21,54 @@
 
 namespace lsg {
 
-BufferView::BufferView(Shared<Buffer> buffer, const size_t stride, const size_t offset, const size_t range)
-	: buffer_(std::move(buffer)), data_(nullptr), stride_(stride), offset_(offset), range_(range) {
-
-	// Validate buffer view.
-	validate();
+BufferView::BufferView(std::shared_ptr<Buffer> buffer, const size_t stride, const size_t offset, const size_t range)
+  : buffer_(std::move(buffer)), data_(nullptr), stride_(stride), offset_(offset), range_(range) {
+  // Validate buffer view.
+  validate();
 
   // Pointer to data with offset applied.
-	data_ = buffer_->data() + offset_;
+  data_ = buffer_->data() + offset_;
 }
 
-BufferView::BufferView(Shared<Buffer> buffer, const size_t stride, const size_t offset)
-	: buffer_(std::move(buffer)), data_(nullptr), stride_(stride), offset_(offset), range_(buffer_->size() - offset) {
-
+BufferView::BufferView(std::shared_ptr<Buffer> buffer, const size_t stride, const size_t offset)
+  : buffer_(std::move(buffer)), data_(nullptr), stride_(stride), offset_(offset), range_(buffer_->size() - offset) {
   // Validate buffer view.
-	validate();
+  validate();
 
-	// Pointer to data with offset applied.
-	data_ = buffer_->data() + offset_;
+  // Pointer to data with offset applied.
+  data_ = buffer_->data() + offset_;
 }
 
-const Shared<Buffer>& BufferView::buffer() const {
-	return buffer_;
+const std::shared_ptr<Buffer>& BufferView::buffer() const {
+  return buffer_;
 }
 
 const std::byte* BufferView::data() const {
-	return data_;
+  return data_;
 }
 
 size_t BufferView::count() const {
-	return range_ / stride_;
+  return range_ / stride_;
 }
 
 size_t BufferView::offset() const {
-	return offset_;
+  return offset_;
 }
 
 size_t BufferView::stride() const {
-	return stride_;
+  return stride_;
 }
 
 size_t BufferView::range() const {
-	return range_;
+  return range_;
 }
 
 void BufferView::validate() const {
-	throwIf<InitializationError>(!buffer_, 
-		                    "Tried to initialize buffer view with null buffer.");
+  throwIf<InitializationError>(!buffer_, "Tried to initialize buffer view with null buffer.");
 
-	throwIf<InitializationError>(offset_ + range_ > buffer_->size(),
-		                    "Invalid BufferView! Out of bounds.");
+  throwIf<InitializationError>(offset_ + range_ > buffer_->size(), "Invalid BufferView! Out of bounds.");
 
-	throwIf<InitializationError>(range_ % stride_ != 0u,
-		                    "Invalid BufferView! Size is not multiple of stride.");
+  throwIf<InitializationError>(range_ % stride_ != 0u, "Invalid BufferView! Size is not multiple of stride.");
 }
 
-}
+} // namespace lsg

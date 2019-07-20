@@ -20,126 +20,124 @@
 #define LSG_COMPONENTS_PERSPECTIVE_CAMERA_H
 
 #include <glm/glm.hpp>
-
 #include "Camera.h"
 
 namespace lsg {
 
 class PerspectiveCamera : public Camera {
-public:
+ public:
+  /**
+   * @brief	Initializes perspective camera parameters with the given values.
+   *
+   * @param	owner	        Owner of the camera component.
+   * @param	fov	          Field of view.
+   * @param	near	        Distance to the near clipping plane.
+   * @param	aspect_ratio  Aspect ratio.
+   * @param	far	          Distance to the far clipping plane.
+   */
+  PerspectiveCamera(const std::weak_ptr<Object>& owner, float fov, float near, float aspect_ratio = 1.0f,
+                    float far = std::numeric_limits<float>::max());
 
   /**
-	 * @brief	Initializes perspective camera parameters with the given values.
-	 *
-	 * @param	owner	        Owner of the camera component.
-	 * @param	fov	          Field of view.
-	 * @param	near	        Distance to the near clipping plane.
-	 * @param	aspect_ratio  Aspect ratio.
-	 * @param	far	          Distance to the far clipping plane.
-	 */
-	PerspectiveCamera(const Ref<Object>& owner, float fov, float near, float aspect_ratio = 1.0f, float far = std::numeric_limits<float>::max());
+   * @brief	  Retrieve projection matrix.
+   *
+   * @return	Projection matrix.
+   */
+  const glm::mat4x4& projectionMatrix() override;
 
   /**
-	 * @brief	  Retrieve projection matrix.
-	 *
-	 * @return	Projection matrix.
-	 */
-	const glm::mat4x4& projectionMatrix() override;
+   * @brief	  Retrieve aspect ratio.
+   *
+   * @return	Aspect ratio.
+   */
+  float aspectRatio() const;
 
   /**
-	 * @brief	  Retrieve aspect ratio.
-	 *
-	 * @return	Aspect ratio.
-	 */
-	float aspectRatio() const;
+   * @brief	  Retrieve field of view.
+   *
+   * @return	Field of view.
+   */
+  float fov() const;
 
   /**
-	 * @brief	  Retrieve field of view.
-	 *
-	 * @return	Field of view.
-	 */
-	float fov() const;
+   * @brief	  Retrieve distance to the far clipping plane.
+   *
+   * @return	Distance to the far clipping plane.
+   */
+  float far() const;
 
   /**
-	 * @brief	  Retrieve distance to the far clipping plane.
-	 *
-	 * @return	Distance to the far clipping plane.
-	 */
-	float far() const;
+   * @brief	  Retrieve distance to the near clipping plane.
+   *
+   * @return	Distance to the near clipping plane.
+   */
+  float near() const;
 
   /**
-	 * @brief	  Retrieve distance to the near clipping plane.
-	 *
-	 * @return	Distance to the near clipping plane.
-	 */
-	float near() const;
+   * @brief	Set aspect ratio.
+   *
+   * @param	aspect_ratio	Aspect ratio to be set.
+   */
+  void setAspectRatio(float aspect_ratio);
 
   /**
-	 * @brief	Set aspect ratio.
-	 *
-	 * @param	aspect_ratio	Aspect ratio to be set.
-	 */
-	void setAspectRatio(float aspect_ratio);
+   * @brief	Set field of view.
+   *
+   * @param	fov Field of view to be set.
+   */
+  void setFov(float fov);
 
   /**
-	 * @brief	Set field of view.
-	 *
-	 * @param	fov Field of view to be set.
-	 */
-	void setFov(float fov);
+   * @brief	Set distance to the far clipping plane.
+   *
+   * @param	far	Distance to the far clipping plane to be set.
+   */
+  void setFar(float far);
 
   /**
-	 * @brief	Set distance to the far clipping plane.
-	 *
-	 * @param	far	Distance to the far clipping plane to be set.
-	 */
-	void setFar(float far);
+   * @brief	Set distance to the near clipping plane.
+   *
+   * @param	near	Distance to the near clipping plane to be set.
+   */
+  void setNear(float near);
 
   /**
-	 * @brief	Set distance to the near clipping plane.
-	 *
-	 * @param	near	Distance to the near clipping plane to be set.
-	 */
-	void setNear(float near);
+   * @brief	Update projection matrix.
+   */
+  void updateProjectionMatrix();
 
-  /**
-	 * @brief	Update projection matrix.
-	 */
-	void updateProjectionMatrix();
-
-private:
+ private:
   /**
    * Aspect ratio.
    */
-	float aspect_ratio_;
+  float aspect_ratio_;
 
   /**
    * Field of view.
    */
-	float fov_;
+  float fov_;
 
   /**
    * Distance to the far clipping plane.
    */
-	float far_;
+  float far_;
 
   /**
    * Distance to the near clipping plane.
    */
-	float near_;
+  float near_;
 
   /**
    * Projection matrix.
    */
-	glm::mat4x4 projection_matrix_;
+  glm::mat4x4 projection_matrix_;
 
   /**
    * Flag that indicates the projection matrix needs to be updated.
    */
-	bool dirty_;
-
+  bool dirty_;
 };
 
-}
+} // namespace lsg
 
 #endif // LSG_COMPONENTS_PERSPECTIVE_CAMERA_H

@@ -93,7 +93,7 @@ class SplitBVHBuilder : public BVHBuilder<T> {
   explicit SplitBVHBuilder(SAHFunction sha_function = SAHFunction(), const BVHConfig& bvh_config = BVHConfig(),
                            const SplitBVHConfig& split_config = SplitBVHConfig());
 
-  Shared<BVH<T>> process(const Shared<TriangleAccessor<T>>& triangle_accessor);
+  std::shared_ptr<BVH<T>> process(const std::shared_ptr<TriangleAccessor<T>>& triangle_accessor);
 
   virtual ~SplitBVHBuilder() = default;
 
@@ -141,7 +141,7 @@ class SplitBVHBuilder : public BVHBuilder<T> {
   /**
    * Triangle accessor.
    */
-  Shared<TriangleAccessor<T>> t_triangle_accessor_;
+  std::shared_ptr<TriangleAccessor<T>> t_triangle_accessor_;
 };
 
 template <typename T>
@@ -155,7 +155,7 @@ SplitBVHBuilder<T>::SplitBVHBuilder(SAHFunction sha_function, const BVHConfig& b
 }
 
 template <typename T>
-Shared<BVH<T>> SplitBVHBuilder<T>::process(const Shared<TriangleAccessor<T>>& triangle_accessor) {
+std::shared_ptr<BVH<T>> SplitBVHBuilder<T>::process(const std::shared_ptr<TriangleAccessor<T>>& triangle_accessor) {
   t_triangle_accessor_ = triangle_accessor;
 
   // Generate references and compute root node bounding box.
@@ -186,7 +186,7 @@ Shared<BVH<T>> SplitBVHBuilder<T>::process(const Shared<TriangleAccessor<T>>& tr
   t_prim_indices_.reserve(t_right_bounds_.size());
 
   buildNode(root_spec, 0);
-  return Shared<BVH<T>>::create(std::move(t_nodes_), std::move(t_prim_indices_));
+  return std::make_shared<BVH<T>>(std::move(t_nodes_), std::move(t_prim_indices_));
 }
 
 template <typename T>

@@ -20,11 +20,15 @@
 
 namespace lsg {
 
-MetallicRoughnessMaterial::MetallicRoughnessMaterial(const std::string& name, glm::vec4 base_color, float metalic_factor, float roughness_factor, 
-	                                                 float emissive_factor, TextureUV base_color_tex, TextureUV metalic_roughness_tex,
-	                                                 TextureUV normal_tex, TextureUV emissive_tex)
-	: Material(name), base_color_(base_color), metalic_factor_(metalic_factor), roughness_factor_(roughness_factor), emissive_factor_(emissive_factor),
-    base_color_tex_(std::move(base_color_tex)), metallic_roughness_tex_(std::move(metalic_roughness_tex)), normal_tex_(std::move(normal_tex)), emissive_tex_(std::move(emissive_tex)) {}
+MetallicRoughnessMaterial::MetallicRoughnessMaterial(const std::string& name, glm::vec4 base_color,
+                                                     float metalic_factor, float roughness_factor,
+                                                     float emissive_factor, TextureUV base_color_tex,
+                                                     TextureUV metalic_roughness_tex, TextureUV normal_tex,
+                                                     TextureUV emissive_tex)
+  : Material(name), base_color_(base_color), metalic_factor_(metalic_factor), roughness_factor_(roughness_factor),
+    emissive_factor_(emissive_factor), base_color_tex_(std::move(base_color_tex)),
+    metallic_roughness_tex_(std::move(metalic_roughness_tex)), normal_tex_(std::move(normal_tex)),
+    emissive_tex_(std::move(emissive_tex)) {}
 
 glm::vec4 MetallicRoughnessMaterial::baseColor() const {
   return base_color_;
@@ -34,25 +38,27 @@ float MetallicRoughnessMaterial::metallicFactor() const {
   return metalic_factor_;
 }
 
-float MetallicRoughnessMaterial::roughnessFactor() const { return 
-  roughness_factor_; }
+float MetallicRoughnessMaterial::roughnessFactor() const {
+  return roughness_factor_;
+}
 
-float MetallicRoughnessMaterial::emissiveFactor() const { return 
-  emissive_factor_; }
+float MetallicRoughnessMaterial::emissiveFactor() const {
+  return emissive_factor_;
+}
 
-Ref<Texture> MetallicRoughnessMaterial::baseColorTex() const {
+const std::shared_ptr<Texture>& MetallicRoughnessMaterial::baseColorTex() const {
   return base_color_tex_.texture;
 }
 
-Ref<Texture> MetallicRoughnessMaterial::metallicRoughnessTex() const {
+const std::shared_ptr<Texture>& MetallicRoughnessMaterial::metallicRoughnessTex() const {
   return metallic_roughness_tex_.texture;
 }
 
-Ref<Texture> MetallicRoughnessMaterial::normalTex() const {
+const std::shared_ptr<Texture>& MetallicRoughnessMaterial::normalTex() const {
   return normal_tex_.texture;
 }
 
-Ref<Texture> MetallicRoughnessMaterial::emissiveTex() const {
+const std::shared_ptr<Texture>& MetallicRoughnessMaterial::emissiveTex() const {
   return emissive_tex_.texture;
 }
 
@@ -77,23 +83,23 @@ void MetallicRoughnessMaterial::setEmissiveFactor(const float emissive_factor) {
 }
 
 void MetallicRoughnessMaterial::setBaseColorTex(const TextureUV& base_color_tex) {
-	base_color_tex_ = base_color_tex;
+  base_color_tex_ = base_color_tex;
   incrementVersion();
 }
 
 void MetallicRoughnessMaterial::setMetalicRoughnessTex(const TextureUV& metallic_roughness_tex) {
-	metallic_roughness_tex_ = metallic_roughness_tex;
+  metallic_roughness_tex_ = metallic_roughness_tex;
   incrementVersion();
 }
 
 void MetallicRoughnessMaterial::setNormalTex(const TextureUV& normal_tex) {
-	normal_tex_ = normal_tex;
+  normal_tex_ = normal_tex;
   incrementVersion();
 }
 
 void MetallicRoughnessMaterial::setEmissiveTex(const TextureUV& emissive_tex) {
-	emissive_tex_ = emissive_tex;
+  emissive_tex_ = emissive_tex;
   incrementVersion();
 }
 
-}
+} // namespace lsg

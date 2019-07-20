@@ -20,126 +20,123 @@
 #define LSG_COMPONENTS_ORTHOGRAPHIC_CAMERA_H
 
 #include <glm/glm.hpp>
-
 #include "Camera.h"
 
 namespace lsg {
 
 class OrthographicCamera : public Camera {
-public:
+ public:
+  /**
+   * @brief	Initializes orthographic camera parameters with the given values.
+   *
+   * @param	owner	Owner of the camera component.
+   * @param	xmag	Horizontal magnification of the view.
+   * @param	ymag	Vertical magnification of the view.
+   * @param	far	  Distance to the far clipping plane.
+   * @param	near	Distance to the near clipping plane.
+   */
+  OrthographicCamera(const std::weak_ptr<Object>& owner, float xmag, float ymag, float far, float near);
 
   /**
-	 * @brief	Initializes orthographic camera parameters with the given values.
-	 *
-	 * @param	owner	Owner of the camera component.
-	 * @param	xmag	Horizontal magnification of the view.
-	 * @param	ymag	Vertical magnification of the view.
-	 * @param	far	  Distance to the far clipping plane.
-	 * @param	near	Distance to the near clipping plane.
-	 */
-	OrthographicCamera(const Ref<Object>& owner, float xmag, float ymag, float far, float near);
+   * @brief	  Retrieve projection matrix.
+   *
+   * @return	Projection matrix.
+   */
+  const glm::mat4x4& projectionMatrix() override;
 
   /**
-	 * @brief	  Retrieve projection matrix.
-	 *
-	 * @return	Projection matrix.
-	 */
-	const glm::mat4x4& projectionMatrix() override;
+   * @brief	  Retrieve horizontal magnification of the view.
+   *
+   * @return	Horizontal magnification of the view.
+   */
+  float xmag() const;
 
   /**
-	 * @brief	  Retrieve horizontal magnification of the view.
-	 *
-	 * @return	Horizontal magnification of the view.
-	 */
-	float xmag() const;
+   * @brief	  Retrieve vertical magnification of the view.
+   *
+   * @return	Vertical magnification of the view.
+   */
+  float ymag() const;
 
   /**
-	 * @brief	  Retrieve vertical magnification of the view.
-	 *
-	 * @return	Vertical magnification of the view.
-	 */
-	float ymag() const;
+   * @brief	  Retrieve distance to the far clipping plane.
+   *
+   * @return	Distance to the far clipping plane.
+   */
+  float far() const;
 
   /**
-	 * @brief	  Retrieve distance to the far clipping plane.
-	 *
-	 * @return	Distance to the far clipping plane.
-	 */
-	float far() const;
+   * @brief	  Retrieve distance to the near clipping plane.
+   *
+   * @return	Distance to the near clipping plane.
+   */
+  float near() const;
 
   /**
-	 * @brief	  Retrieve distance to the near clipping plane.
-	 *
-	 * @return	Distance to the near clipping plane.
-	 */
-	float near() const;
+   * @brief	Set horizontal magnification of the view.
+   *
+   * @param	xmag	Horizontal magnification of the view to be set.
+   */
+  void setXmag(float xmag);
 
   /**
-	 * @brief	Set horizontal magnification of the view.
-	 *
-	 * @param	xmag	Horizontal magnification of the view to be set.
-	 */
-	void setXmag(float xmag);
+   * @brief	Set vertical magnification of the view.
+   *
+   * @param	ymag	Vertical magnification of the view to be set.
+   */
+  void setYmag(float ymag);
 
   /**
-	 * @brief	Set vertical magnification of the view.
-	 *
-	 * @param	ymag	Vertical magnification of the view to be set.
-	 */
-	void setYmag(float ymag);
-
-  /**
-	 * @brief	Set distance to the far clipping plane.
-	 *
-	 * @param	far	Distance to the far clipping plane to be set.
-	 */
+   * @brief	Set distance to the far clipping plane.
+   *
+   * @param	far	Distance to the far clipping plane to be set.
+   */
   void setFar(float far);
 
   /**
-	 * @brief	Set distance to the near clipping plane.
-	 *
-	 * @param	near	Distance to the near clipping plane to be set.
-	 */
-	void setNear(float near);
+   * @brief	Set distance to the near clipping plane.
+   *
+   * @param	near	Distance to the near clipping plane to be set.
+   */
+  void setNear(float near);
 
   /**
-	 * @brief	Update projection matrix.
-	 */
-	void updateProjectionMatrix();
+   * @brief	Update projection matrix.
+   */
+  void updateProjectionMatrix();
 
-
-private:
+ private:
   /**
    * Horizontal magnification of the view.
    */
-	float xmag_;
+  float xmag_;
 
   /**
    * Vertical magnification of the view.
    */
-	float ymag_;
+  float ymag_;
 
   /**
    * Distance to the far clipping plane.
    */
-	float far_;
+  float far_;
 
   /**
    * Distance to the near clipping plane.
    */
-	float near_;
+  float near_;
 
   /**
    * Projection matrix.
    */
-	glm::mat4x4 projection_matrix_;
+  glm::mat4x4 projection_matrix_;
 
   /**
    * Flag that indicates the projection matrix needs to be updated.
    */
-	bool dirty_;
+  bool dirty_;
 };
 
-}
+} // namespace lsg
 
 #endif // LSG_COMPONENTS_ORTHOGRAPHIC_CAMERA_H

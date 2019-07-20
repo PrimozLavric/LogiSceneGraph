@@ -17,68 +17,67 @@
  */
 
 #include "lsg/components/PerspectiveCamera.h"
-
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace lsg {
 
-PerspectiveCamera::PerspectiveCamera(const Ref<Object>& owner, const float fov, const float near, const float aspect_ratio, const float far)
+PerspectiveCamera::PerspectiveCamera(const std::weak_ptr<Object>& owner, const float fov, const float near,
+                                     const float aspect_ratio, const float far)
   : Camera("PerspectiveCamera", owner), aspect_ratio_(aspect_ratio), fov_(fov), far_(far), near_(near), dirty_(true) {}
 
 const glm::mat4x4& PerspectiveCamera::projectionMatrix() {
-	updateProjectionMatrix();
-	return projection_matrix_;
+  updateProjectionMatrix();
+  return projection_matrix_;
 }
 
 float PerspectiveCamera::aspectRatio() const {
-	return aspect_ratio_;
+  return aspect_ratio_;
 }
 
 float PerspectiveCamera::fov() const {
-	return fov_;
+  return fov_;
 }
 
 float PerspectiveCamera::far() const {
-	return far_;
+  return far_;
 }
 
 float PerspectiveCamera::near() const {
-	return near_;
+  return near_;
 }
 
 void PerspectiveCamera::setAspectRatio(const float aspect_ratio) {
-	aspect_ratio_ = aspect_ratio;
-	dirty_ = true;
+  aspect_ratio_ = aspect_ratio;
+  dirty_ = true;
 }
 
 void PerspectiveCamera::setFov(const float fov) {
-	fov_ = fov;
-	dirty_ = true;
+  fov_ = fov;
+  dirty_ = true;
 }
 
 void PerspectiveCamera::setFar(const float far) {
-	far_ = far;
-	dirty_ = true;
+  far_ = far;
+  dirty_ = true;
 }
 
 void PerspectiveCamera::setNear(const float near) {
-	near_ = near;
-	dirty_ = true;
+  near_ = near;
+  dirty_ = true;
 }
 
 void PerspectiveCamera::updateProjectionMatrix() {
-	if (!dirty_) {
-		return;
-	}
+  if (!dirty_) {
+    return;
+  }
 
-	if (far_ == std::numeric_limits<float>::max()) {
-		projection_matrix_ = glm::infinitePerspective(fov_, aspect_ratio_, near_);
-	} else {
-		projection_matrix_ = glm::perspective(fov_, aspect_ratio_, near_, far_);
-	}
+  if (far_ == std::numeric_limits<float>::max()) {
+    projection_matrix_ = glm::infinitePerspective(fov_, aspect_ratio_, near_);
+  } else {
+    projection_matrix_ = glm::perspective(fov_, aspect_ratio_, near_, far_);
+  }
 
-	dirty_ = false;
+  dirty_ = false;
 }
 
-
-}
+} // namespace lsg

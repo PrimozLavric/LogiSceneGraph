@@ -76,8 +76,8 @@ class BufferAccessor : std::enable_shared_from_this<BufferAccessor> {
    * @param	component_type  Buffer entry component type.
    * @param	buffer_offset   Offset from the beginning of the buffer. Note: this is not an entry offset.
    */
-  explicit BufferAccessor(Shared<Buffer> buffer, StructureType structure_type, ComponentType component_type,
-                          size_t buffer_offset = 0u);
+  explicit BufferAccessor(const std::shared_ptr<Buffer>& buffer, StructureType structure_type,
+                          ComponentType component_type, size_t buffer_offset = 0u);
 
   /**
    * @brief	  Retrieve underlying buffer view.

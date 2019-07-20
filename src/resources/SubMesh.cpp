@@ -20,31 +20,28 @@
 
 namespace lsg {
 
-SubMesh::SubMesh(const std::string& name, Shared<Geometry> geometry, Shared<Material> material)
-	: Identifiable(name), geometry_(std::move(geometry)), material_(std::move(material)) {
+SubMesh::SubMesh(const std::string& name, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
+  : Identifiable(name), geometry_(std::move(geometry)), material_(std::move(material)) {}
+
+SubMesh::SubMesh(std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
+  : Identifiable("Submesh"), geometry_(std::move(geometry)), material_(std::move(material)) {}
+
+void SubMesh::setGeometry(const std::shared_ptr<Geometry>& geometry) {
+  geometry_ = geometry;
+  incrementVersion();
 }
 
-SubMesh::SubMesh(Shared<Geometry> geometry, Shared<Material> material) 
-  : Identifiable("Submesh"), geometry_(std::move(geometry)), material_(std::move(material)) {
+void SubMesh::setMaterial(const std::shared_ptr<Material>& material) {
+  material_ = material;
+  incrementVersion();
 }
 
-void SubMesh::setGeometry(const Shared<Geometry>& geometry) {
-	geometry_ = geometry;
-	incrementVersion();
+const std::shared_ptr<Geometry>& SubMesh::geometry() const {
+  return geometry_;
 }
 
-void SubMesh::setMaterial(const Shared<Material>& material) {
-	material_ = material;
-	incrementVersion();
+const std::shared_ptr<Material>& SubMesh::material() const {
+  return material_;
 }
 
-Ref<Geometry> SubMesh::geometry() const {
-	return geometry_;
-}
-
-Ref<Material> SubMesh::material() const {
-	return material_;
-}
-
-
-}
+} // namespace lsg

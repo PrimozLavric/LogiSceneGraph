@@ -20,49 +20,44 @@
 #define LSG_LOADERS_GLTFLOADER_H
 
 #include <tinygltf/tiny_gltf.h>
-#include "lsg/core/Shared.h"
 #include "lsg/core/Object.h"
 #include "lsg/core/Scene.h"
 #include "lsg/resources/BufferAccessor.h"
-#include "lsg/resources/Texture.h"
 #include "lsg/resources/Image2D.h"
+#include "lsg/resources/Texture.h"
 
 namespace lsg {
 
 class GLTFLoader {
-public:
-	std::vector<Shared<Scene>> load(const std::string& filename);
+ public:
+  std::vector<std::shared_ptr<Scene>> load(const std::string& filename);
 
+ protected:
+  tinygltf::Model loadModelASCII(const std::string& filename);
 
-protected:
-	tinygltf::Model loadModelASCII(const std::string& filename);
+  static ComponentType parseType(int32_t type);
 
-	static ComponentType parseType(int32_t type);
+  static StructureType parseStructure(int32_t structure);
 
-	static StructureType parseStructure(int32_t structure);
+ protected:
+  static std::vector<std::shared_ptr<Object>> loadObjects(const tinygltf::Model& model);
 
+  static BufferAccessor loadBuffer(const tinygltf::Model& model, size_t accessor_index);
 
-protected:
-	static std::vector<Shared<Object>> loadObjects(const tinygltf::Model& model);
+  static std::shared_ptr<Image2D> loadImage(const tinygltf::Model& model, size_t image_index);
 
-	static BufferAccessor loadBuffer(const tinygltf::Model& model, size_t accessor_index);
+  static std::pair<Filter, MipmapMode> parseFilterMode(int mode);
 
-	static Shared<Image2D> loadImage(const tinygltf::Model& model, size_t image_index);
+  static Wrapping parseWrapMode(int mode);
 
-	static std::pair<Filter, MipmapMode> parseFilterMode(int mode);
-    
-	static Wrapping parseWrapMode(int mode);
+  static std::shared_ptr<Sampler> loadSampler(const tinygltf::Model& model, size_t sampler_index);
 
-	static Shared<Sampler> loadSampler(const tinygltf::Model& model, size_t sampler_index);
+  static std::shared_ptr<Texture> loadTexture(const tinygltf::Model& model, size_t texture_index);
 
-	static Shared<Texture> loadTexture(const tinygltf::Model& model, size_t texture_index);
-
-private:
-	tinygltf::TinyGLTF loader_;
-
+ private:
+  tinygltf::TinyGLTF loader_;
 };
 
+} // namespace lsg
 
-}
-
-#endif  // LSG_LOADERS_GLTFLOADER_H
+#endif // LSG_LOADERS_GLTFLOADER_H

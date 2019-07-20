@@ -21,25 +21,24 @@
 
 #include <vector>
 #include "lsg/core/Identifiable.h"
-#include "lsg/core/Shared.h"
 #include "lsg/core/Object.h"
 
 namespace lsg {
 
 class Scene : public Identifiable, public std::enable_shared_from_this<Scene> {
-public:
-	explicit Scene(std::vector<Shared<Object>> root_objects = {});
+ public:
+  explicit Scene(std::vector<std::shared_ptr<Object>> root_objects = {});
 
-	explicit Scene(const std::string& name, std::vector<Shared<Object>> root_objects = {});
+  explicit Scene(const std::string& name, std::vector<std::shared_ptr<Object>> root_objects = {});
 
-	const std::vector<Shared<Object>>& rootObjects() const;
+  const std::vector<std::shared_ptr<Object>>& rootObjects() const;
 
-	void addObject(const Shared<Object>& object);
+  void addObject(const std::shared_ptr<Object>& object);
 
-private:
-	std::vector<Shared<Object>> root_objects_;
+ private:
+  std::vector<std::shared_ptr<Object>> root_objects_;
 };
 
-}
+} // namespace lsg
 
 #endif // LSG_CORE_SCENE_H

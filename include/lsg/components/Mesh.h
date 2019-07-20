@@ -26,22 +26,22 @@
 namespace lsg {
 
 class Mesh : public Component, public VersionTracker, std::enable_shared_from_this<Mesh> {
-public:
-	explicit Mesh(Ref<Object> owner, std::vector<Shared<SubMesh>> sub_meshes = {});
+ public:
+  explicit Mesh(std::weak_ptr<Object> owner, std::vector<std::shared_ptr<SubMesh>> sub_meshes = {});
 
-	explicit Mesh(Ref<Object> owner, const std::string& name, std::vector<Shared<SubMesh>> sub_meshes = {});
+  explicit Mesh(std::weak_ptr<Object> owner, const std::string& name,
+                std::vector<std::shared_ptr<SubMesh>> sub_meshes = {});
 
-	size_t subMeshCount() const;
+  size_t subMeshCount() const;
 
-	void addSubMesh(const Shared<SubMesh>& sub_mesh);
+  void addSubMesh(const std::shared_ptr<SubMesh>& sub_mesh);
 
-	const std::vector<Shared<SubMesh>>& subMeshes();
+  const std::vector<std::shared_ptr<SubMesh>>& subMeshes();
 
-private:
-	std::vector<Shared<SubMesh>> sub_meshes_;
+ private:
+  std::vector<std::shared_ptr<SubMesh>> sub_meshes_;
 };
 
-
-}
+} // namespace lsg
 
 #endif // LSG_COMPONENTS_GEOMETRY_REFERENCE_H

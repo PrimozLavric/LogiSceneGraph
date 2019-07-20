@@ -18,27 +18,26 @@
 
 #ifndef LSG_RESOURCES_BUFFER_VIEW_H
 #define LSG_RESOURCES_BUFFER_VIEW_H
-#include "lsg/core/Shared.h"
 #include "lsg/resources/Buffer.h"
 
 namespace lsg {
 
 class BufferView : public std::enable_shared_from_this<BufferView> {
-public:
-  BufferView(Shared<Buffer> buffer, size_t stride, size_t offset, size_t range);
+ public:
+  BufferView(std::shared_ptr<Buffer> buffer, size_t stride, size_t offset, size_t range);
 
-  BufferView(Shared<Buffer> buffer, size_t stride, size_t offset = 0u);
+  BufferView(std::shared_ptr<Buffer> buffer, size_t stride, size_t offset = 0u);
 
   /**
-     * @brief	  Retrieve referenced buffer.
-     *
-     * @return	Referenced buffer.
-     */
-  const Shared<Buffer>& buffer() const;
+   * @brief	  Retrieve referenced buffer.
+   *
+   * @return	Referenced buffer.
+   */
+  const std::shared_ptr<Buffer>& buffer() const;
 
   /**
    * @brief	  Pointer to data referenced by buffer view.
-   * 
+   *
    * @return	Pointer to buffer view data.
    */
   const std::byte* data() const;
@@ -71,14 +70,14 @@ public:
    */
   size_t range() const;
 
-protected:
-	void validate() const;
+ protected:
+  void validate() const;
 
-private:
+ private:
   /**
    * Referenced buffer.
    */
-  Shared<Buffer> buffer_;
+  std::shared_ptr<Buffer> buffer_;
 
   /**
    * Pointer to the beginning of the buffer view data.
@@ -108,15 +107,15 @@ private:
  */
 template <typename T>
 class TBufferView : public BufferView, public std::enable_shared_from_this<TBufferView<T>> {
-public:
+ public:
   /**
-	 * @brief Used to construct typed buffer view with explicitly defined range.
-	 *
-	 * @param	buffer	Shared buffer object.
-	 * @param	offset	Offset from the beginning of the buffer.
-	 * @param	range	  Range of the buffer.
-	 */
-	TBufferView(const Shared<Buffer>& buffer, size_t offset, size_t range);
+   * @brief Used to construct typed buffer view with explicitly defined range.
+   *
+   * @param	buffer	Shared buffer object.
+   * @param	offset	Offset from the beginning of the buffer.
+   * @param	range	  Range of the buffer.
+   */
+  TBufferView(const std::shared_ptr<Buffer>& buffer, size_t offset, size_t range);
 
   /**
    * @brief Typed buffer view.
@@ -124,7 +123,7 @@ public:
    * @param	buffer	Shared buffer object.
    * @param	offset	Offset from the beginning of the buffer.
    */
-  explicit TBufferView(const Shared<Buffer>& buffer, size_t offset = 0u);
+  explicit TBufferView(const std::shared_ptr<Buffer>& buffer, size_t offset = 0u);
 
   /**
    * @brief Construct typed buffer view from regular buffer view.
@@ -136,7 +135,7 @@ public:
   /**
    * @brief   Retrieve element on the given index.
    *
-   * @param	  index Index of the element (index must be less than count())	
+   * @param	  index Index of the element (index must be less than count())
    * @return  Reference to the element on the given index.
    */
   const T& operator[](size_t index);
@@ -150,12 +149,12 @@ public:
 };
 
 template <typename T>
-TBufferView<T>::TBufferView(const Shared<Buffer>& buffer, const size_t offset, const size_t range)
+TBufferView<T>::TBufferView(const std::shared_ptr<Buffer>& buffer, const size_t offset, const size_t range)
   : BufferView(buffer, sizeof(T), offset, range) {}
 
 template <typename T>
-TBufferView<T>::TBufferView(const Shared<Buffer>& buffer, const size_t offset)
-	: BufferView(buffer, sizeof(T), offset) {}
+TBufferView<T>::TBufferView(const std::shared_ptr<Buffer>& buffer, const size_t offset)
+  : BufferView(buffer, sizeof(T), offset) {}
 
 template <typename T>
 TBufferView<T>::TBufferView(const BufferView& buffer_view)
@@ -168,9 +167,9 @@ const T& TBufferView<T>::operator[](const size_t index) {
 
 template <typename T>
 const T* TBufferView<T>::tData() const {
-	return reinterpret_cast<T*>(data());
+  return reinterpret_cast<T*>(data());
 }
 
-}
+} // namespace lsg
 
-#endif  // LSG_RESOURCES_BUFFER_VIEW_H
+#endif // LSG_RESOURCES_BUFFER_VIEW_H

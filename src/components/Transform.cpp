@@ -17,194 +17,197 @@
  */
 
 #include "lsg/components/Transform.h"
-#include "lsg/core/Object.h"
 #include "lsg/core/Math.h"
+#include "lsg/core/Object.h"
 
 namespace lsg {
 
-Transform::Transform(Ref<Object> owner)
-  : Component("Transform", owner), world_matrix_(1.0), world_matrix_dirty_(false), 
-    loc_matrix_(1.0), loc_matrix_dirty_(false), loc_position_(), loc_rotation_(), loc_scale_(1.0f) {
-
+Transform::Transform(const std::weak_ptr<Object>& owner)
+  : Component("Transform", owner), world_matrix_(1.0), world_matrix_dirty_(false), loc_matrix_(1.0),
+    loc_matrix_dirty_(false), loc_position_(), loc_rotation_(), loc_scale_(1.0f) {
+  auto locked_owner = owner_.lock();
   // Traverse ancestors.
-  owner->traverseUpExcl([this](const Ref<Object> object) {
-	  const auto transform = object->getComponent<Transform>();
+  locked_owner->traverseUpExcl([this](const std::shared_ptr<Object>& object) {
+    const auto transform = object->getComponent<Transform>();
 
     // Check if the ancestor has transform component.
     if (transform) {
       if (transform->world_matrix_dirty_) {
-		    this->markWorldMatrixDirty();
+        this->markWorldMatrixDirty();
       } else {
-		    world_matrix_ = world_matrix_ * loc_matrix_;
+        world_matrix_ = world_matrix_ * loc_matrix_;
       }
 
-		  return false;
+      return false;
     }
 
-	  return true;
+    return true;
   });
 
   // When the parent changes mark the world matrix dirty.
-  owner->setOnParentChangeCallback(Ref<Identifiable>(this), [this] (Ref<Object>) {
-	  this->markWorldMatrixDirty();
-  });
+  locked_owner->setOnParentChangeCallback(*this,
+                                          [this](const std::shared_ptr<Object>&) { this->markWorldMatrixDirty(); });
 }
 
 const glm::mat4x4& Transform::matrix() {
   if (loc_matrix_dirty_) {
-	  loc_matrix_ = glm::mat4_cast(loc_rotation_);
-	  for (size_t i = 0; i < 3; i++) {
-		  loc_matrix_[i][i] *= loc_scale_[i];
-		  loc_matrix_[3][i] = loc_position_[i];
-	  }
+    loc_matrix_ = glm::mat4_cast(loc_rotation_);
+    for (size_t i = 0; i < 3; i++) {
+      loc_matrix_[i][i] *= loc_scale_[i];
+      loc_matrix_[3][i] = loc_position_[i];
+    }
   }
 
-	return loc_matrix_;
+  return loc_matrix_;
 }
 
 const glm::mat4x4& Transform::worldMatrix() {
   if (world_matrix_dirty_) {
-	  updateWorldMatrix();
+    updateWorldMatrix();
   }
 
   return world_matrix_;
 }
 
 const glm::vec3& Transform::position() const {
-	return loc_position_;
+  return loc_position_;
 }
 
 const glm::quat& Transform::rotation() const {
-	return loc_rotation_;
+  return loc_rotation_;
 }
 
 glm::vec3 Transform::eulerRotation() const {
-	return glm::eulerAngles(loc_rotation_);
+  return glm::eulerAngles(loc_rotation_);
 }
 
 const glm::vec3& Transform::scale() const {
-	return loc_scale_;
+  return loc_scale_;
 }
 
 void Transform::applyMatrix(const glm::mat4& mat) {
-	loc_matrix_ = mat * matrix();
-	decomposeMatrix(loc_matrix_, loc_position_, loc_rotation_, loc_scale_);
-	markWorldMatrixDirty();
+  loc_matrix_ = mat * matrix();
+  decomposeMatrix(loc_matrix_, loc_position_, loc_rotation_, loc_scale_);
+  markWorldMatrixDirty();
 }
 
 void Transform::applyQuaternion(const glm::quat& quaternion) {
-	loc_rotation_ *= quaternion;
-	markLocalMatrixDirty();
+  loc_rotation_ *= quaternion;
+  markLocalMatrixDirty();
 }
 
 void Transform::setLocalMatrix(const glm::mat4& mat) {
-	loc_matrix_ = mat;
-	decomposeMatrix(loc_matrix_, loc_position_, loc_rotation_, loc_scale_);
-	markWorldMatrixDirty();
+  loc_matrix_ = mat;
+  decomposeMatrix(loc_matrix_, loc_position_, loc_rotation_, loc_scale_);
+  markWorldMatrixDirty();
 }
 
 void Transform::setRotation(const glm::quat& quaternion) {
-	loc_rotation_ = quaternion;
-	markLocalMatrixDirty();
+  loc_rotation_ = quaternion;
+  markLocalMatrixDirty();
 }
 
 void Transform::setScale(const glm::vec3& scale) {
-	loc_scale_ = scale;
-	markLocalMatrixDirty();
+  loc_scale_ = scale;
+  markLocalMatrixDirty();
 }
 
 void Transform::setPosition(const glm::vec3& position) {
-	loc_position_ = position;
-	markLocalMatrixDirty();
+  loc_position_ = position;
+  markLocalMatrixDirty();
 }
 
 void Transform::translateOnAxis(const glm::vec3& axis, const float distance) {
-	const glm::vec3 loc_axis = loc_rotation_ * axis;
-	setPosition(loc_position_ + (loc_axis * distance));
+  const glm::vec3 loc_axis = loc_rotation_ * axis;
+  setPosition(loc_position_ + (loc_axis * distance));
 }
 
 void Transform::translateX(const float distance) {
-	const static glm::vec3 axis(1.0f, 0.0f, 0.0f);
-	translateOnAxis(axis, distance);
+  const static glm::vec3 axis(1.0f, 0.0f, 0.0f);
+  translateOnAxis(axis, distance);
 }
 
 void Transform::translateY(const float distance) {
-	const static glm::vec3 axis(0.0f, 1.0f, 0.0f);
-	translateOnAxis(axis, distance);
+  const static glm::vec3 axis(0.0f, 1.0f, 0.0f);
+  translateOnAxis(axis, distance);
 }
 
 void Transform::translateZ(const float distance) {
-	const static glm::vec3 axis(0.0f, 0.0f, 1.0f);
-	translateOnAxis(axis, distance);
+  const static glm::vec3 axis(0.0f, 0.0f, 1.0f);
+  translateOnAxis(axis, distance);
 }
 
 void Transform::rotateOnAxis(const glm::vec3& axis, const float angle) {
-	const auto quaternion = glm::quat(axis * angle);
-	loc_rotation_ *= quaternion;
-	markLocalMatrixDirty();
+  const auto quaternion = glm::quat(axis * angle);
+  loc_rotation_ *= quaternion;
+  markLocalMatrixDirty();
 }
 
 void Transform::rotateX(const float angle) {
-	const static glm::vec3 axis(1.0f, 0.0f, 0.0f);
+  const static glm::vec3 axis(1.0f, 0.0f, 0.0f);
   rotateOnAxis(axis, angle);
 }
 
 void Transform::rotateY(const float angle) {
-	const static glm::vec3 axis(0.0f, 1.0f, 0.0f);
+  const static glm::vec3 axis(0.0f, 1.0f, 0.0f);
   rotateOnAxis(axis, angle);
 }
 
 void Transform::rotateZ(const float angle) {
-	const static glm::vec3 axis(0.0f, 0.0f, 1.0f);
-	rotateOnAxis(axis, angle);
+  const static glm::vec3 axis(0.0f, 0.0f, 1.0f);
+  rotateOnAxis(axis, angle);
 }
 
 void Transform::updateWorldMatrix() {
   // Do not update world matrix if not dirty.
   if (!world_matrix_dirty_) {
-	  return;
+    return;
   }
 
-  Ref<Transform> transform;
+  std::shared_ptr<Transform> transform;
   // Find first ancestor with transform.
-  owner_->traverseUpExcl([this, &transform](const Ref<Object> object) {
-	  transform = object->getComponent<Transform>();
-	  return !static_cast<bool>(transform);
-  });
+  if (auto locked_owner = owner_.lock()) {
+    locked_owner->traverseUpExcl([this, &transform](const std::shared_ptr<Object>& object) {
+      transform = object->getComponent<Transform>();
+      return !static_cast<bool>(transform);
+    });
+  }
 
   // Update ancestor transform and compute the world matrix.
   if (transform) {
-	  transform->updateWorldMatrix();
-	  world_matrix_ = transform->world_matrix_ * matrix();
+    transform->updateWorldMatrix();
+    world_matrix_ = transform->world_matrix_ * matrix();
   } else {
-	  world_matrix_ = matrix();
+    world_matrix_ = matrix();
   }
 
   world_matrix_dirty_ = false;
 }
 
 void Transform::markLocalMatrixDirty() {
-	loc_matrix_dirty_ = true;
-	markWorldMatrixDirty();
+  loc_matrix_dirty_ = true;
+  markWorldMatrixDirty();
 }
 
 void Transform::markWorldMatrixDirty() {
   // Don't do anything if the matrix is already marked as dirty.
   if (world_matrix_dirty_) {
-	  return;
+    return;
   }
 
-	world_matrix_dirty_ = true;
+  world_matrix_dirty_ = true;
   // Mark all child objects world matrices as dirty.
-	owner_->traverseDownExcl([](const Ref<Object> object) {
-	  const auto transform = object->getComponent<Transform>();
-    if (transform) {
-		  transform->world_matrix_dirty_ = true;
-    }
+  if (auto locked_owner = owner_.lock()) {
+    locked_owner->traverseDownExcl([](const std::shared_ptr<Object> object) {
+      const auto transform = object->getComponent<Transform>();
+      if (transform) {
+        transform->world_matrix_dirty_ = true;
+      }
 
-    // Descend.
-	  return true;
-	});
+      // Descend.
+      return true;
+    });
+  }
 }
 
-}
+} // namespace lsg

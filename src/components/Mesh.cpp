@@ -20,22 +20,22 @@
 
 namespace lsg {
 
-Mesh::Mesh(const Ref<Object> owner, std::vector<Shared<SubMesh>> sub_meshes) 
+Mesh::Mesh(const std::weak_ptr<Object> owner, std::vector<std::shared_ptr<SubMesh>> sub_meshes)
   : Component("Mesh", owner), sub_meshes_(std::move(sub_meshes)) {}
 
-Mesh::Mesh(const Ref<Object> owner, const std::string& name, std::vector<Shared<SubMesh>> sub_meshes)
-	: Component(name, owner), sub_meshes_(std::move(sub_meshes)) {}
+Mesh::Mesh(const std::weak_ptr<Object> owner, const std::string& name, std::vector<std::shared_ptr<SubMesh>> sub_meshes)
+  : Component(name, owner), sub_meshes_(std::move(sub_meshes)) {}
 
 size_t Mesh::subMeshCount() const {
-	return sub_meshes_.size();
+  return sub_meshes_.size();
 }
 
-void Mesh::addSubMesh(const Shared<SubMesh>& sub_mesh) {
-	sub_meshes_.emplace_back(sub_mesh);
+void Mesh::addSubMesh(const std::shared_ptr<SubMesh>& sub_mesh) {
+  sub_meshes_.emplace_back(sub_mesh);
 }
 
-const std::vector<Shared<SubMesh>>& Mesh::subMeshes() {
-	return sub_meshes_;
+const std::vector<std::shared_ptr<SubMesh>>& Mesh::subMeshes() {
+  return sub_meshes_;
 }
 
-}
+} // namespace lsg

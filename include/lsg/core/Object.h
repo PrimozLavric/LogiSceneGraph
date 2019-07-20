@@ -22,13 +22,12 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_map>
-
 #include "lsg/core/Component.h"
 #include "lsg/core/Identifiable.h"
-#include "lsg/core/Shared.h"
 
 namespace lsg {
 
@@ -51,7 +50,7 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    * @return  Reference to the searched object or null ref if not found.
    */
   template <typename T = Object>
-  Ref<T> find(std::string_view name) const;
+  std::shared_ptr<T> find(std::string_view name) const;
 
   /**
    * @brief   Check if the object is active.
@@ -72,7 +71,7 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    *
    * @param	obj Child object.
    */
-  void addChild(const Shared<Object>& obj);
+  void addChild(const std::shared_ptr<Object>& obj);
 
   /**
    * @brief Sets on parent change callback for the given object.
@@ -80,14 +79,15 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    * @param object    Object to which the callback is bound.
    * @param	callback  Callback.
    */
-  void setOnParentChangeCallback(const Ref<Identifiable>& object, const std::function<void(Ref<Object>)>& callback);
+  void setOnParentChangeCallback(const Identifiable& object,
+                                 const std::function<void(const std::shared_ptr<Object>&)>& callback);
 
   /**
    * @brief Removes on parent change callback registered under the given object.
    *
    * @param	object  Object to which the callback is bound.
    */
-  void removeOnParentChangeCallback(const Ref<Identifiable>& object);
+  void removeOnParentChangeCallback(const Identifiable& object);
 
   /**
    * @brief   Retrieves reference to the parent. If the object has no parent null reference is returned.
@@ -96,7 +96,7 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    * @return	Reference to the parent or null reference.
    */
   template <typename T = Object>
-  Ref<T> getParent() const;
+  std::shared_ptr<T> getParent() const;
 
   /**
    * @brief Detach this object from parent if it has one.
@@ -111,7 +111,7 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    * @return	Child object with the given name and of the given type or null if no child matches.
    */
   template <typename T = Object>
-  Ref<T> getChild(std::string_view name) const;
+  std::shared_ptr<T> getChild(std::string_view name) const;
 
   /**
    * @brief Traverse the hierarchy passing this and all descendant object to the traversal function.
@@ -119,7 +119,7 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    *
    * @param	traversal_fn  Traversal function.
    */
-  void traverseDown(const std::function<bool(Ref<Object>)>& traversal_fn) const;
+  void traverseDown(const std::function<bool(const std::shared_ptr<Object>&)>& traversal_fn) const;
 
   /**
    * @brief Traverse the hierarchy passing all descendant object to the traversal function.
@@ -127,7 +127,7 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    *
    * @param	traversal_fn  Traversal function.
    */
-  void traverseDownExcl(const std::function<bool(Ref<Object>)>& traversal_fn) const;
+  void traverseDownExcl(const std::function<bool(const std::shared_ptr<Object>&)>& traversal_fn) const;
 
   /**
    * @brief Traverse the hierarchy passing this and all ascendant object to the traversal function.
@@ -135,7 +135,7 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    *
    * @param	traversal_fn  Traversal function.
    */
-  void traverseUp(const std::function<bool(Ref<Object>)>& traversal_fn) const;
+  void traverseUp(const std::function<bool(const std::shared_ptr<Object>&)>& traversal_fn) const;
 
   /**
    * @brief Traverse the hierarchy passing all ascendant object to the traversal function.
@@ -143,7 +143,7 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    *
    * @param	traversal_fn  Traversal function.
    */
-  void traverseUpExcl(const std::function<bool(Ref<Object>)>& traversal_fn) const;
+  void traverseUpExcl(const std::function<bool(const std::shared_ptr<Object>&)>& traversal_fn) const;
 
   /**
    * @brief   Add the component to the object.
@@ -153,7 +153,7 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    * @return  Reference to the component.
    */
   template <typename T, typename... Args>
-  Ref<T> addComponent(Args... args);
+  std::shared_ptr<T> addComponent(Args... args);
 
   /**
    * @brief   Retrieve first component of the given type T.
@@ -162,7 +162,7 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    * @return	First component of type T or null if there is no component of the given type T.
    */
   template <typename T>
-  Ref<T> getComponent() const;
+  std::shared_ptr<T> getComponent() const;
 
   /**
    * @brief   Retrieve all components of type T
@@ -171,7 +171,7 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    * @return	Vector of components of the given type.
    */
   template <typename T>
-  const std::vector<Ref<T>>& getComponents() const;
+  std::vector<std::shared_ptr<T>> getComponents() const;
 
   /**
    * @brief Default virtual destructor (this object is intended to be inherited).
@@ -198,91 +198,92 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
   /**
    * Weak reference to the parent.
    */
-  Ref<Object> parent_;
+  std::weak_ptr<Object> parent_;
 
   /**
    * Holds child objects mapped by their name.
    */
-  std::unordered_multimap<std::string_view, Shared<Object>> children_;
+  std::multimap<std::string_view, std::shared_ptr<Object>> children_;
 
   /**
    * Holds components of the object.
    */
-  std::list<Shared<Component>> components_;
+  std::list<std::shared_ptr<Component>> components_;
 
   /**
    * Callbacks that are invoked once the object parent changes.
    */
-  std::unordered_map<size_t, std::function<void(Ref<Object>)>> on_parent_change_callbacks_;
+  std::unordered_map<size_t, std::function<void(const std::shared_ptr<Object>&)>> on_parent_change_callbacks_;
 };
 
 template <typename T>
-Ref<T> Object::getParent() const {
+std::shared_ptr<T> Object::getParent() const {
   if constexpr (std::is_same<Object, T>()) {
-    return parent_;
+    return parent_.lock();
   } else {
-    return parent_.dynamicCast<T>();
+    return std::dynamic_pointer_cast<T>(parent_.lock());
   }
 }
 
 template <typename T>
-Ref<T> Object::getChild(const std::string_view name) const {
+std::shared_ptr<T> Object::getChild(const std::string_view name) const {
+  static std::shared_ptr<T> null = nullptr;
+
   const auto range = children_.equal_range(name);
-  for (auto it = range.first; it != range.second; ++it) {
-    Ref<T> ref = it->second;
-    if (ref) {
-      return ref;
-    }
-  }
 
-  return Ref<T>();
-}
-
-template <typename T>
-Ref<T> Object::find(const std::string_view name) const {
-  // Check if this object matches the search.
-  if (this->name() == name) {
-    Ref<T> obj(dynamic_cast<T*>(const_cast<Object*>(this)));
-    if (obj) {
-      return obj;
-    }
-  }
-
-  // Search in child objects.
-  Ref<T> search_res;
-  for (auto& child : children_) {
-    search_res = child.second->find<T>(name);
-    if (search_res) {
-      break;
-    }
-  }
-
-  return search_res;
-}
-
-template <typename T, typename... Args>
-Ref<T> Object::addComponent(Args... args) {
-  components_.emplace_back(Shared<T>::create(Ref<Object>(this), args...));
-  return components_.back();
-}
-
-template <typename T>
-Ref<T> Object::getComponent() const {
-  for (auto& component : components_) {
-    Shared<T> casted = component.dynamicCast<T>();
+  for (auto it = range.first; it != range.second; it++) {
+    auto casted = std::dynamic_pointer_cast<T>(it->second);
     if (casted) {
       return casted;
     }
   }
 
-  return Ref<T>();
+  return nullptr;
 }
 
 template <typename T>
-const std::vector<Ref<T>>& Object::getComponents() const {
-  std::vector<Ref<T>> matches;
+std::shared_ptr<T> Object::find(const std::string_view name) const {
+  // Check if this object matches the search.
+  if (this->name() == name) {
+    return std::dynamic_pointer_cast<T>(const_cast<Object*>(this)->shared_from_this());
+  }
+
+  // Search in child objects.
+  std::shared_ptr<T> search_rez;
+  for (auto& child : children_) {
+    search_rez = child.second->find<T>(name);
+    if (search_rez) {
+      break;
+    }
+  }
+
+  return search_rez;
+}
+
+template <typename T, typename... Args>
+std::shared_ptr<T> Object::addComponent(Args... args) {
+  components_.emplace_back(std::make_shared<T>(shared_from_this(), args...));
+  return std::static_pointer_cast<T>(components_.back());
+}
+
+template <typename T>
+std::shared_ptr<T> Object::getComponent() const {
+  std::shared_ptr<T> searched_component;
   for (auto& component : components_) {
-    Shared<T> casted = component.dynamicCast<T>();
+    searched_component = std::dynamic_pointer_cast<T>(component);
+    if (searched_component) {
+      break;
+    }
+  }
+
+  return searched_component;
+}
+
+template <typename T>
+std::vector<std::shared_ptr<T>> Object::getComponents() const {
+  std::vector<std::shared_ptr<T>> matches;
+  for (auto& component : components_) {
+    std::shared_ptr<T> casted = std::dynamic_pointer_cast<T>(component);
     if (casted) {
       matches.emplace_back(casted);
     }

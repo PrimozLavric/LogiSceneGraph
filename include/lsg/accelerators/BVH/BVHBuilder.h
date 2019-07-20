@@ -21,14 +21,14 @@
 
 #include <cmath>
 #include <deque>
+#include <functional>
+#include <memory>
 #include <vector>
 #include "lsg/accelerators/BVH/BVH.h"
 #include "lsg/accelerators/BVH/SAHFunction.h"
-#include "lsg/core/Shared.h"
 #include "lsg/math/AABB.h"
 
-namespace lsg {
-namespace bvh {
+namespace lsg::bvh {
 
 /**
  * @brief SAH BVHBuilder configuration.
@@ -157,7 +157,7 @@ class BVHBuilder {
    *
    * @return  Shared Bounding Volume Hierarchy object.
    */
-  Shared<BVH<T>> process(const std::vector<AABB<T>>& bounding_boxes);
+  std::shared_ptr<BVH<T>> process(const std::vector<AABB<T>>& bounding_boxes);
 
  protected:
   /**
@@ -243,7 +243,7 @@ BVHBuilder<T>::BVHBuilder(SAHFunction sah_function, const BVHConfig& config)
   : sah_function_(std::move(sah_function)), config_(config) {}
 
 template <typename T>
-Shared<BVH<T>> BVHBuilder<T>::process(const std::vector<AABB<T>>& bounding_boxes) {
+std::shared_ptr<BVH<T>> BVHBuilder<T>::process(const std::vector<AABB<T>>& bounding_boxes) {
   t_reference_stack_.clear();
 
   // Generate references and compute root node bounding box.
@@ -264,7 +264,7 @@ Shared<BVH<T>> BVHBuilder<T>::process(const std::vector<AABB<T>>& bounding_boxes
   t_prim_indices_.reserve(bounding_boxes.size());
 
   buildNode(root_spec, 0);
-  return Shared<BVH<T>>::create(std::move(t_nodes_), std::move(t_prim_indices_));
+  return std::make_shared<BVH<T>>(std::move(t_nodes_), std::move(t_prim_indices_));
 }
 
 template <typename T>
@@ -340,7 +340,7 @@ uint32_t BVHBuilder<T>::createLeaf(const NodeSpec<T>& spec) {
 
 template <typename T>
 ObjectSplit<T> BVHBuilder<T>::findObjectSplit(const NodeSpec<T>& spec, const float node_sah) {
-  ObjectSplit<T> best_split;
+  ObjectSplit<T> best_split{};
   float best_tie_break = std::numeric_limits<float>::max();
 
   // Iterator that points to element where the node references begin.
@@ -397,7 +397,6 @@ std::pair<NodeSpec<T>, NodeSpec<T>> BVHBuilder<T>::performObjectSplit(const Node
                         NodeSpec<T>(spec.num_refs - split.num_left, split.right_bounds));
 }
 
-} // namespace bvh
-} // namespace lsg
+} // namespace lsg::bvh
 
 #endif // LSG_ACCELERATORS_BVH_BUILDER_H
