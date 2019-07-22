@@ -83,6 +83,26 @@ const AABB<float>& Geometry::getBoundingBox() const {
   return bounding_box_;
 }
 
+std::shared_ptr<TriangleAccessor<float>> Geometry::getTriangleAccessor() const {
+  throwIf<IllegalInvocation>(!vertices_.has_value(), "Tried to create TriangleAccessor for geometry without vertices.");
+
+  if (indices_.has_value()) {
+    if (indices_.value().elementSize() == sizeof(uint16_t)) {
+      return std::make_shared<IndexedTriAccessor<uint16_t, float>>(vertices_.value(),
+                                                                   TBufferAccessor<uint16_t>(indices_.value()));
+    }
+
+    if (indices_.value().elementSize() == sizeof(uint32_t)) {
+      return std::make_shared<IndexedTriAccessor<uint32_t, float>>(vertices_.value(),
+                                                                   TBufferAccessor<uint32_t>(indices_.value()));
+    }
+
+    throw IllegalInvocation("Unknown index type.");
+  }
+
+  return std::make_shared<TriAccessor<float>>(vertices_.value());
+}
+
 void Geometry::clearVertices() {
   vertices_.reset();
   bounding_box_.reset();

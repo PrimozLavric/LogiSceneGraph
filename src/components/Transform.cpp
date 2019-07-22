@@ -51,11 +51,7 @@ Transform::Transform(const std::weak_ptr<Object>& owner)
 
 const glm::mat4x4& Transform::matrix() {
   if (loc_matrix_dirty_) {
-    loc_matrix_ = glm::mat4_cast(loc_rotation_);
-    for (size_t i = 0; i < 3; i++) {
-      loc_matrix_[i][i] *= loc_scale_[i];
-      loc_matrix_[3][i] = loc_position_[i];
-    }
+    composeMatrix(loc_matrix_, loc_position_, loc_rotation_, loc_scale_);
   }
 
   return loc_matrix_;

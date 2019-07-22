@@ -57,8 +57,7 @@ class Geometry : public Identifiable, public std::enable_shared_from_this<Geomet
 
   const AABB<float>& getBoundingBox() const;
 
-  template <typename T>
-  std::shared_ptr<TriangleAccessor<T>> getTriangleAccessor() const;
+  std::shared_ptr<TriangleAccessor<float>> getTriangleAccessor() const;
 
   void clearVertices();
 
@@ -159,27 +158,6 @@ class Geometry : public Identifiable, public std::enable_shared_from_this<Geomet
    */
   AABB<float> bounding_box_;
 };
-
-template <typename T>
-std::shared_ptr<TriangleAccessor<T>> Geometry::getTriangleAccessor() const {
-  throwIf<IllegalInvocation>(!vertices_.has_value(), "Tried to create TriangleAccessor for geometry without vertices.");
-
-  if (indices_.has_value()) {
-    if (indices_.value().elementSize() == sizeof(uint16_t)) {
-      return std::make_shared<IndexedTriAccessor<uint16_t, T>>(vertices_.value(),
-                                                               TBufferAccessor<uint16_t>(indices_.value()));
-    }
-
-    if (indices_.value().elementSize() == sizeof(uint32_t)) {
-      return std::make_shared<IndexedTriAccessor<uint32_t, T>>(vertices_.value(),
-                                                               TBufferAccessor<uint32_t>(indices_.value()));
-    }
-
-    throw IllegalInvocation("Unknown index type.");
-  }
-
-  return std::make_shared<TriAccessor<T>>(vertices_.value());
-}
 
 } // namespace lsg
 

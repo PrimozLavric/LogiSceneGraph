@@ -34,7 +34,6 @@
 #include "core/Math.h"
 #include "core/Object.h"
 #include "core/Scene.h"
-#include "core/Shared.h"
 #include "core/VersionTracker.h"
 #include "loaders/GLTFLoader.h"
 #include "materials/Material.h"

@@ -22,34 +22,47 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#define GLM_ENABLE_EXPERIMENTAL 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
 
 namespace lsg {
 
 inline void composeMatrix(glm::mat4x4& mat, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& scale) {
-	mat = glm::mat4_cast(rot);
+  float x = rot.x, y = rot.y, z = rot.z, w = rot.w;
+  float x2 = x + x, y2 = y + y, z2 = z + z;
+  float xx = x * x2, xy = x * y2, xz = x * z2;
+  float yy = y * y2, yz = y * z2, zz = z * z2;
+  float wx = w * x2, wy = w * y2, wz = w * z2;
 
-	// Local position.
-	mat[3][0] += pos[0];
-	mat[3][1] += pos[1];
-	mat[3][2] += pos[2];
+  float sx = scale.x, sy = scale.y, sz = scale.z;
 
-	// Scale.
-	for (size_t i = 0; i < 3; i++) {
-		mat[i][0] *= scale[0];
-		mat[i][1] *= scale[1];
-		mat[i][2] *= scale[2];
-	}
+  mat[0][0] = (1 - (yy + zz)) * sx;
+  mat[0][1] = (xy + wz) * sx;
+  mat[0][2] = (xz - wy) * sx;
+  mat[0][3] = 0;
+
+  mat[1][0] = (xy - wz) * sy;
+  mat[1][1] = (1 - (xx + zz)) * sy;
+  mat[1][2] = (yz + wx) * sy;
+  mat[1][3] = 0;
+
+  mat[2][0] = (xz + wy) * sz;
+  mat[2][1] = (yz - wx) * sz;
+  mat[2][2] = (1 - (xx + yy)) * sz;
+  mat[2][3] = 0;
+
+  mat[3][0] = pos.x;
+  mat[3][1] = pos.y;
+  mat[3][2] = pos.z;
+  mat[3][3] = 1;
 }
-
 
 inline void decomposeMatrix(const glm::mat4x4& mat, glm::vec3& pos, glm::quat& rot, glm::vec3& scale) {
-	static glm::vec3 skew;
-	static glm::vec4 perspective;
-	glm::decompose(mat, scale, rot, pos, skew, perspective);
+  static glm::vec3 skew;
+  static glm::vec4 perspective;
+  glm::decompose(mat, scale, rot, pos, skew, perspective);
 }
 
-}
+} // namespace lsg
 
-#endif  // LSG_CORE_MATH_H
+#endif // LSG_CORE_MATH_H

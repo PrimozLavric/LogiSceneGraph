@@ -58,6 +58,8 @@ class BVH {
     };
   };
 
+  BVH() = default;
+
   /**
    * @brief
    *
@@ -79,6 +81,8 @@ class BVH {
    * @return
    */
   const std::vector<uint32_t>& getPrimitiveIndices() const;
+
+  const AABB<T>& getBounds() const;
 
   std::vector<uint32_t> rayIntersect(const Ray<T>& ray);
 
@@ -109,6 +113,17 @@ const std::vector<typename BVH<T>::Node>& BVH<T>::getNodes() const {
 template <typename T>
 const std::vector<uint32_t>& BVH<T>::getPrimitiveIndices() const {
   return prim_indices_;
+}
+
+template <typename T>
+const AABB<T>& BVH<T>::getBounds() const {
+  static AABB<T> zeroBounds;
+
+  if (!nodes_.empty()) {
+    return nodes_[0].bounds;
+  }
+
+  return zeroBounds;
 }
 
 template <typename T>

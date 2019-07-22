@@ -33,6 +33,8 @@ class Ray {
 
   const glm::tvec3<T>& dir() const;
 
+  Ray<T> transform(const glm::tmat4x4<T>& matrix) const;
+
   bool intersectAABB(const AABB<T>& aabb) const;
 
   std::optional<glm::tvec3<T>> intersectTriangle(const glm::tvec3<T>& a, const glm::tvec3<T>& b,
@@ -54,6 +56,11 @@ const glm::tvec3<T>& Ray<T>::origin() const {
 template <typename T>
 const glm::tvec3<T>& Ray<T>::dir() const {
   return dir_;
+}
+
+template <typename T>
+Ray<T> Ray<T>::transform(const glm::tmat4x4<T>& matrix) const {
+  return Ray<T>(matrix * glm::vec4(origin_, 1.0), matrix * glm::vec4(dir_, 0.0));
 }
 
 template <typename T>
