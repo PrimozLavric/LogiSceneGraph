@@ -28,6 +28,7 @@
 #include <unordered_map>
 #include "lsg/core/Component.h"
 #include "lsg/core/Identifiable.h"
+#include "lsg/core/ObjectComposite.h"
 
 namespace lsg {
 
@@ -41,16 +42,6 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    * @param	value	Activate - true, Deactivate - false.
    */
   void setActive(bool value);
-
-  /**
-   * @brief   Search for object with the given name.
-   *
-   * @tparam  T     Object type.
-   * @param   name  Name of the searched object.
-   * @return  Reference to the searched object or null ref if not found.
-   */
-  template <typename T = Object>
-  std::shared_ptr<T> find(std::string_view name) const;
 
   /**
    * @brief   Check if the object is active.
@@ -72,6 +63,24 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    * @param	obj Child object.
    */
   void addChild(const std::shared_ptr<Object>& obj);
+
+  /**
+   * @brief   Retrieve child object with the given name.
+   *
+   * @tparam	T     Type to which the child object will be casted.
+   * @param   name	Name of the object that is to be retrieved.
+   * @return	Child object with the given name and of the given type or null if no child matches.
+   */
+  const std::shared_ptr<Object>& getChild(std::string_view name) const;
+
+  /**
+   * @brief   Search for object with the given name.
+   *
+   * @tparam  T     Object type.
+   * @param   name  Name of the searched object.
+   * @return  Shared pointer that points to the searched child or nullptr if not found.
+   */
+  std::shared_ptr<Object> find(std::string_view hierarchy_path) const;
 
   /**
    * @brief Sets on parent change callback for the given object.
@@ -102,32 +111,6 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
    * @brief Detach this object from parent if it has one.
    */
   void detach();
-
-  /**
-   * @brief   Retrieve child object with the given name.
-   *
-   * @tparam	T     Type to which the child object will be casted.
-   * @param   name	Name of the object that is to be retrieved.
-   * @return	Child object with the given name and of the given type or null if no child matches.
-   */
-  template <typename T = Object>
-  std::shared_ptr<T> getChild(std::string_view name) const;
-
-  /**
-   * @brief Traverse the hierarchy passing this and all descendant object to the traversal function.
-   *        Traversal can be stopped by returning false in traversal function.
-   *
-   * @param	traversal_fn  Traversal function.
-   */
-  void traverseDown(const std::function<bool(const std::shared_ptr<Object>&)>& traversal_fn) const;
-
-  /**
-   * @brief Traverse the hierarchy passing all descendant object to the traversal function.
-   *        Traversal can be stopped by returning false in traversal function.
-   *
-   * @param	traversal_fn  Traversal function.
-   */
-  void traverseDownExcl(const std::function<bool(const std::shared_ptr<Object>&)>& traversal_fn) const;
 
   /**
    * @brief Traverse the hierarchy passing this and all ascendant object to the traversal function.
@@ -201,9 +184,9 @@ class Object : public Identifiable, public std::enable_shared_from_this<Object> 
   std::weak_ptr<Object> parent_;
 
   /**
-   * Holds child objects mapped by their name.
+   * Holds child objects.
    */
-  std::multimap<std::string_view, std::shared_ptr<Object>> children_;
+  std::vector<std::shared_ptr<Object>> children_;
 
   /**
    * Holds components of the object.
@@ -223,41 +206,6 @@ std::shared_ptr<T> Object::getParent() const {
   } else {
     return std::dynamic_pointer_cast<T>(parent_.lock());
   }
-}
-
-template <typename T>
-std::shared_ptr<T> Object::getChild(const std::string_view name) const {
-  static std::shared_ptr<T> null = nullptr;
-
-  const auto range = children_.equal_range(name);
-
-  for (auto it = range.first; it != range.second; it++) {
-    auto casted = std::dynamic_pointer_cast<T>(it->second);
-    if (casted) {
-      return casted;
-    }
-  }
-
-  return nullptr;
-}
-
-template <typename T>
-std::shared_ptr<T> Object::find(const std::string_view name) const {
-  // Check if this object matches the search.
-  if (this->name() == name) {
-    return std::dynamic_pointer_cast<T>(const_cast<Object*>(this)->shared_from_this());
-  }
-
-  // Search in child objects.
-  std::shared_ptr<T> search_rez;
-  for (auto& child : children_) {
-    search_rez = child.second->find<T>(name);
-    if (search_rez) {
-      break;
-    }
-  }
-
-  return search_rez;
 }
 
 template <typename T, typename... Args>

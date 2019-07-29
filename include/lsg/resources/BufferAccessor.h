@@ -184,7 +184,7 @@ class TBufferAccessor : public BufferAccessor {
    * @param	  index Element index.
    * @return	Element on the given index.
    */
-  const T& operator[](size_t index) const;
+  T& operator[](size_t index) const;
 };
 
 template <typename T>
@@ -209,9 +209,8 @@ TBufferAccessor<T>::TBufferAccessor(BufferAccessor&& other) : BufferAccessor(std
 }
 
 template <typename T>
-const T& TBufferAccessor<T>::operator[](const size_t index) const {
-  throwIf<OutOfRange>(index >= count(), "Tried to access element that is out of range.");
-  return reinterpret_cast<const T&>(bufferView().data()[bufferView().stride() * index + byteOffset()]);
+T& TBufferAccessor<T>::operator[](const size_t index) const {
+  return reinterpret_cast<T&>(bufferView().data()[bufferView().stride() * index + byteOffset()]);
 }
 
 } // namespace lsg

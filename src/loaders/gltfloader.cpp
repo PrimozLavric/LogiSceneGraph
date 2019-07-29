@@ -169,9 +169,9 @@ std::vector<std::shared_ptr<Object>> GLTFLoader::loadObjects(const tinygltf::Mod
           lsg_material->setName(gltf_material.name);
 
           if (auto jt = gltf_material.values.find("baseColorFactor"); jt != gltf_material.values.end()) {
-            lsg_material->setBaseColor(glm::make_vec4(jt->second.ColorFactor().data()));
+            lsg_material->setBaseColorFactor(glm::make_vec4(jt->second.ColorFactor().data()));
           } else {
-            lsg_material->setBaseColor(glm::vec4(1.0f));
+            lsg_material->setBaseColorFactor(glm::vec4(1.0f));
           }
 
           if (auto jt = gltf_material.values.find("baseColorTexture"); jt != gltf_material.values.end()) {
@@ -210,9 +210,9 @@ std::vector<std::shared_ptr<Object>> GLTFLoader::loadObjects(const tinygltf::Mod
 
           if (auto jt = gltf_material.additionalValues.find("emissiveFactor");
               jt != gltf_material.additionalValues.end()) {
-            lsg_material->setEmissiveFactor(static_cast<float>(jt->second.Factor()));
+            lsg_material->setEmissiveFactor(glm::make_vec3(jt->second.number_array.data()));
           } else {
-            lsg_material->setEmissiveFactor(0.0f);
+            lsg_material->setEmissiveFactor(glm::vec3(0.0f));
           }
 
           if (auto jt = gltf_material.additionalValues.find("emissiveTexture");
@@ -262,7 +262,7 @@ BufferAccessor GLTFLoader::loadBuffer(const tinygltf::Model& model, size_t acces
   return BufferAccessor(std::make_shared<Buffer>(buffer.name, buffer_data), structure_type, component_type);
 }
 
-std::shared_ptr<Image2D> GLTFLoader::loadImage(const tinygltf::Model& model, size_t image_index) {
+std::shared_ptr<Image> GLTFLoader::loadImage(const tinygltf::Model& model, size_t image_index) {
   tinygltf::Image gltf_img = model.images[image_index];
   StructureType structure_type = parseStructure(gltf_img.component);
 
@@ -285,9 +285,7 @@ std::shared_ptr<Image2D> GLTFLoader::loadImage(const tinygltf::Model& model, siz
       throw LoaderError("Failed to load image: " + gltf_img.name + ".");
   }
 
-  // TODO: Include name.
-  return std::make_shared<Image2D>(reinterpret_cast<std::byte*>(gltf_img.image.data()), img_format, gltf_img.width,
-                                   gltf_img.height);
+  return std::make_shared<Image>(gltf_img.name, gltf_img.image, img_format, gltf_img.width, gltf_img.height);
 }
 
 std::pair<Filter, MipmapMode> GLTFLoader::parseFilterMode(int mode) {
@@ -333,7 +331,7 @@ std::shared_ptr<Sampler> GLTFLoader::loadSampler(const tinygltf::Model& model, s
 
 std::shared_ptr<Texture> GLTFLoader::loadTexture(const tinygltf::Model& model, size_t texture_index) {
   tinygltf::Texture gltf_tex = model.textures[texture_index];
-  std::shared_ptr<Image2D> image = loadImage(model, gltf_tex.source);
+  std::shared_ptr<Image> image = loadImage(model, gltf_tex.source);
   std::shared_ptr<Sampler> sampler =
     (gltf_tex.sampler < 0) ? std::make_shared<Sampler>() : loadSampler(model, gltf_tex.sampler);
 

@@ -19,8 +19,8 @@
 #ifndef LSG_CORE_STRING_UTIL_H
 #define LSG_CORE_STRING_UTIL_H
 
-#include <string>
 #include <sstream>
+#include <string>
 
 namespace lsg {
 namespace util {
@@ -34,9 +34,9 @@ namespace detail {
  * @param arg - const reference to the argument
  * @return std::ostream& output stream
  */
-template<typename LastArg>
+template <typename LastArg>
 std::ostream& streamAppend(std::ostream& stream, const LastArg& arg) {
-	return (stream << arg);
+  return (stream << arg);
 }
 
 /**
@@ -51,25 +51,25 @@ std::ostream& streamAppend(std::ostream& stream, const LastArg& arg) {
  * @param args other arguments
  * @return std::ostream& output stream
  */
-template<typename FirstArg, typename SecondArg, typename... Args>
-std::ostream& streamAppend(std::ostream& stream, const FirstArg& arg1, const SecondArg& arg2, const Args& ... args) {
-	stream << arg1;
-	return streamAppend(stream, arg2, args...);
+template <typename FirstArg, typename SecondArg, typename... Args>
+std::ostream& streamAppend(std::ostream& stream, const FirstArg& arg1, const SecondArg& arg2, const Args&... args) {
+  stream << arg1;
+  return streamAppend(stream, arg2, args...);
 }
 
-}
+} // namespace detail
 
 /**
  * @brief String concatenation function.
  */
-template<typename... Args>
-std::string generateString(const Args& ... args) {
-	std::stringstream stream{};
-	detail::streamAppend(stream, args...);
-	return stream.str();
+template <typename... Args>
+std::string strCat(const Args&... args) {
+  std::stringstream stream{};
+  detail::streamAppend(stream, args...);
+  return stream.str();
 }
 
-}
-}
+} // namespace util
+} // namespace lsg
 
 #endif // LSG_CORE_STRING_UTIL_H

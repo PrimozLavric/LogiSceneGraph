@@ -93,7 +93,7 @@ class SplitBVHBuilder : public BVHBuilder<T> {
   explicit SplitBVHBuilder(SAHFunction sha_function = SAHFunction(), const BVHConfig& bvh_config = BVHConfig(),
                            const SplitBVHConfig& split_config = SplitBVHConfig());
 
-  std::shared_ptr<BVH<T>> process(const std::shared_ptr<TriangleAccessor<T>>& triangle_accessor);
+  std::shared_ptr<BVH<T>> process(const std::shared_ptr<TriangleAccessor<glm::tvec3<T>>>& triangle_accessor);
 
   virtual ~SplitBVHBuilder() = default;
 
@@ -141,7 +141,7 @@ class SplitBVHBuilder : public BVHBuilder<T> {
   /**
    * Triangle accessor.
    */
-  std::shared_ptr<TriangleAccessor<T>> t_triangle_accessor_;
+  std::shared_ptr<TriangleAccessor<glm::tvec3<T>>> t_triangle_accessor_;
 };
 
 template <typename T>
@@ -155,14 +155,15 @@ SplitBVHBuilder<T>::SplitBVHBuilder(SAHFunction sha_function, const BVHConfig& b
 }
 
 template <typename T>
-std::shared_ptr<BVH<T>> SplitBVHBuilder<T>::process(const std::shared_ptr<TriangleAccessor<T>>& triangle_accessor) {
+std::shared_ptr<BVH<T>>
+  SplitBVHBuilder<T>::process(const std::shared_ptr<TriangleAccessor<glm::tvec3<T>>>& triangle_accessor) {
   t_triangle_accessor_ = triangle_accessor;
 
   // Generate references and compute root node bounding box.
   NodeSpec<T> root_spec(t_triangle_accessor_->count());
 
   for (uint32_t i = 0; i < t_triangle_accessor_->count(); i++) {
-    Triangle<T> tri = (*t_triangle_accessor_)[i];
+    Triangle<glm::tvec3<T>> tri = (*t_triangle_accessor_)[i];
     AABB<T> bounds;
 
     // Compute triangle bounding box.
@@ -325,7 +326,7 @@ std::pair<Reference<T>, Reference<T>> SplitBVHBuilder<T>::splitReference(const R
   Reference<T> left = ref;
   Reference<T> right = ref;
 
-  Triangle<T> tri = (*t_triangle_accessor_)[ref.index];
+  Triangle<glm::tvec3<T>> tri = (*t_triangle_accessor_)[ref.index];
 
   // Loop over edges.
   for (size_t i = 0u; i < 3u; i++) {

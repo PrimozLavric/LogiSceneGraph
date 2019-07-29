@@ -22,28 +22,48 @@
 
 namespace lsg {
 
-Image::Image(const std::string& name, std::vector<std::byte> data, const Format format)
-  : Identifiable(name), format_(format), format_info_(kFormatTable.at(format)), data_(std::move(data)) {
-  throwIf<InitializationError>(data_.size() % format_info_.size != 0,
-                               "Image data size is not multiple of format size.");
+Image::Image(const std::string& name, Format format, size_t width, size_t height, size_t depth)
+  : Identifiable(name), format_(format), format_info_(kFormatTable.at(format)), width_(width), height_(height),
+    depth_(depth), data_(format_info_.size * width_ * height_ * depth_, std::byte(0u)) {}
+
+size_t Image::width() const {
+  return width_;
 }
 
-Image::Image(const std::string& name, const std::byte* data, const Format format, const size_t size)
-  : Identifiable(name), format_(format), format_info_(kFormatTable.at(format)), data_(data, data + size) {
-  throwIf<InitializationError>(data_.size() % format_info_.size != 0,
-                               "Image data size is not multiple of format size.");
+size_t Image::height() const {
+  return height_;
 }
 
-Image::Image(const std::string& name, const Format format, const size_t pixel_count)
-  : Identifiable(name), format_(format), format_info_(kFormatTable.at(format)),
-    data_(pixel_count * format_info_.size, std::byte(0)) {}
+size_t Image::depth() const {
+  return depth_;
+}
 
 Format Image::getFormat() const {
   return format_;
 }
 
+size_t Image::pixelSize() const {
+  return format_info_.size;
+}
+size_t Image::numChannels() const {
+  return format_info_.channel_count;
+}
+
 FormatInfo Image::getFormatInfo() const {
   return format_info_;
+}
+
+std::byte* Image::at(size_t x, size_t y, size_t z) {
+  return const_cast<std::byte*>(static_cast<const Image*>(this)->at(x, y, z));
+}
+
+const std::byte* Image::at(size_t x, size_t y, size_t z) const {
+  const size_t pixel_size = pixelSize();
+  const size_t bX = pixel_size * x;
+  const size_t bY = pixel_size * y;
+  const size_t bZ = pixel_size * z;
+
+  return &data_[bX + width_ * (bY + depth_ * bZ)];
 }
 
 const std::byte* Image::rawPixelData() const {
@@ -52,6 +72,29 @@ const std::byte* Image::rawPixelData() const {
 
 void Image::copyFrom(const std::byte* input_data) {
   std::memcpy(data_.data(), input_data, data_.size());
+}
+
+void Image::updateProperties(Format format, size_t width, size_t height, size_t depth) {
+  format_ = format;
+  format_info_ = kFormatTable.at(format);
+  width_ = width;
+  height_ = height;
+  depth_ = depth;
+  validate();
+}
+
+void Image::updateProperties(size_t width, size_t height, size_t depth) {
+  width_ = width;
+  height_ = height;
+  depth_ = depth;
+  validate();
+}
+
+void Image::validate() const {
+  throwIf<InitializationError>(data_.size() != (format_info_.size) * width_ * height_ * depth_,
+                               util::strCat("Image dimensions [", width_, ", ", height_, ", ", depth_,
+                                            "] are not compatible with buffer size [", data_.size(),
+                                            "] and format of size [", format_info_.size, "]."));
 }
 
 } // namespace lsg

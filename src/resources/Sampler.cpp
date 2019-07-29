@@ -20,23 +20,14 @@
 
 namespace lsg {
 
-
-Sampler::Sampler(const Filter mag_filter, const Filter min_filter, const Wrapping wrapping_u, 
-	               const Wrapping wrapping_v, const Wrapping wrapping_w, const MipmapMode mipmap_mode, 
-	               const float mip_lod_bias, const bool enable_anisotropy, const float max_anisotropy, 
-	               const bool enable_compare, const CompareOp compare_op, const float min_lod, const float max_lod)
-  : Identifiable("Sampler"),
-    mag_filter_(mag_filter),
-    min_filter_(min_filter),
-    wrapping_u_(wrapping_u), wrapping_v_(wrapping_v), wrapping_w_(wrapping_w),
-    mipmap_mode_(mipmap_mode),
-    mip_lod_bias_(mip_lod_bias),
-    enable_anisotropy_(enable_anisotropy),
-    max_anisotropy_(max_anisotropy),
-    enable_compare_(enable_compare),
-    compare_op_(compare_op),
-    min_lod_(min_lod),
-    max_lod_(max_lod) {}
+Sampler::Sampler(const Filter mag_filter, const Filter min_filter, const Wrapping wrapping_u, const Wrapping wrapping_v,
+                 const Wrapping wrapping_w, const MipmapMode mipmap_mode, const float mip_lod_bias,
+                 const bool enable_anisotropy, const float max_anisotropy, const bool enable_compare,
+                 const CompareOp compare_op, const float min_lod, const float max_lod)
+  : Identifiable("Sampler"), mag_filter_(mag_filter), min_filter_(min_filter), wrapping_u_(wrapping_u),
+    wrapping_v_(wrapping_v), wrapping_w_(wrapping_w), mipmap_mode_(mipmap_mode), mip_lod_bias_(mip_lod_bias),
+    enable_anisotropy_(enable_anisotropy), max_anisotropy_(max_anisotropy), enable_compare_(enable_compare),
+    compare_op_(compare_op), min_lod_(min_lod), max_lod_(max_lod) {}
 
 Filter Sampler::magFilter() const {
   return mag_filter_;
@@ -154,4 +145,4 @@ void Sampler::setMaxLod(const float max_lod) {
   max_lod_ = max_lod;
   incrementVersion();
 }
-}
+} // namespace lsg

@@ -20,18 +20,18 @@
 
 namespace lsg {
 
-MetallicRoughnessMaterial::MetallicRoughnessMaterial(const std::string& name, glm::vec4 base_color,
+MetallicRoughnessMaterial::MetallicRoughnessMaterial(const std::string& name, glm::vec4 base_color_factor,
                                                      float metalic_factor, float roughness_factor,
-                                                     float emissive_factor, TextureUV base_color_tex,
+                                                     glm::vec3 emissive_factor, TextureUV base_color_tex,
                                                      TextureUV metalic_roughness_tex, TextureUV normal_tex,
                                                      TextureUV emissive_tex)
-  : Material(name), base_color_(base_color), metalic_factor_(metalic_factor), roughness_factor_(roughness_factor),
-    emissive_factor_(emissive_factor), base_color_tex_(std::move(base_color_tex)),
+  : Material(name), base_color_factor_(base_color_factor), metalic_factor_(metalic_factor),
+    roughness_factor_(roughness_factor), emissive_factor_(emissive_factor), base_color_tex_(std::move(base_color_tex)),
     metallic_roughness_tex_(std::move(metalic_roughness_tex)), normal_tex_(std::move(normal_tex)),
     emissive_tex_(std::move(emissive_tex)) {}
 
-glm::vec4 MetallicRoughnessMaterial::baseColor() const {
-  return base_color_;
+glm::vec4 MetallicRoughnessMaterial::baseColorFactor() const {
+  return base_color_factor_;
 }
 
 float MetallicRoughnessMaterial::metallicFactor() const {
@@ -42,7 +42,7 @@ float MetallicRoughnessMaterial::roughnessFactor() const {
   return roughness_factor_;
 }
 
-float MetallicRoughnessMaterial::emissiveFactor() const {
+glm::vec3 MetallicRoughnessMaterial::emissiveFactor() const {
   return emissive_factor_;
 }
 
@@ -62,8 +62,8 @@ const std::shared_ptr<Texture>& MetallicRoughnessMaterial::emissiveTex() const {
   return emissive_tex_.texture;
 }
 
-void MetallicRoughnessMaterial::setBaseColor(const glm::vec4& base_color) {
-  base_color_ = base_color;
+void MetallicRoughnessMaterial::setBaseColorFactor(const glm::vec4& base_color) {
+  base_color_factor_ = base_color;
   incrementVersion();
 }
 
@@ -77,7 +77,7 @@ void MetallicRoughnessMaterial::setRoughnessFactor(const float roughness_factor)
   incrementVersion();
 }
 
-void MetallicRoughnessMaterial::setEmissiveFactor(const float emissive_factor) {
+void MetallicRoughnessMaterial::setEmissiveFactor(const glm::vec3& emissive_factor) {
   emissive_factor_ = emissive_factor;
   incrementVersion();
 }

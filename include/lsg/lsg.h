@@ -36,6 +36,7 @@
 #include "core/Scene.h"
 #include "core/VersionTracker.h"
 #include "loaders/GLTFLoader.h"
+#include "lsg/util/String.h"
 #include "materials/Material.h"
 #include "materials/MetallicRoughnessMaterial.h"
 #include "math/AABB.h"
@@ -46,13 +47,10 @@
 #include "resources/Format.h"
 #include "resources/Geometry.h"
 #include "resources/Image.h"
-#include "resources/Image1D.h"
-#include "resources/Image2D.h"
-#include "resources/Image3D.h"
+#include "resources/ImageView.h"
 #include "resources/Sampler.h"
 #include "resources/SubMesh.h"
 #include "resources/Texture.h"
 #include "resources/Triangle.h"
-#include "util/StringUtil.h"
 
 #endif

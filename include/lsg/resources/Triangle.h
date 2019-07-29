@@ -26,95 +26,89 @@ namespace lsg {
 
 /**
  * @brief	  Triangle that contains references to its vertices.
- * 
+ *
  * @tparam	T Type of the vertex components.
  */
 template <typename T>
 class Triangle {
-public:
+ public:
   /**
-	 * @brief Initializes Triangle with vertex retrieval function.
-	 * 
-	 * @param	get_vertex_fn Function used to retrieve vertices.
-	 */
-	explicit Triangle(std::function<const glm::tvec3<T>&(size_t index)> get_vertex_fn)
-		: get_vertex_fn_(get_vertex_fn) {}
+   * @brief Initializes Triangle with vertex retrieval function.
+   *
+   * @param	get_vertex_fn Function used to retrieve vertices.
+   */
+  explicit Triangle(T& a, T& b, T& c) : vertex_data_({a, b, c}) {}
 
   /**
-	 * @brief   Retrieve first vertex of the triangle.
-	 * 
-	 * @return	First triangle vertex.
-	 */
-	const glm::tvec3<T>& a() const {
-		return get_vertex_fn_(0u);
-	}
+   * @brief   Retrieve first vertex of the triangle.
+   *
+   * @return	First triangle vertex.
+   */
+  const T& a() const {
+    return vertex_data_[0u];
+  }
 
-	/**
-	 * @brief   Retrieve second vertex of the triangle.
-	 *
-	 * @return	Second triangle vertex.
-	 */
-	const glm::tvec3<T>& b() const {
-		return get_vertex_fn_(1u);
-	}
+  /**
+   * @brief   Retrieve second vertex of the triangle.
+   *
+   * @return	Second triangle vertex.
+   */
+  const T& b() const {
+    return vertex_data_[1u];
+  }
 
-	/**
-	 * @brief   Retrieve third vertex of the triangle.
-	 *
-	 * @return	Third triangle vertex.
-	 */
-	const glm::tvec3<T>& c() const {
-		return get_vertex_fn_(2u);
-	}
+  /**
+   * @brief   Retrieve third vertex of the triangle.
+   *
+   * @return	Third triangle vertex.
+   */
+  const T& c() const {
+    return vertex_data_[2u];
+  }
 
   /**
    * @brief   Retrieve vertex on the give index (a - 0, b - 1, c - 2).
-   * 
-   * @param   index Vertex index. 
+   *
+   * @param   index Vertex index.
    * @return	Vertex.
    */
-  const glm::tvec3<T>& operator[](size_t index) const {
-	  return get_vertex_fn_(index);
-	}
+  const T& operator[](size_t index) const {
+    return vertex_data_[index];
+  }
 
-private:
-  /**
-   * Function that is used to retrieve vertices.
-   */
-	std::function<const glm::tvec3<T>&(size_t index)> get_vertex_fn_;
+ private:
+  std::array<std::reference_wrapper<T>, 3> vertex_data_;
 };
-
 
 /**
  * @brief	  Triangle accessor interface.
- * 
+ *
  * @tparam	T Type of triangle vertex components.
  */
 template <typename T>
 class TriangleAccessor {
-public:
+ public:
   /**
-	 * @brief	  Get number of triangles.
-	 * 
-	 * @return	Number of triangles.
-	 */
-	virtual size_t count() const = 0;
+   * @brief	  Get number of triangles.
+   *
+   * @return	Number of triangles.
+   */
+  virtual size_t count() const = 0;
 
   /**
-	 * @brief   Retrieve triangle on the given index.
-	 * 
-	 * @param	  index Index of the triangle. 
-	 * @return	Triangle.
-	 */
-	virtual Triangle<T> operator[](size_t index) const = 0;
+   * @brief   Retrieve triangle on the given index.
+   *
+   * @param	  index Index of the triangle.
+   * @return	Triangle.
+   */
+  virtual Triangle<T> operator[](size_t index) const = 0;
 
   /**
-	 * @brief This is an abstract class.
-	 */
-	virtual ~TriangleAccessor() = default;
+   * @brief This is an abstract class.
+   */
+  virtual ~TriangleAccessor() = default;
 };
 
-}
+} // namespace lsg
 
-
-#endif  // LSG_RESOURCES_TRIANGLE_ACCESSOR_H
+#endif // LSG_RESOURCES_TRIANGLE_ACCESSOR_H

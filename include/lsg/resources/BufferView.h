@@ -40,7 +40,7 @@ class BufferView : public std::enable_shared_from_this<BufferView> {
    *
    * @return	Pointer to buffer view data.
    */
-  const std::byte* data() const;
+  std::byte* data() const;
 
   /**
    * @brief   Number of entries in the buffer view.
@@ -82,7 +82,7 @@ class BufferView : public std::enable_shared_from_this<BufferView> {
   /**
    * Pointer to the beginning of the buffer view data.
    */
-  const std::byte* data_;
+  std::byte* data_;
 
   /**
    * Entry size in bytes.

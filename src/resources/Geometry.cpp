@@ -27,7 +27,7 @@ void Geometry::setIndices(const BufferAccessor& indices) {
   indices_ = indices;
 }
 
-void Geometry::setVertices(const TBufferAccessor<glm::tvec3<float>>& vertices) {
+void Geometry::setVertices(const TBufferAccessor<glm::vec3>& vertices) {
   vertices_ = vertices;
 
   bounding_box_.reset();
@@ -37,11 +37,11 @@ void Geometry::setVertices(const TBufferAccessor<glm::tvec3<float>>& vertices) {
   }
 }
 
-void Geometry::setNormals(const TBufferAccessor<glm::tvec3<float>>& normals) {
+void Geometry::setNormals(const TBufferAccessor<glm::vec3>& normals) {
   normals_ = normals;
 }
 
-void Geometry::setTangents(const TBufferAccessor<glm::tvec4<float>>& tangents) {
+void Geometry::setTangents(const TBufferAccessor<glm::vec4>& tangents) {
   tangents_ = tangents;
 }
 
@@ -59,15 +59,15 @@ const BufferAccessor& Geometry::getIndices() const {
   return indices_.value();
 }
 
-const TBufferAccessor<glm::tvec3<float>>& Geometry::getVertices() const {
+const TBufferAccessor<glm::vec3>& Geometry::getVertices() const {
   return vertices_.value();
 }
 
-const TBufferAccessor<glm::tvec3<float>>& Geometry::getNormals() const {
+const TBufferAccessor<glm::vec3>& Geometry::getNormals() const {
   return normals_.value();
 }
 
-const TBufferAccessor<glm::tvec4<float>>& Geometry::getTangents() const {
+const TBufferAccessor<glm::vec4>& Geometry::getTangents() const {
   return tangents_.value();
 }
 
@@ -81,26 +81,6 @@ const BufferAccessor& Geometry::getUv(const size_t index) const {
 
 const AABB<float>& Geometry::getBoundingBox() const {
   return bounding_box_;
-}
-
-std::shared_ptr<TriangleAccessor<float>> Geometry::getTriangleAccessor() const {
-  throwIf<IllegalInvocation>(!vertices_.has_value(), "Tried to create TriangleAccessor for geometry without vertices.");
-
-  if (indices_.has_value()) {
-    if (indices_.value().elementSize() == sizeof(uint16_t)) {
-      return std::make_shared<IndexedTriAccessor<uint16_t, float>>(vertices_.value(),
-                                                                   TBufferAccessor<uint16_t>(indices_.value()));
-    }
-
-    if (indices_.value().elementSize() == sizeof(uint32_t)) {
-      return std::make_shared<IndexedTriAccessor<uint32_t, float>>(vertices_.value(),
-                                                                   TBufferAccessor<uint32_t>(indices_.value()));
-    }
-
-    throw IllegalInvocation("Unknown index type.");
-  }
-
-  return std::make_shared<TriAccessor<float>>(vertices_.value());
 }
 
 void Geometry::clearVertices() {
@@ -154,6 +134,69 @@ bool Geometry::hasUv(const size_t index) const {
   throwIf<OutOfRange>(index > uv_.size(), "Cannot bind uv-s on index (" + std::to_string(index) + "). Max index is " +
                                             std::to_string(uv_.size() - 1) + ".");
   return uv_[index].has_value();
+}
+
+std::shared_ptr<TriangleAccessor<glm::vec3>> Geometry::getTrianglePositionAccessor() const {
+  throwIf<IllegalInvocation>(!vertices_.has_value(),
+                             "Tried to create TriangleAccessor for geometry without vertex positions.");
+
+  if (indices_.has_value()) {
+    if (indices_.value().elementSize() == sizeof(uint16_t)) {
+      return std::make_shared<IndexedTriAccessor<uint16_t, glm::vec3>>(vertices_.value(),
+                                                                       TBufferAccessor<uint16_t>(indices_.value()));
+    }
+
+    if (indices_.value().elementSize() == sizeof(uint32_t)) {
+      return std::make_shared<IndexedTriAccessor<uint32_t, glm::vec3>>(vertices_.value(),
+                                                                       TBufferAccessor<uint32_t>(indices_.value()));
+    }
+
+    throw IllegalInvocation("Unknown index type.");
+  }
+
+  return std::make_shared<TriAccessor<glm::vec3>>(vertices_.value());
+}
+
+std::shared_ptr<TriangleAccessor<glm::vec3>> Geometry::getTriangleNormalAccessor() const {
+  throwIf<IllegalInvocation>(!normals_.has_value(),
+                             "Tried to create TriangleAccessor for geometry without vertex normals.");
+
+  if (indices_.has_value()) {
+    if (indices_.value().elementSize() == sizeof(uint16_t)) {
+      return std::make_shared<IndexedTriAccessor<uint16_t, glm::vec3>>(normals_.value(),
+                                                                       TBufferAccessor<uint16_t>(indices_.value()));
+    }
+
+    if (indices_.value().elementSize() == sizeof(uint32_t)) {
+      return std::make_shared<IndexedTriAccessor<uint32_t, glm::vec3>>(normals_.value(),
+                                                                       TBufferAccessor<uint32_t>(indices_.value()));
+    }
+
+    throw IllegalInvocation("Unknown index type.");
+  }
+
+  return std::make_shared<TriAccessor<glm::vec3>>(normals_.value());
+}
+
+std::shared_ptr<TriangleAccessor<glm::vec4>> Geometry::getTriangleTangentAccessor() const {
+  throwIf<IllegalInvocation>(!tangents_.has_value(),
+                             "Tried to create TriangleAccessor for geometry without vertex tangents.");
+
+  if (indices_.has_value()) {
+    if (indices_.value().elementSize() == sizeof(uint16_t)) {
+      return std::make_shared<IndexedTriAccessor<uint16_t, glm::vec4>>(tangents_.value(),
+                                                                       TBufferAccessor<uint16_t>(indices_.value()));
+    }
+
+    if (indices_.value().elementSize() == sizeof(uint32_t)) {
+      return std::make_shared<IndexedTriAccessor<uint32_t, glm::vec4>>(tangents_.value(),
+                                                                       TBufferAccessor<uint32_t>(indices_.value()));
+    }
+
+    throw IllegalInvocation("Unknown index type.");
+  }
+
+  return std::make_shared<TriAccessor<glm::vec4>>(tangents_.value());
 }
 
 } // namespace lsg

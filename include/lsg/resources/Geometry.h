@@ -45,19 +45,17 @@ class Geometry : public Identifiable, public std::enable_shared_from_this<Geomet
 
   const BufferAccessor& getIndices() const;
 
-  const TBufferAccessor<glm::tvec3<float>>& getVertices() const;
+  const TBufferAccessor<glm::vec3>& getVertices() const;
 
-  const TBufferAccessor<glm::tvec3<float>>& getNormals() const;
+  const TBufferAccessor<glm::vec3>& getNormals() const;
 
-  const TBufferAccessor<glm::tvec4<float>>& getTangents() const;
+  const TBufferAccessor<glm::vec4>& getTangents() const;
 
   const BufferAccessor& getColors() const;
 
   const BufferAccessor& getUv(size_t index) const;
 
   const AABB<float>& getBoundingBox() const;
-
-  std::shared_ptr<TriangleAccessor<float>> getTriangleAccessor() const;
 
   void clearVertices();
 
@@ -83,43 +81,48 @@ class Geometry : public Identifiable, public std::enable_shared_from_this<Geomet
 
   bool hasUv(size_t index) const;
 
+  std::shared_ptr<TriangleAccessor<glm::vec3>> getTrianglePositionAccessor() const;
+
+  std::shared_ptr<TriangleAccessor<glm::vec3>> getTriangleNormalAccessor() const;
+
+  std::shared_ptr<TriangleAccessor<glm::vec4>> getTriangleTangentAccessor() const;
+
  protected:
   template <typename IndexT, typename T>
   class IndexedTriAccessor : public TriangleAccessor<T> {
    public:
-    IndexedTriAccessor(TBufferAccessor<glm::tvec3<float>> vertices, TBufferAccessor<IndexT> indices)
-      : vertices_(std::move(vertices)), indices_(std::move(indices)) {}
+    IndexedTriAccessor(TBufferAccessor<T> vertex_data, TBufferAccessor<IndexT> indices)
+      : vertex_data_(std::move(vertex_data)), indices_(std::move(indices)) {}
 
     size_t count() const override {
       return indices_.count() / 3;
     }
 
     Triangle<T> operator[](size_t index) const override {
-      return Triangle<T>([this, index](const size_t vertex_idx) -> const glm::tvec3<T>& {
-        return vertices_[indices_[index * 3u + vertex_idx]];
-      });
+      return Triangle<T>(vertex_data_[indices_[index * 3u]], vertex_data_[indices_[index * 3u + 1u]],
+                         vertex_data_[indices_[index * 3u + 2u]]);
     }
 
    private:
-    TBufferAccessor<glm::tvec3<float>> vertices_;
+    TBufferAccessor<T> vertex_data_;
     TBufferAccessor<IndexT> indices_;
   };
 
   template <typename T>
   class TriAccessor : public TriangleAccessor<T> {
    public:
-    explicit TriAccessor(TBufferAccessor<glm::tvec3<float>> vertices) : vertices_(std::move(vertices)) {}
+    explicit TriAccessor(TBufferAccessor<T> vertex_data) : vertex_data_(std::move(vertex_data)) {}
 
     size_t count() const override {
-      return vertices_.count() / 3;
+      return vertex_data_.count() / 3;
     }
 
     Triangle<T> operator[](size_t index) const override {
-      return Triangle<T>([this, index](const size_t vertex_idx) { return vertices_[index * 3u + vertex_idx]; });
+      return Triangle<T>(vertex_data_[index * 3u], vertex_data_[index * 3u + 1u], vertex_data_[index * 3u + 2u]);
     }
 
    private:
-    TBufferAccessor<glm::tvec3<float>> vertices_;
+    TBufferAccessor<T> vertex_data_;
   };
 
  private:

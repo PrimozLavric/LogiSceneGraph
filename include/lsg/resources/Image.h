@@ -19,47 +19,81 @@
 #ifndef LSG_RESOURCES_IMAGE_H
 #define LSG_RESOURCES_IMAGE_H
 
-#include "lsg/core/Identifiable.h"
-#include "lsg/resources/Format.h"
 #include <cstddef>
 #include <memory>
 #include <vector>
+#include "lsg/core/Identifiable.h"
+#include "lsg/resources/Format.h"
 
 namespace lsg {
 
-enum class ImageType { e1D, e2D, e3D };
-
 class Image : public Identifiable, public std::enable_shared_from_this<Image> {
  public:
-  Image(const std::string& name, std::vector<std::byte> data, Format format);
+  template <typename T>
+  Image(const std::string& name, const std::vector<T>& data, Format format, size_t width, size_t height = 1u,
+        size_t depth = 1u);
 
-  Image(const std::string& name, const std::byte* data, Format format, size_t size);
+  template <typename T>
+  Image(const std::string& name, const T* data, size_t size, Format format, size_t width, size_t height = 1u,
+        size_t depth = 1u);
 
-  Image(const std::string& name, Format format, size_t pixel_count);
+  Image(const std::string& name, Format format, size_t width, size_t height = 1u, size_t depth = 1u);
 
-  virtual size_t width() const = 0;
+  size_t width() const;
 
-  virtual size_t height() const = 0;
+  size_t height() const;
 
-  virtual size_t depth() const = 0;
-
-  virtual ImageType getType() const = 0;
+  size_t depth() const;
 
   Format getFormat() const;
 
+  size_t pixelSize() const;
+
+  size_t numChannels() const;
+
   FormatInfo getFormatInfo() const;
+
+  std::byte* at(size_t x, size_t y = 0u, size_t z = 0u);
+
+  const std::byte* at(size_t x, size_t y = 0u, size_t z = 0u) const;
 
   const std::byte* rawPixelData() const;
 
   void copyFrom(const std::byte* input_data);
 
-  virtual ~Image() = default;
+  void updateProperties(Format format, size_t width, size_t height, size_t depth);
+
+  void updateProperties(size_t width, size_t height, size_t depth);
+
+ protected:
+  void validate() const;
 
  private:
   Format format_;
   FormatInfo format_info_;
+  size_t width_;
+  size_t height_;
+  size_t depth_;
   std::vector<std::byte> data_;
 };
+
+template <typename T>
+Image::Image(const std::string& name, const std::vector<T>& data, Format format, size_t width, size_t height,
+             size_t depth)
+  : Identifiable(name), format_(format), format_info_(kFormatTable.at(format)), width_(width), height_(height),
+    depth_(depth), data_(reinterpret_cast<const std::byte*>(data.data()),
+                         reinterpret_cast<const std::byte*>(data.data()) + (data.size() * sizeof(T))) {
+  validate();
+}
+
+template <typename T>
+Image::Image(const std::string& name, const T* data, size_t size, Format format, size_t width, size_t height,
+             size_t depth)
+  : Identifiable(name), format_(format), format_info_(kFormatTable.at(format)), width_(width), height_(height),
+    depth_(depth),
+    data_(reinterpret_cast<const std::byte*>(data), reinterpret_cast<const std::byte*>(data) + size * sizeof(T)) {
+  validate();
+}
 
 } // namespace lsg
 

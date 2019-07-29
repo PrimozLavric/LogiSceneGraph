@@ -20,18 +20,20 @@
 
 namespace lsg {
 
-Buffer::Buffer(std::vector<std::byte> data)
-  : Identifiable("Buffer"), data_(std::move(data)) {}
+Buffer::Buffer(std::vector<std::byte> data) : Identifiable("Buffer"), data_(std::move(data)) {}
 
-Buffer::Buffer(const std::string& name, std::vector<std::byte> data)
-	: Identifiable(name), data_(std::move(data)) {}
+Buffer::Buffer(const std::string& name, std::vector<std::byte> data) : Identifiable(name), data_(std::move(data)) {}
 
 size_t Buffer::size() const {
-	return data_.size();
+  return data_.size();
 }
 
 const std::byte* Buffer::data() const {
-	return data_.data();
+  return data_.data();
 }
 
+std::byte* Buffer::data() {
+  return data_.data();
 }
+
+} // namespace lsg

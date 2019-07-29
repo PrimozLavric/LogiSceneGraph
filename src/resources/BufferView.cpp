@@ -43,7 +43,7 @@ const std::shared_ptr<Buffer>& BufferView::buffer() const {
   return buffer_;
 }
 
-const std::byte* BufferView::data() const {
+std::byte* BufferView::data() const {
   return data_;
 }
 

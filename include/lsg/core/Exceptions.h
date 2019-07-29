@@ -20,14 +20,14 @@
 #define LSG_CORE_EXCEPTIONS_H
 
 #include <stdexcept>
-#include "lsg/util/StringUtil.h"
+#include "lsg/util/String.h"
 
 namespace lsg {
 
 template <typename Exception, typename... Args>
 void throwIf(const bool condition, Args... args) {
   if (condition) {
-	  throw Exception(util::generateString(args...));
+	  throw Exception(util::strCat(args...));
   }
 }
 

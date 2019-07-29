@@ -31,7 +31,7 @@ class MetallicRoughnessMaterial : public Material {
    * @brief Initialize MetallicRoughnessMaterial members.
    *
    * @param	name                    Name of the material. Default is: "MetalicRoughnessMaterial".
-   * @param	base_color              Material's base color.
+   * @param	base_color_factor       Material's base color.
    * @param	metalic_factor          Metalness of the material.
    * @param	roughness_factor        Roughness of the material.
    * @param	emissive_factor         Intensity of the light being emitted by the material.
@@ -41,8 +41,8 @@ class MetallicRoughnessMaterial : public Material {
    * @param	emissive_tex            Emissive texture.
    */
   explicit MetallicRoughnessMaterial(const std::string& name = "MetalicRoughnessMaterial",
-                                     glm::vec4 base_color = glm::vec4(1.0f), float metalic_factor = 1.0f,
-                                     float roughness_factor = 1.0f, float emissive_factor = 0.0f,
+                                     glm::vec4 base_color_factor = glm::vec4(1.0f), float metalic_factor = 1.0f,
+                                     float roughness_factor = 1.0f, glm::vec3 emissive_factor = glm::vec3(0.0f),
                                      TextureUV base_color_tex = TextureUV(),
                                      TextureUV metalic_roughness_tex = TextureUV(), TextureUV normal_tex = TextureUV(),
                                      TextureUV emissive_tex = TextureUV());
@@ -52,7 +52,7 @@ class MetallicRoughnessMaterial : public Material {
    *
    * @return	Material's base color.
    */
-  glm::vec4 baseColor() const;
+  glm::vec4 baseColorFactor() const;
 
   /**
    * @brief   Retrieve metalness of the material.
@@ -73,7 +73,7 @@ class MetallicRoughnessMaterial : public Material {
    *
    * @return  Intensity of the light being emitted by the material.
    */
-  float emissiveFactor() const;
+  glm::vec3 emissiveFactor() const;
 
   /**
    * @brief	  Retrieve reference to the base color texture.
@@ -108,7 +108,7 @@ class MetallicRoughnessMaterial : public Material {
    *
    * @param	base_color  Material's base color.
    */
-  void setBaseColor(const glm::vec4& base_color);
+  void setBaseColorFactor(const glm::vec4& base_color);
 
   /**
    * @brief	Set metalness of the material.
@@ -129,7 +129,7 @@ class MetallicRoughnessMaterial : public Material {
    *
    * @param	emissive_factor Intensity of the light being emitted by the material.
    */
-  void setEmissiveFactor(float emissive_factor);
+  void setEmissiveFactor(const glm::vec3& emissive_factor);
 
   /**
    * @brief	Set base color texture.
@@ -163,7 +163,7 @@ class MetallicRoughnessMaterial : public Material {
   /**
    * Material's base color.
    */
-  glm::vec4 base_color_;
+  glm::vec4 base_color_factor_;
 
   /**
    * Metalness of the material.
@@ -178,7 +178,7 @@ class MetallicRoughnessMaterial : public Material {
   /**
    * Intensity of the light being emitted by the material.
    */
-  float emissive_factor_;
+  glm::vec3 emissive_factor_;
 
   /**
    * Base color texture.

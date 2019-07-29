@@ -23,7 +23,7 @@
 #include "lsg/core/Object.h"
 #include "lsg/core/Scene.h"
 #include "lsg/resources/BufferAccessor.h"
-#include "lsg/resources/Image2D.h"
+#include "lsg/resources/Image.h"
 #include "lsg/resources/Texture.h"
 
 namespace lsg {
@@ -44,7 +44,7 @@ class GLTFLoader {
 
   static BufferAccessor loadBuffer(const tinygltf::Model& model, size_t accessor_index);
 
-  static std::shared_ptr<Image2D> loadImage(const tinygltf::Model& model, size_t image_index);
+  static std::shared_ptr<Image> loadImage(const tinygltf::Model& model, size_t image_index);
 
   static std::pair<Filter, MipmapMode> parseFilterMode(int mode);
 

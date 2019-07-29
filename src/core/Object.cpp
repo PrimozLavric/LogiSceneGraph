@@ -41,7 +41,7 @@ bool Object::isActiveInHierarchy() const {
 void Object::addChild(const std::shared_ptr<Object>& obj) {
   obj->detachInternal();
   obj->parent_ = weak_from_this();
-  children_.emplace(obj->name(), obj);
+  children_.emplace_back(obj);
   obj->notifyParentChange();
 }
 
@@ -57,22 +57,6 @@ void Object::removeOnParentChangeCallback(const Identifiable& object) {
 void Object::detach() {
   detachInternal();
   notifyParentChange();
-}
-
-void Object::traverseDown(const std::function<bool(const std::shared_ptr<Object>&)>& traversal_fn) const {
-  if (!traversal_fn(const_cast<Object*>(this)->shared_from_this())) {
-    return;
-  }
-
-  traverseDownExcl(traversal_fn);
-}
-
-void Object::traverseDownExcl(const std::function<bool(const std::shared_ptr<Object>&)>& traversal_fn) const {
-  for (const auto& child : children_) {
-    if (traversal_fn(child.second)) {
-      child.second->traverseDownExcl(traversal_fn);
-    }
-  }
 }
 
 void Object::traverseUp(const std::function<bool(const std::shared_ptr<Object>&)>& traversal_fn) const {
@@ -95,11 +79,9 @@ void Object::traverseUpExcl(const std::function<bool(const std::shared_ptr<Objec
 void Object::detachInternal() {
   // Proceed if the object has parent
   if (auto locked_parent = parent_.lock()) {
-    // Find the object among parent children.
-    const auto child_range = locked_parent->children_.equal_range(name());
-    for (auto it = child_range.first; it != child_range.second; ++it) {
+    for (auto it = children_.begin(); it != children_.end(); ++it) {
       // Remove this object form parent children.
-      if (it->second.get() == this) {
+      if (it->get() == this) {
         locked_parent->children_.erase(it);
         parent_.reset();
         return;
