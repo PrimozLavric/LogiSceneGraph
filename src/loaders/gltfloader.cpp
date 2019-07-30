@@ -21,6 +21,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include "lsg/components/Mesh.h"
+#include "lsg/components/OrthographicCamera.h"
+#include "lsg/components/PerspectiveCamera.h"
 #include "lsg/components/Transform.h"
 #include "lsg/materials/MetallicRoughnessMaterial.h"
 #include "lsg/resources/Buffer.h"
@@ -113,6 +115,10 @@ std::vector<Ref<Object>> GLTFLoader::loadObjects(const tinygltf::Model& model) {
       if (!node.scale.empty()) {
         transform->setScale(glm::vec3(glm::make_vec3(node.scale.data())));
       }
+    }
+
+    if (node.camera != -1) {
+      loadCamera(model, node.camera, objects.back());
     }
 
     // Add mesh if the node has one
@@ -336,6 +342,19 @@ Ref<Texture> GLTFLoader::loadTexture(const tinygltf::Model& model, size_t textur
   Ref<Sampler> sampler = (gltf_tex.sampler < 0) ? makeRef<Sampler>() : loadSampler(model, gltf_tex.sampler);
 
   return makeRef<Texture>(image, sampler);
+}
+
+void GLTFLoader::loadCamera(const tinygltf::Model& model, size_t camera_index, const Ref<Object>& object) {
+  tinygltf::Camera gltf_cam = model.cameras[camera_index];
+  if (gltf_cam.type == "perspective") {
+    object->addComponent<PerspectiveCamera>(gltf_cam.perspective.yfov, gltf_cam.perspective.znear,
+                                            gltf_cam.perspective.aspectRatio, gltf_cam.perspective.zfar);
+  } else if (gltf_cam.type == "orthographic") {
+    object->addComponent<OrthographicCamera>(gltf_cam.orthographic.xmag, gltf_cam.orthographic.ymag,
+                                             gltf_cam.orthographic.zfar, gltf_cam.orthographic.znear);
+  } else {
+    throw LoaderError("Unknown camera type.");
+  }
 }
 
 tinygltf::Model GLTFLoader::loadModelASCII(const std::string& filename) {

@@ -20,6 +20,7 @@
 #define LSG_LOADERS_GLTFLOADER_H
 
 #include <tinygltf/tiny_gltf.h>
+#include "lsg/components/Camera.h"
 #include "lsg/core/Object.h"
 #include "lsg/core/Scene.h"
 #include "lsg/resources/BufferAccessor.h"
@@ -53,6 +54,8 @@ class GLTFLoader {
   static Ref<Sampler> loadSampler(const tinygltf::Model& model, size_t sampler_index);
 
   static Ref<Texture> loadTexture(const tinygltf::Model& model, size_t texture_index);
+
+  static void loadCamera(const tinygltf::Model& model, size_t camera_index, const Ref<Object>& object);
 
  private:
   tinygltf::TinyGLTF loader_;

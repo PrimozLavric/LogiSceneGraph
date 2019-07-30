@@ -26,7 +26,7 @@ class ImageView {
  public:
   explicit ImageView(Image& image);
 
-  explicit ImageView(const std::shared_ptr<Image>& image);
+  explicit ImageView(const lsg::Ref<Image>& image);
 
   size_t width() const;
 
@@ -50,7 +50,7 @@ ImageView<T>::ImageView(Image& image) : image_(image) {
 }
 
 template <typename T>
-ImageView<T>::ImageView(const std::shared_ptr<Image>& image) : image_(*image) {
+ImageView<T>::ImageView(const lsg::Ref<Image>& image) : image_(*image) {
   throwIf<InvalidArgument>(image_.get().pixelSize() != sizeof(T),
                            util::strCat("Pixel size [", image_.get().pixelSize(),
                                         "] does not match the size of the type T [", sizeof(T), "]."));

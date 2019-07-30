@@ -119,8 +119,8 @@ bool Object::matchesHierarchyPath(std::string_view hierarchy_path) const {
   }
 
   // Check if the top level matches.
-  if (!hierarchy_path.compare(hierarchy_path.size() - this_name.size(), this_name.size(), this_name) ||
-      hierarchy_path[hierarchy_path.size() - this_name.size() - 1] != '/') {
+  std::string_view current_name = hierarchy_path.substr(hierarchy_path.size() - this_name.size(), this_name.size());
+  if (current_name != this_name || hierarchy_path[hierarchy_path.size() - this_name.size() - 1] != '/') {
     return false;
   }
 
