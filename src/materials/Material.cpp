@@ -20,7 +20,6 @@
 
 namespace lsg {
 
-TextureUV::TextureUV(std::shared_ptr<Texture> texture, uint32_t uv_index)
-  : texture(std::move(texture)), uv_index(uv_index) {}
+TextureUV::TextureUV(Ref<Texture> texture, uint32_t uv_index) : texture(std::move(texture)), uv_index(uv_index) {}
 
 } // namespace lsg

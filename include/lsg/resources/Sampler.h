@@ -18,43 +18,22 @@
 
 #ifndef LSG_RESOURCES_SAMPLER_H
 #define LSG_RESOURCES_SAMPLER_H
+
 #include "lsg/core/Identifiable.h"
+#include "lsg/core/Ref.h"
 #include "lsg/core/VersionTracker.h"
 
 namespace lsg {
 
-
 #ifndef LSG_VULKAN
 
-enum class Filter {
-  eNearest,
-  eLinear,
-  eCubicIMG
-};
+enum class Filter { eNearest, eLinear, eCubicIMG };
 
-enum class MipmapMode {
-  eNearest,
-  eLinear
-};
+enum class MipmapMode { eNearest, eLinear };
 
-enum class Wrapping {
-  eRepeat,
-  eMirroredRepeat,
-  eClampToEdge,
-  eClampToBorder,
-  eMirrorClampToEdge
-};
+enum class Wrapping { eRepeat, eMirroredRepeat, eClampToEdge, eClampToBorder, eMirrorClampToEdge };
 
-enum class CompareOp {
-  eNever,
-  eLess,
-  eEqual,
-  eLessOrEqual,
-  eGreater,
-  eNotEqual,
-  eGreaterOrEqual,
-  eAlways
-};
+enum class CompareOp { eNever, eLess, eEqual, eLessOrEqual, eGreater, eNotEqual, eGreaterOrEqual, eAlways };
 
 #else
 #include <vulkan/vulkan.hpp>
@@ -66,16 +45,14 @@ using CompareOp = vk::CompareOp;
 
 #endif
 
-class Sampler : public Identifiable, public VersionTracker {
-public:
+class Sampler : public Identifiable, public RefCounter<Sampler>, public VersionTracker {
+ public:
   explicit Sampler(Filter mag_filter = Filter::eNearest, Filter min_filter = Filter::eNearest,
-                   Wrapping wrapping_u = Wrapping::eRepeat,
-                   Wrapping wrapping_v = Wrapping::eRepeat, Wrapping wrapping_w = Wrapping::eRepeat,
-                   MipmapMode mipmap_mode = MipmapMode::eNearest,
+                   Wrapping wrapping_u = Wrapping::eRepeat, Wrapping wrapping_v = Wrapping::eRepeat,
+                   Wrapping wrapping_w = Wrapping::eRepeat, MipmapMode mipmap_mode = MipmapMode::eNearest,
                    float mip_lod_bias = 0.0f, bool enable_anisotropy = false, float max_anisotropy = 0.0f,
-                   bool enable_compare = false,
-                   CompareOp compare_op = CompareOp::eAlways, float min_lod = 0.0f, float max_lod = 0.0f);
-
+                   bool enable_compare = false, CompareOp compare_op = CompareOp::eAlways, float min_lod = 0.0f,
+                   float max_lod = 0.0f);
 
   Filter magFilter() const;
 
@@ -129,7 +106,7 @@ public:
 
   void setMaxLod(float max_lod);
 
-private:
+ private:
   Filter mag_filter_;
   Filter min_filter_;
   Wrapping wrapping_u_;
@@ -145,6 +122,6 @@ private:
   float max_lod_;
 };
 
-}
+} // namespace lsg
 
 #endif

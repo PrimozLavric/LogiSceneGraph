@@ -21,8 +21,8 @@
 
 namespace lsg {
 
-OrthographicCamera::OrthographicCamera(const std::weak_ptr<Object>& owner, const float xmag, const float ymag,
-                                       const float far, const float near)
+OrthographicCamera::OrthographicCamera(Object& owner, const float xmag, const float ymag, const float far,
+                                       const float near)
   : Camera("OrthographicCamera", owner), xmag_(xmag), ymag_(ymag), far_(far), near_(near), dirty_(true) {}
 
 const glm::mat4x4& OrthographicCamera::projectionMatrix() {

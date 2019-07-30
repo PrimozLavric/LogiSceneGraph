@@ -80,28 +80,28 @@ class MetallicRoughnessMaterial : public Material {
    *
    * @return	Reference to the base color texture. Null reference if not set.
    */
-  const std::shared_ptr<Texture>& baseColorTex() const;
+  const Ref<Texture>& baseColorTex() const;
 
   /**
    * @brief	  Retrieve reference to the metallic roughness texture.
    *
    * @return	Reference to the metallic roughness texture. Null reference if not set.
    */
-  const std::shared_ptr<Texture>& metallicRoughnessTex() const;
+  const Ref<Texture>& metallicRoughnessTex() const;
 
   /**
    * @brief	  Retrieve reference to the normal texture.
    *
    * @return	Reference to the normal texture. Null reference if not set.
    */
-  const std::shared_ptr<Texture>& normalTex() const;
+  const Ref<Texture>& normalTex() const;
 
   /**
    * @brief	  Retrieve reference to the emissive texture.
    *
    * @return	Reference to the emissive texture. Null reference if not set.
    */
-  const std::shared_ptr<Texture>& emissiveTex() const;
+  const Ref<Texture>& emissiveTex() const;
 
   /**
    * @brief	Set material's base color.

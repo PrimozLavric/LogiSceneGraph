@@ -26,6 +26,7 @@
 #include <vector>
 #include "lsg/accelerators/BVH/BVH.h"
 #include "lsg/accelerators/BVH/SAHFunction.h"
+#include "lsg/core/Ref.h"
 #include "lsg/math/AABB.h"
 
 namespace lsg::bvh {
@@ -157,7 +158,7 @@ class BVHBuilder {
    *
    * @return  Shared Bounding Volume Hierarchy object.
    */
-  std::shared_ptr<BVH<T>> process(const std::vector<AABB<T>>& bounding_boxes);
+  Ref<BVH<T>> process(const std::vector<AABB<T>>& bounding_boxes);
 
  protected:
   /**
@@ -243,7 +244,7 @@ BVHBuilder<T>::BVHBuilder(SAHFunction sah_function, const BVHConfig& config)
   : sah_function_(std::move(sah_function)), config_(config) {}
 
 template <typename T>
-std::shared_ptr<BVH<T>> BVHBuilder<T>::process(const std::vector<AABB<T>>& bounding_boxes) {
+Ref<BVH<T>> BVHBuilder<T>::process(const std::vector<AABB<T>>& bounding_boxes) {
   t_reference_stack_.clear();
 
   // Generate references and compute root node bounding box.
@@ -264,7 +265,7 @@ std::shared_ptr<BVH<T>> BVHBuilder<T>::process(const std::vector<AABB<T>>& bound
   t_prim_indices_.reserve(bounding_boxes.size());
 
   buildNode(root_spec, 0);
-  return std::make_shared<BVH<T>>(std::move(t_nodes_), std::move(t_prim_indices_));
+  return makeRef<BVH<T>>(std::move(t_nodes_), std::move(t_prim_indices_));
 }
 
 template <typename T>

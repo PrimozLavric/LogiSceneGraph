@@ -18,20 +18,4 @@
 
 #include "lsg/core/Scene.h"
 
-namespace lsg {
-
-Scene::Scene(std::vector<std::shared_ptr<Object>> root_objects)
-  : Identifiable("Scene"), root_objects_(std::move(root_objects)) {}
-
-Scene::Scene(const std::string& name, std::vector<std::shared_ptr<Object>> root_objects)
-  : Identifiable(name), root_objects_(std::move(root_objects)) {}
-
-const std::vector<std::shared_ptr<Object>>& Scene::rootObjects() const {
-  return root_objects_;
-}
-
-void Scene::addObject(const std::shared_ptr<Object>& object) {
-  root_objects_.push_back(object);
-}
-
-}
+namespace lsg {}

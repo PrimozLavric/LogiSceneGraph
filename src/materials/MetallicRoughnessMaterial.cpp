@@ -46,19 +46,19 @@ glm::vec3 MetallicRoughnessMaterial::emissiveFactor() const {
   return emissive_factor_;
 }
 
-const std::shared_ptr<Texture>& MetallicRoughnessMaterial::baseColorTex() const {
+const Ref<Texture>& MetallicRoughnessMaterial::baseColorTex() const {
   return base_color_tex_.texture;
 }
 
-const std::shared_ptr<Texture>& MetallicRoughnessMaterial::metallicRoughnessTex() const {
+const Ref<Texture>& MetallicRoughnessMaterial::metallicRoughnessTex() const {
   return metallic_roughness_tex_.texture;
 }
 
-const std::shared_ptr<Texture>& MetallicRoughnessMaterial::normalTex() const {
+const Ref<Texture>& MetallicRoughnessMaterial::normalTex() const {
   return normal_tex_.texture;
 }
 
-const std::shared_ptr<Texture>& MetallicRoughnessMaterial::emissiveTex() const {
+const Ref<Texture>& MetallicRoughnessMaterial::emissiveTex() const {
   return emissive_tex_.texture;
 }
 

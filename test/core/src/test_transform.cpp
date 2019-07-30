@@ -10,9 +10,9 @@ void testVecNear(glm::vec3 actual, glm::vec3 expected, float epsilon) {
               (actual[2] - expected[2]) < epsilon);
 }
 TEST(Transform, Basic) {
-  std::shared_ptr<Object> a = std::make_shared<Object>("A");
+  Ref<Object> a = makeRef<Object>("A");
   a->addComponent<Transform>();
-  std::shared_ptr<Transform> transform = a->getComponent<Transform>();
+  Ref<Transform> transform = a->getComponent<Transform>();
 
   glm::vec3 pos(10.0f, 30.0f, 23.0f);
   glm::vec3 euler_rot(glm::pi<float>() / 2.0f, glm::pi<float>() / 3.0f, glm::pi<float>() / 4.0f);
@@ -28,18 +28,6 @@ TEST(Transform, Basic) {
   EXPECT_EQ(transform->rotation(), rot);
   testVecNear(transform->eulerRotation(), euler_rot, 1e-5);
   EXPECT_EQ(transform->scale(), scale);
-
-  // Compute expected matrix.
-  glm::mat4 expected_mat = glm::mat4_cast(rot);
-  expected_mat[0][0] *= scale[0];
-  expected_mat[1][1] *= scale[1];
-  expected_mat[2][2] *= scale[2];
-  expected_mat[3][0] = pos[0];
-  expected_mat[3][1] = pos[1];
-  expected_mat[3][2] = pos[2];
-
-  // Validate matrix.
-  EXPECT_EQ(transform->worldMatrix(), expected_mat);
 
   // Test rotations
   transform->rotateX(-glm::pi<float>() / 2.0f);

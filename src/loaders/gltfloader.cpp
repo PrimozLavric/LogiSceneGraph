@@ -27,19 +27,20 @@
 
 namespace lsg {
 
-std::vector<std::shared_ptr<Scene>> GLTFLoader::load(const std::string& filename) {
+std::vector<Ref<Scene>> GLTFLoader::load(const std::string& filename) {
   tinygltf::Model model = loadModelASCII(filename);
-  std::vector<std::shared_ptr<Scene>> scenes;
-  std::vector<std::shared_ptr<Object>> objects = loadObjects(model);
+  std::vector<Ref<Scene>> scenes;
+  std::vector<Ref<Object>> objects = loadObjects(model);
 
   for (const auto& scene : model.scenes) {
-    std::vector<std::shared_ptr<Object>> scene_objects;
+    std::vector<Ref<Object>> scene_objects;
 
     for (const auto idx : scene.nodes) {
       scene_objects.emplace_back(objects[idx]);
     }
 
-    scenes.emplace_back(std::make_shared<Scene>(scene.name, scene_objects));
+    scenes.emplace_back(makeRef<Scene>(scene.name));
+    scenes.back()->addChildren(scene_objects);
   }
 
   return scenes;
@@ -89,14 +90,14 @@ StructureType GLTFLoader::parseStructure(const int32_t structure) {
   }
 }
 
-std::vector<std::shared_ptr<Object>> GLTFLoader::loadObjects(const tinygltf::Model& model) {
-  std::vector<std::shared_ptr<Object>> objects;
+std::vector<Ref<Object>> GLTFLoader::loadObjects(const tinygltf::Model& model) {
+  std::vector<Ref<Object>> objects;
 
   for (const auto& node : model.nodes) {
-    objects.emplace_back(std::make_shared<Object>(node.name));
+    objects.emplace_back(makeRef<Object>(node.name));
 
     // Add transform component.
-    const std::shared_ptr<Transform>& transform = objects.back()->addComponent<Transform>();
+    Ref<Transform> transform = objects.back()->addComponent<Transform>();
 
     // If the node specifies matrix use it.
     if (!node.matrix.empty()) {
@@ -116,12 +117,12 @@ std::vector<std::shared_ptr<Object>> GLTFLoader::loadObjects(const tinygltf::Mod
 
     // Add mesh if the node has one
     if (node.mesh != -1) {
-      const std::shared_ptr<Mesh>& mesh = objects.back()->addComponent<Mesh>();
+      const Ref<Mesh>& mesh = objects.back()->addComponent<Mesh>();
       for (const auto& primitives : model.meshes[node.mesh].primitives) {
         /**
          * GEOMETRY
          */
-        std::shared_ptr<Geometry> geometry = std::make_shared<Geometry>();
+        Ref<Geometry> geometry = makeRef<Geometry>();
 
         if (primitives.indices > 0) {
           geometry->setIndices(loadBuffer(model, primitives.indices));
@@ -160,7 +161,7 @@ std::vector<std::shared_ptr<Object>> GLTFLoader::loadObjects(const tinygltf::Mod
         /**
          * MATERIAL
          */
-        std::shared_ptr<MetallicRoughnessMaterial> lsg_material = std::make_shared<MetallicRoughnessMaterial>();
+        Ref<MetallicRoughnessMaterial> lsg_material = makeRef<MetallicRoughnessMaterial>();
 
         // Check if the material is specified.
         if (primitives.material != -1) {
@@ -175,7 +176,7 @@ std::vector<std::shared_ptr<Object>> GLTFLoader::loadObjects(const tinygltf::Mod
           }
 
           if (auto jt = gltf_material.values.find("baseColorTexture"); jt != gltf_material.values.end()) {
-            std::shared_ptr<Texture> tex = loadTexture(model, jt->second.TextureIndex());
+            Ref<Texture> tex = loadTexture(model, jt->second.TextureIndex());
             lsg_material->setBaseColorTex(
               TextureUV(tex, (jt->second.has_number_value) ? static_cast<uint32_t>(jt->second.number_value) : 0u));
           }
@@ -193,7 +194,7 @@ std::vector<std::shared_ptr<Object>> GLTFLoader::loadObjects(const tinygltf::Mod
           }
 
           if (auto jt = gltf_material.values.find("metallicRoughnessTexture"); jt != gltf_material.values.end()) {
-            std::shared_ptr<Texture> tex = loadTexture(model, jt->second.TextureIndex());
+            Ref<Texture> tex = loadTexture(model, jt->second.TextureIndex());
             lsg_material->setMetalicRoughnessTex(
               TextureUV(tex, (jt->second.has_number_value) ? static_cast<uint32_t>(jt->second.number_value) : 0u));
           }
@@ -203,7 +204,7 @@ std::vector<std::shared_ptr<Object>> GLTFLoader::loadObjects(const tinygltf::Mod
            */
           if (auto jt = gltf_material.additionalValues.find("normalTexture");
               jt != gltf_material.additionalValues.end()) {
-            std::shared_ptr<Texture> tex = loadTexture(model, jt->second.TextureIndex());
+            Ref<Texture> tex = loadTexture(model, jt->second.TextureIndex());
             lsg_material->setNormalTex(
               TextureUV(tex, (jt->second.has_number_value) ? static_cast<uint32_t>(jt->second.number_value) : 0u));
           }
@@ -217,13 +218,13 @@ std::vector<std::shared_ptr<Object>> GLTFLoader::loadObjects(const tinygltf::Mod
 
           if (auto jt = gltf_material.additionalValues.find("emissiveTexture");
               jt != gltf_material.additionalValues.end()) {
-            std::shared_ptr<Texture> tex = loadTexture(model, jt->second.TextureIndex());
+            Ref<Texture> tex = loadTexture(model, jt->second.TextureIndex());
             lsg_material->setEmissiveTex(
               TextureUV(tex, (jt->second.has_number_value) ? static_cast<uint32_t>(jt->second.number_value) : 0u));
           }
         }
 
-        mesh->addSubMesh(std::make_shared<SubMesh>(geometry, lsg_material));
+        mesh->addSubMesh(makeRef<SubMesh>(geometry, lsg_material));
       }
     }
   }
@@ -259,10 +260,10 @@ BufferAccessor GLTFLoader::loadBuffer(const tinygltf::Model& model, size_t acces
     std::memcpy(logi_entry, gltf_entry, entry_size);
   }
 
-  return BufferAccessor(std::make_shared<Buffer>(buffer.name, buffer_data), structure_type, component_type);
+  return BufferAccessor(makeRef<Buffer>(buffer.name, buffer_data), structure_type, component_type);
 }
 
-std::shared_ptr<Image> GLTFLoader::loadImage(const tinygltf::Model& model, size_t image_index) {
+Ref<Image> GLTFLoader::loadImage(const tinygltf::Model& model, size_t image_index) {
   tinygltf::Image gltf_img = model.images[image_index];
   StructureType structure_type = parseStructure(gltf_img.component);
 
@@ -285,7 +286,7 @@ std::shared_ptr<Image> GLTFLoader::loadImage(const tinygltf::Model& model, size_
       throw LoaderError("Failed to load image: " + gltf_img.name + ".");
   }
 
-  return std::make_shared<Image>(gltf_img.name, gltf_img.image, img_format, gltf_img.width, gltf_img.height);
+  return makeRef<Image>(gltf_img.name, gltf_img.image, img_format, gltf_img.width, gltf_img.height);
 }
 
 std::pair<Filter, MipmapMode> GLTFLoader::parseFilterMode(int mode) {
@@ -318,7 +319,7 @@ Wrapping GLTFLoader::parseWrapMode(int mode) {
   }
 }
 
-std::shared_ptr<Sampler> GLTFLoader::loadSampler(const tinygltf::Model& model, size_t sampler_index) {
+Ref<Sampler> GLTFLoader::loadSampler(const tinygltf::Model& model, size_t sampler_index) {
   tinygltf::Sampler gltf_sampler = model.samplers[sampler_index];
   auto [min_filter, mipmap_mode] = parseFilterMode(gltf_sampler.minFilter);
   Filter mag_filter = parseFilterMode(gltf_sampler.magFilter).first;
@@ -326,16 +327,15 @@ std::shared_ptr<Sampler> GLTFLoader::loadSampler(const tinygltf::Model& model, s
   Wrapping wrap_v = parseWrapMode(gltf_sampler.wrapT);
   Wrapping wrap_w = parseWrapMode(gltf_sampler.wrapR);
 
-  return std::make_shared<Sampler>(mag_filter, min_filter, wrap_u, wrap_v, wrap_w, mipmap_mode);
+  return makeRef<Sampler>(mag_filter, min_filter, wrap_u, wrap_v, wrap_w, mipmap_mode);
 }
 
-std::shared_ptr<Texture> GLTFLoader::loadTexture(const tinygltf::Model& model, size_t texture_index) {
+Ref<Texture> GLTFLoader::loadTexture(const tinygltf::Model& model, size_t texture_index) {
   tinygltf::Texture gltf_tex = model.textures[texture_index];
-  std::shared_ptr<Image> image = loadImage(model, gltf_tex.source);
-  std::shared_ptr<Sampler> sampler =
-    (gltf_tex.sampler < 0) ? std::make_shared<Sampler>() : loadSampler(model, gltf_tex.sampler);
+  Ref<Image> image = loadImage(model, gltf_tex.source);
+  Ref<Sampler> sampler = (gltf_tex.sampler < 0) ? makeRef<Sampler>() : loadSampler(model, gltf_tex.sampler);
 
-  return std::make_shared<Texture>(image, sampler);
+  return makeRef<Texture>(image, sampler);
 }
 
 tinygltf::Model GLTFLoader::loadModelASCII(const std::string& filename) {

@@ -35,7 +35,7 @@ TEST(SBVH, Basic) {
                                   {2, 3, 0},
                                   {3, 0, 1}};
 
-  Shared<TriangleAccessorImpl> accessor = std::make_shared<TriangleAccessorImpl>(vertices, indices);
+  Shared<TriangleAccessorImpl> accessor = makeRef<TriangleAccessorImpl>(vertices, indices);
   bvh::SplitBVHBuilder<float> builder;
   std::shared_ptr<BVH<float>> bvh = builder.process(accessor);
 

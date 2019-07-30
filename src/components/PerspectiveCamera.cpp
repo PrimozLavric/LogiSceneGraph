@@ -21,8 +21,8 @@
 
 namespace lsg {
 
-PerspectiveCamera::PerspectiveCamera(const std::weak_ptr<Object>& owner, const float fov, const float near,
-                                     const float aspect_ratio, const float far)
+PerspectiveCamera::PerspectiveCamera(Object& owner, const float fov, const float near, const float aspect_ratio,
+                                     const float far)
   : Camera("PerspectiveCamera", owner), aspect_ratio_(aspect_ratio), fov_(fov), far_(far), near_(near), dirty_(true) {}
 
 const glm::mat4x4& PerspectiveCamera::projectionMatrix() {

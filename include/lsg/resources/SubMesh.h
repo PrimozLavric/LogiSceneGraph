@@ -26,7 +26,7 @@
 
 namespace lsg {
 
-class SubMesh : public Identifiable, public VersionTracker, public std::enable_shared_from_this<SubMesh> {
+class SubMesh : public Identifiable, public RefCounter<SubMesh>, public VersionTracker {
  public:
   /**
    * @brief Initialize sub-mesh with the given geometry and material.
@@ -35,7 +35,7 @@ class SubMesh : public Identifiable, public VersionTracker, public std::enable_s
    * @param geometry  Geometry.
    * @param	material  Material
    */
-  explicit SubMesh(const std::string& name, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material);
+  explicit SubMesh(const std::string& name, const Ref<Geometry>& geometry, const Ref<Material>& material);
 
   /**
    * @brief Initialize sub-mesh with the given geometry and material.
@@ -43,46 +43,46 @@ class SubMesh : public Identifiable, public VersionTracker, public std::enable_s
    * @param geometry  Geometry.
    * @param	material  Material
    */
-  explicit SubMesh(std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material);
+  explicit SubMesh(const Ref<Geometry>& geometry, const Ref<Material>& material);
 
   /**
    * @brief Set sub-mesh material.
    *
    * @param	geometry  Geometry to be set.
    */
-  void setGeometry(const std::shared_ptr<Geometry>& geometry);
+  void setGeometry(const Ref<Geometry>& geometry);
 
   /**
    * @brief Set sub-mesh material.
    *
    * @param	material  Material to be set.
    */
-  void setMaterial(const std::shared_ptr<Material>& material);
+  void setMaterial(const Ref<Material>& material);
 
   /**
    * @brief Retrieve reference to the geometry.
    *
    * @return  Reference to sub-mesh geometry.
    */
-  const std::shared_ptr<Geometry>& geometry() const;
+  const Ref<Geometry>& geometry() const;
 
   /**
    * @brief Retrieve reference to the material.
    *
    * @return  Reference to sub-mesh material.
    */
-  const std::shared_ptr<Material>& material() const;
+  const Ref<Material>& material() const;
 
  private:
   /**
    * Sub-mesh geometry
    */
-  std::shared_ptr<Geometry> geometry_;
+  Ref<Geometry> geometry_;
 
   /**
    * Sub-mesh material.
    */
-  std::shared_ptr<Material> material_;
+  Ref<Material> material_;
 };
 
 } // namespace lsg

@@ -20,14 +20,15 @@
 #define LSG_RESOURCES_GEOMETRY_H
 
 #include <array>
-#include <lsg/math/AABB.h>
-#include <lsg/resources/Triangle.h>
 #include <optional>
+#include "lsg/core/Ref.h"
+#include "lsg/math/AABB.h"
 #include "lsg/resources/BufferAccessor.h"
+#include "lsg/resources/Triangle.h"
 
 namespace lsg {
 
-class Geometry : public Identifiable, public std::enable_shared_from_this<Geometry> {
+class Geometry : public Identifiable, public RefCounter<Geometry> {
  public:
   Geometry();
 
@@ -81,11 +82,11 @@ class Geometry : public Identifiable, public std::enable_shared_from_this<Geomet
 
   bool hasUv(size_t index) const;
 
-  std::shared_ptr<TriangleAccessor<glm::vec3>> getTrianglePositionAccessor() const;
+  Ref<TriangleAccessor<glm::vec3>> getTrianglePositionAccessor() const;
 
-  std::shared_ptr<TriangleAccessor<glm::vec3>> getTriangleNormalAccessor() const;
+  Ref<TriangleAccessor<glm::vec3>> getTriangleNormalAccessor() const;
 
-  std::shared_ptr<TriangleAccessor<glm::vec4>> getTriangleTangentAccessor() const;
+  Ref<TriangleAccessor<glm::vec4>> getTriangleTangentAccessor() const;
 
  protected:
   template <typename IndexT, typename T>

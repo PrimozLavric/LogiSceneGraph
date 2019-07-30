@@ -20,6 +20,7 @@
 #define LSG_ACCELERATORS_BVH_SPLIT_BVH_BUILDER_H
 #include <array>
 #include "lsg/accelerators/BVH/BVHBuilder.h"
+#include "lsg/core/Ref.h"
 #include "lsg/resources/Triangle.h"
 
 namespace lsg {
@@ -90,10 +91,10 @@ struct SpatialBin final {
 template <typename T>
 class SplitBVHBuilder : public BVHBuilder<T> {
  public:
-  explicit SplitBVHBuilder(SAHFunction sha_function = SAHFunction(), const BVHConfig& bvh_config = BVHConfig(),
+  explicit SplitBVHBuilder(const SAHFunction& sha_function = SAHFunction(), const BVHConfig& bvh_config = BVHConfig(),
                            const SplitBVHConfig& split_config = SplitBVHConfig());
 
-  std::shared_ptr<BVH<T>> process(const std::shared_ptr<TriangleAccessor<glm::tvec3<T>>>& triangle_accessor);
+  Ref<BVH<T>> process(const Ref<TriangleAccessor<glm::tvec3<T>>>& triangle_accessor);
 
   virtual ~SplitBVHBuilder() = default;
 
@@ -141,22 +142,20 @@ class SplitBVHBuilder : public BVHBuilder<T> {
   /**
    * Triangle accessor.
    */
-  std::shared_ptr<TriangleAccessor<glm::tvec3<T>>> t_triangle_accessor_;
+  Ref<TriangleAccessor<glm::tvec3<T>>> t_triangle_accessor_;
 };
 
 template <typename T>
-SplitBVHBuilder<T>::SplitBVHBuilder(SAHFunction sha_function, const BVHConfig& bvh_config,
+SplitBVHBuilder<T>::SplitBVHBuilder(const SAHFunction& sha_function, const BVHConfig& bvh_config,
                                     const SplitBVHConfig& split_config)
-  : BVHBuilder<T>(std::move(sha_function), bvh_config), split_config_(split_config), t_min_overlap_(),
-    t_triangle_accessor_() {
+  : BVHBuilder<T>(sha_function, bvh_config), split_config_(split_config), t_min_overlap_(), t_triangle_accessor_() {
   for (size_t i = 0; i < 3u; i++) {
     t_spatial_bins_[i].resize(split_config_.num_spatial_bins);
   }
 }
 
 template <typename T>
-std::shared_ptr<BVH<T>>
-  SplitBVHBuilder<T>::process(const std::shared_ptr<TriangleAccessor<glm::tvec3<T>>>& triangle_accessor) {
+Ref<BVH<T>> SplitBVHBuilder<T>::process(const Ref<TriangleAccessor<glm::tvec3<T>>>& triangle_accessor) {
   t_triangle_accessor_ = triangle_accessor;
 
   // Generate references and compute root node bounding box.
@@ -187,7 +186,7 @@ std::shared_ptr<BVH<T>>
   t_prim_indices_.reserve(t_right_bounds_.size());
 
   buildNode(root_spec, 0);
-  return std::make_shared<BVH<T>>(std::move(t_nodes_), std::move(t_prim_indices_));
+  return makeRef<BVH<T>>(std::move(t_nodes_), std::move(t_prim_indices_));
 }
 
 template <typename T>

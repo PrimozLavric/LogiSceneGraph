@@ -19,28 +19,29 @@
 #ifndef LSG_RESOURCES_TEXTURE_H
 #define LSG_RESOURCES_TEXTURE_H
 
-#include "Sampler.h"
+#include "lsg/core/Ref.h"
 #include "lsg/resources/Image.h"
+#include "lsg/resources/Sampler.h"
 
 namespace lsg {
 
-class Texture : public Identifiable, std::enable_shared_from_this<Texture> {
+class Texture : public Identifiable, public RefCounter<Texture> {
  public:
-  explicit Texture(std::shared_ptr<Image> image, std::shared_ptr<Sampler> sampler = {});
+  explicit Texture(const Ref<Image>& image, const Ref<Sampler>& sampler = {});
 
-  const std::shared_ptr<Image>& image() const;
+  const Ref<Image>& image() const;
 
   bool hasSampler() const;
 
-  const std::shared_ptr<Sampler>& sampler() const;
+  const Ref<Sampler>& sampler() const;
 
-  void setImage(const std::shared_ptr<Image>& image);
+  void setImage(const Ref<Image>& image);
 
-  void setSampler(const std::shared_ptr<Sampler>& sampler);
+  void setSampler(const Ref<Sampler>& sampler);
 
  private:
-  std::shared_ptr<Image> image_;
-  std::shared_ptr<Sampler> sampler_;
+  Ref<Image> image_;
+  Ref<Sampler> sampler_;
 };
 
 } // namespace lsg

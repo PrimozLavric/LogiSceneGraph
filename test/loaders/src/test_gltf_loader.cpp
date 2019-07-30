@@ -9,16 +9,16 @@ using namespace lsg;
 
 TEST(GLTFLoader, Basic) {
   GLTFLoader loader;
-  std::vector<std::shared_ptr<Scene>> scenes = loader.load("./testdata/lantern/Lantern.gltf");
+  std::vector<Ref<Scene>> scenes = loader.load("./testdata/lantern/Lantern.gltf");
 
   for (const auto& scene : scenes) {
-    for (const auto& root_object : scene->rootObjects()) {
-      root_object->traverseDown([](const std::shared_ptr<Object>& obj) {
+    for (const auto& root_object : scene->children()) {
+      root_object->traverseDown([](const Ref<Object>& obj) {
         std::cout << obj->name() << std::endl;
-        const std::shared_ptr<Mesh>& mesh = obj->getComponent<Mesh>();
+        const Ref<Mesh>& mesh = obj->getComponent<Mesh>();
         if (mesh) {
           for (const auto& subMesh : mesh->subMeshes()) {
-            const std::shared_ptr<Geometry>& geometry = subMesh->geometry();
+            const Ref<Geometry>& geometry = subMesh->geometry();
             const AABB<float>& aabb = geometry->getBoundingBox();
             glm::tvec3<float> min = aabb.min();
             glm::tvec3<float> max = aabb.max();

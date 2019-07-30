@@ -20,21 +20,21 @@
 
 namespace lsg {
 
-Mesh::Mesh(const std::weak_ptr<Object> owner, std::vector<std::shared_ptr<SubMesh>> sub_meshes)
+Mesh::Mesh(Object& owner, std::vector<Ref<SubMesh>> sub_meshes)
   : Component("Mesh", owner), sub_meshes_(std::move(sub_meshes)) {}
 
-Mesh::Mesh(const std::weak_ptr<Object> owner, const std::string& name, std::vector<std::shared_ptr<SubMesh>> sub_meshes)
+Mesh::Mesh(Object& owner, const std::string& name, std::vector<Ref<SubMesh>> sub_meshes)
   : Component(name, owner), sub_meshes_(std::move(sub_meshes)) {}
 
 size_t Mesh::subMeshCount() const {
   return sub_meshes_.size();
 }
 
-void Mesh::addSubMesh(const std::shared_ptr<SubMesh>& sub_mesh) {
+void Mesh::addSubMesh(const Ref<SubMesh>& sub_mesh) {
   sub_meshes_.emplace_back(sub_mesh);
 }
 
-const std::vector<std::shared_ptr<SubMesh>>& Mesh::subMeshes() {
+const std::vector<Ref<SubMesh>>& Mesh::subMeshes() {
   return sub_meshes_;
 }
 

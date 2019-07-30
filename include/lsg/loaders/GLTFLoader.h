@@ -30,7 +30,7 @@ namespace lsg {
 
 class GLTFLoader {
  public:
-  std::vector<std::shared_ptr<Scene>> load(const std::string& filename);
+  std::vector<Ref<Scene>> load(const std::string& filename);
 
  protected:
   tinygltf::Model loadModelASCII(const std::string& filename);
@@ -40,19 +40,19 @@ class GLTFLoader {
   static StructureType parseStructure(int32_t structure);
 
  protected:
-  static std::vector<std::shared_ptr<Object>> loadObjects(const tinygltf::Model& model);
+  static std::vector<Ref<Object>> loadObjects(const tinygltf::Model& model);
 
   static BufferAccessor loadBuffer(const tinygltf::Model& model, size_t accessor_index);
 
-  static std::shared_ptr<Image> loadImage(const tinygltf::Model& model, size_t image_index);
+  static Ref<Image> loadImage(const tinygltf::Model& model, size_t image_index);
 
   static std::pair<Filter, MipmapMode> parseFilterMode(int mode);
 
   static Wrapping parseWrapMode(int mode);
 
-  static std::shared_ptr<Sampler> loadSampler(const tinygltf::Model& model, size_t sampler_index);
+  static Ref<Sampler> loadSampler(const tinygltf::Model& model, size_t sampler_index);
 
-  static std::shared_ptr<Texture> loadTexture(const tinygltf::Model& model, size_t texture_index);
+  static Ref<Texture> loadTexture(const tinygltf::Model& model, size_t texture_index);
 
  private:
   tinygltf::TinyGLTF loader_;

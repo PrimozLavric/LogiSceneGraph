@@ -21,13 +21,14 @@
 #include <glm/vec2.hpp>
 #include <stack>
 #include <vector>
+#include "lsg/core/Ref.h"
 #include "lsg/math/AABB.h"
 #include "lsg/math/Ray.h"
 
 namespace lsg {
 
 template <typename T>
-class BVH {
+class BVH : public RefCounter<BVH<T>> {
  public:
   /**
    * BVH Node.

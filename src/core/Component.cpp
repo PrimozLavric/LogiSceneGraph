@@ -20,7 +20,7 @@
 
 namespace lsg {
 
-Component::Component(const std::string& name, const std::weak_ptr<Object> owner) : Identifiable(name), owner_(owner) {}
+Component::Component(const std::string& name, Object& owner) : Identifiable(name), owner_(owner) {}
 
 Component::~Component() = default;
 

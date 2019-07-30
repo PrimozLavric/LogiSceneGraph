@@ -35,7 +35,7 @@ class PerspectiveCamera : public Camera {
    * @param	aspect_ratio  Aspect ratio.
    * @param	far	          Distance to the far clipping plane.
    */
-  PerspectiveCamera(const std::weak_ptr<Object>& owner, float fov, float near, float aspect_ratio = 1.0f,
+  PerspectiveCamera(Object& owner, float fov, float near, float aspect_ratio = 1.0f,
                     float far = std::numeric_limits<float>::max());
 
   /**

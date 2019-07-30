@@ -22,19 +22,20 @@
 #include <memory>
 #include <string>
 #include "lsg/core/Identifiable.h"
+#include "lsg/core/Ref.h"
 
 namespace lsg {
 
 class Object;
 
-class Component : public Identifiable, public std::enable_shared_from_this<Component> {
+class Component : public Identifiable, public RefCounter<Component> {
  public:
-  explicit Component(const std::string& name, std::weak_ptr<Object> owner);
+  explicit Component(const std::string& name, Object& owner);
 
   ~Component() override;
 
  protected:
-  std::weak_ptr<Object> owner_;
+  Object& owner_;
 };
 
 } // namespace lsg

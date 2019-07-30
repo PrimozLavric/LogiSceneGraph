@@ -41,11 +41,11 @@ enum class ComponentType {
   kUnspecified
 };
 
-size_t sizeOf(const StructureType structure_type);
+size_t sizeOf(StructureType structure_type);
 
-size_t sizeOf(const ComponentType component_type);
+size_t sizeOf(ComponentType component_type);
 
-class BufferAccessor : std::enable_shared_from_this<BufferAccessor> {
+class BufferAccessor {
  public:
   /**
    * @brief	Creates BufferAccessor for the given buffer view with the given element size and offset.
@@ -76,8 +76,8 @@ class BufferAccessor : std::enable_shared_from_this<BufferAccessor> {
    * @param	component_type  Buffer entry component type.
    * @param	buffer_offset   Offset from the beginning of the buffer. Note: this is not an entry offset.
    */
-  explicit BufferAccessor(const std::shared_ptr<Buffer>& buffer, StructureType structure_type,
-                          ComponentType component_type, size_t buffer_offset = 0u);
+  explicit BufferAccessor(const Ref<Buffer>& buffer, StructureType structure_type, ComponentType component_type,
+                          size_t buffer_offset = 0u);
 
   /**
    * @brief	  Retrieve underlying buffer view.

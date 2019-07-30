@@ -21,12 +21,12 @@
 
 namespace lsg {
 
-Texture::Texture(std::shared_ptr<Image> image, std::shared_ptr<Sampler> sampler)
-  : Identifiable("Texture"), image_(std::move(image)), sampler_(std::move(sampler)) {
+Texture::Texture(const Ref<Image>& image, const Ref<Sampler>& sampler)
+  : Identifiable("Texture"), image_(image), sampler_(sampler) {
   throwIf<InvalidArgument>(!image_, "Tried to initialize Texture with null image.");
 }
 
-const std::shared_ptr<Image>& Texture::image() const {
+const Ref<Image>& Texture::image() const {
   return image_;
 }
 
@@ -34,16 +34,16 @@ bool Texture::hasSampler() const {
   return static_cast<bool>(sampler_);
 }
 
-const std::shared_ptr<Sampler>& Texture::sampler() const {
+const Ref<Sampler>& Texture::sampler() const {
   return sampler_;
 }
 
-void Texture::setImage(const std::shared_ptr<Image>& image) {
+void Texture::setImage(const Ref<Image>& image) {
   throwIf<InvalidArgument>(!image, "Tried to set Texture image to null.");
   image_ = image;
 }
 
-void Texture::setSampler(const std::shared_ptr<Sampler>& sampler) {
+void Texture::setSampler(const Ref<Sampler>& sampler) {
   sampler_ = sampler;
 }
 

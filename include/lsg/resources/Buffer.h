@@ -23,13 +23,14 @@
 #include <memory>
 #include <vector>
 #include "lsg/core/Identifiable.h"
+#include "lsg/core/Ref.h"
 
 namespace lsg {
 
 /**
  * @brief Buffer is an object that holds raw data.
  */
-class Buffer : public Identifiable, public std::enable_shared_from_this<Buffer> {
+class Buffer : public Identifiable, public RefCounter<Buffer> {
  public:
   /**
    * @brief Initialize buffer data.

@@ -35,7 +35,7 @@ class OrthographicCamera : public Camera {
    * @param	far	  Distance to the far clipping plane.
    * @param	near	Distance to the near clipping plane.
    */
-  OrthographicCamera(const std::weak_ptr<Object>& owner, float xmag, float ymag, float far, float near);
+  OrthographicCamera(Object& owner, float xmag, float ymag, float far, float near);
 
   /**
    * @brief	  Retrieve projection matrix.

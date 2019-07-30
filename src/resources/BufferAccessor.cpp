@@ -77,7 +77,7 @@ BufferAccessor::BufferAccessor(BufferView buffer_view, const StructureType struc
                                "Bad buffer accessor (offset + element_size > BufferView.stride).");
 }
 
-BufferAccessor::BufferAccessor(const std::shared_ptr<Buffer>& buffer, const StructureType structure_type,
+BufferAccessor::BufferAccessor(const Ref<Buffer>& buffer, const StructureType structure_type,
                                const ComponentType component_type, const size_t buffer_offset)
   : buffer_view_(BufferView(buffer, sizeOf(structure_type) * sizeOf(component_type), buffer_offset)),
     element_size_(sizeOf(structure_type) * sizeOf(component_type)), byte_offset_(0), structure_type_(structure_type),

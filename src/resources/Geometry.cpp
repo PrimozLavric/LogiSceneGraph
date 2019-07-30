@@ -136,67 +136,67 @@ bool Geometry::hasUv(const size_t index) const {
   return uv_[index].has_value();
 }
 
-std::shared_ptr<TriangleAccessor<glm::vec3>> Geometry::getTrianglePositionAccessor() const {
+Ref<TriangleAccessor<glm::vec3>> Geometry::getTrianglePositionAccessor() const {
   throwIf<IllegalInvocation>(!vertices_.has_value(),
                              "Tried to create TriangleAccessor for geometry without vertex positions.");
 
   if (indices_.has_value()) {
     if (indices_.value().elementSize() == sizeof(uint16_t)) {
-      return std::make_shared<IndexedTriAccessor<uint16_t, glm::vec3>>(vertices_.value(),
-                                                                       TBufferAccessor<uint16_t>(indices_.value()));
+      return makeRef<IndexedTriAccessor<uint16_t, glm::vec3>>(vertices_.value(),
+                                                              TBufferAccessor<uint16_t>(indices_.value()));
     }
 
     if (indices_.value().elementSize() == sizeof(uint32_t)) {
-      return std::make_shared<IndexedTriAccessor<uint32_t, glm::vec3>>(vertices_.value(),
-                                                                       TBufferAccessor<uint32_t>(indices_.value()));
+      return makeRef<IndexedTriAccessor<uint32_t, glm::vec3>>(vertices_.value(),
+                                                              TBufferAccessor<uint32_t>(indices_.value()));
     }
 
     throw IllegalInvocation("Unknown index type.");
   }
 
-  return std::make_shared<TriAccessor<glm::vec3>>(vertices_.value());
+  return makeRef<TriAccessor<glm::vec3>>(vertices_.value());
 }
 
-std::shared_ptr<TriangleAccessor<glm::vec3>> Geometry::getTriangleNormalAccessor() const {
+Ref<TriangleAccessor<glm::vec3>> Geometry::getTriangleNormalAccessor() const {
   throwIf<IllegalInvocation>(!normals_.has_value(),
                              "Tried to create TriangleAccessor for geometry without vertex normals.");
 
   if (indices_.has_value()) {
     if (indices_.value().elementSize() == sizeof(uint16_t)) {
-      return std::make_shared<IndexedTriAccessor<uint16_t, glm::vec3>>(normals_.value(),
-                                                                       TBufferAccessor<uint16_t>(indices_.value()));
+      return makeRef<IndexedTriAccessor<uint16_t, glm::vec3>>(normals_.value(),
+                                                              TBufferAccessor<uint16_t>(indices_.value()));
     }
 
     if (indices_.value().elementSize() == sizeof(uint32_t)) {
-      return std::make_shared<IndexedTriAccessor<uint32_t, glm::vec3>>(normals_.value(),
-                                                                       TBufferAccessor<uint32_t>(indices_.value()));
+      return makeRef<IndexedTriAccessor<uint32_t, glm::vec3>>(normals_.value(),
+                                                              TBufferAccessor<uint32_t>(indices_.value()));
     }
 
     throw IllegalInvocation("Unknown index type.");
   }
 
-  return std::make_shared<TriAccessor<glm::vec3>>(normals_.value());
+  return makeRef<TriAccessor<glm::vec3>>(normals_.value());
 }
 
-std::shared_ptr<TriangleAccessor<glm::vec4>> Geometry::getTriangleTangentAccessor() const {
+Ref<TriangleAccessor<glm::vec4>> Geometry::getTriangleTangentAccessor() const {
   throwIf<IllegalInvocation>(!tangents_.has_value(),
                              "Tried to create TriangleAccessor for geometry without vertex tangents.");
 
   if (indices_.has_value()) {
     if (indices_.value().elementSize() == sizeof(uint16_t)) {
-      return std::make_shared<IndexedTriAccessor<uint16_t, glm::vec4>>(tangents_.value(),
-                                                                       TBufferAccessor<uint16_t>(indices_.value()));
+      return makeRef<IndexedTriAccessor<uint16_t, glm::vec4>>(tangents_.value(),
+                                                              TBufferAccessor<uint16_t>(indices_.value()));
     }
 
     if (indices_.value().elementSize() == sizeof(uint32_t)) {
-      return std::make_shared<IndexedTriAccessor<uint32_t, glm::vec4>>(tangents_.value(),
-                                                                       TBufferAccessor<uint32_t>(indices_.value()));
+      return makeRef<IndexedTriAccessor<uint32_t, glm::vec4>>(tangents_.value(),
+                                                              TBufferAccessor<uint32_t>(indices_.value()));
     }
 
     throw IllegalInvocation("Unknown index type.");
   }
 
-  return std::make_shared<TriAccessor<glm::vec4>>(tangents_.value());
+  return makeRef<TriAccessor<glm::vec4>>(tangents_.value());
 }
 
 } // namespace lsg

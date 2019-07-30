@@ -7,7 +7,7 @@ using namespace lsg;
 
 void testRayIntersection(std::vector<AABB<float>> boxes, Ray<float> ray) {
   bvh::BVHBuilder<float> builder(bvh::SAHFunction("test", 0.0, 1000.0, 1u, 1u));
-  std::shared_ptr<BVH<float>> tree = builder.process(boxes);
+  Ref<BVH<float>> tree = builder.process(boxes);
 
   std::vector<uint32_t> indices = tree->rayIntersect(ray);
   std::set<uint32_t> indices_set(indices.begin(), indices.end());

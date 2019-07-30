@@ -24,16 +24,16 @@ namespace lsg {
 
 class BufferView : public std::enable_shared_from_this<BufferView> {
  public:
-  BufferView(std::shared_ptr<Buffer> buffer, size_t stride, size_t offset, size_t range);
+  BufferView(const Ref<Buffer>& buffer, size_t stride, size_t offset, size_t range);
 
-  BufferView(std::shared_ptr<Buffer> buffer, size_t stride, size_t offset = 0u);
+  BufferView(const Ref<Buffer>& buffer, size_t stride, size_t offset = 0u);
 
   /**
    * @brief	  Retrieve referenced buffer.
    *
    * @return	Referenced buffer.
    */
-  const std::shared_ptr<Buffer>& buffer() const;
+  const Ref<Buffer>& buffer() const;
 
   /**
    * @brief	  Pointer to data referenced by buffer view.
@@ -77,7 +77,7 @@ class BufferView : public std::enable_shared_from_this<BufferView> {
   /**
    * Referenced buffer.
    */
-  std::shared_ptr<Buffer> buffer_;
+  Ref<Buffer> buffer_;
 
   /**
    * Pointer to the beginning of the buffer view data.
@@ -115,7 +115,7 @@ class TBufferView : public BufferView, public std::enable_shared_from_this<TBuff
    * @param	offset	Offset from the beginning of the buffer.
    * @param	range	  Range of the buffer.
    */
-  TBufferView(const std::shared_ptr<Buffer>& buffer, size_t offset, size_t range);
+  TBufferView(const Ref<Buffer>& buffer, size_t offset, size_t range);
 
   /**
    * @brief Typed buffer view.
@@ -123,7 +123,7 @@ class TBufferView : public BufferView, public std::enable_shared_from_this<TBuff
    * @param	buffer	Shared buffer object.
    * @param	offset	Offset from the beginning of the buffer.
    */
-  explicit TBufferView(const std::shared_ptr<Buffer>& buffer, size_t offset = 0u);
+  explicit TBufferView(const Ref<Buffer>& buffer, size_t offset = 0u);
 
   /**
    * @brief Construct typed buffer view from regular buffer view.
@@ -149,12 +149,11 @@ class TBufferView : public BufferView, public std::enable_shared_from_this<TBuff
 };
 
 template <typename T>
-TBufferView<T>::TBufferView(const std::shared_ptr<Buffer>& buffer, const size_t offset, const size_t range)
+TBufferView<T>::TBufferView(const Ref<Buffer>& buffer, const size_t offset, const size_t range)
   : BufferView(buffer, sizeof(T), offset, range) {}
 
 template <typename T>
-TBufferView<T>::TBufferView(const std::shared_ptr<Buffer>& buffer, const size_t offset)
-  : BufferView(buffer, sizeof(T), offset) {}
+TBufferView<T>::TBufferView(const Ref<Buffer>& buffer, const size_t offset) : BufferView(buffer, sizeof(T), offset) {}
 
 template <typename T>
 TBufferView<T>::TBufferView(const BufferView& buffer_view)

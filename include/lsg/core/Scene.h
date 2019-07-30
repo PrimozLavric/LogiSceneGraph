@@ -25,18 +25,8 @@
 
 namespace lsg {
 
-class Scene : public Identifiable, public std::enable_shared_from_this<Scene> {
- public:
-  explicit Scene(std::vector<std::shared_ptr<Object>> root_objects = {});
-
-  explicit Scene(const std::string& name, std::vector<std::shared_ptr<Object>> root_objects = {});
-
-  const std::vector<std::shared_ptr<Object>>& rootObjects() const;
-
-  void addObject(const std::shared_ptr<Object>& object);
-
- private:
-  std::vector<std::shared_ptr<Object>> root_objects_;
+class Scene : public Object {
+  using Object::Object;
 };
 
 } // namespace lsg

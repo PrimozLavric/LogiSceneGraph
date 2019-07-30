@@ -23,11 +23,12 @@
 #include <memory>
 #include <vector>
 #include "lsg/core/Identifiable.h"
+#include "lsg/core/Ref.h"
 #include "lsg/resources/Format.h"
 
 namespace lsg {
 
-class Image : public Identifiable, public std::enable_shared_from_this<Image> {
+class Image : public Identifiable, public RefCounter<Image> {
  public:
   template <typename T>
   Image(const std::string& name, const std::vector<T>& data, Format format, size_t width, size_t height = 1u,

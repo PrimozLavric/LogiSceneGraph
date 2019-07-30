@@ -21,8 +21,8 @@
 
 namespace lsg {
 
-BufferView::BufferView(std::shared_ptr<Buffer> buffer, const size_t stride, const size_t offset, const size_t range)
-  : buffer_(std::move(buffer)), data_(nullptr), stride_(stride), offset_(offset), range_(range) {
+BufferView::BufferView(const Ref<Buffer>& buffer, const size_t stride, const size_t offset, const size_t range)
+  : buffer_(buffer), data_(nullptr), stride_(stride), offset_(offset), range_(range) {
   // Validate buffer view.
   validate();
 
@@ -30,8 +30,8 @@ BufferView::BufferView(std::shared_ptr<Buffer> buffer, const size_t stride, cons
   data_ = buffer_->data() + offset_;
 }
 
-BufferView::BufferView(std::shared_ptr<Buffer> buffer, const size_t stride, const size_t offset)
-  : buffer_(std::move(buffer)), data_(nullptr), stride_(stride), offset_(offset), range_(buffer_->size() - offset) {
+BufferView::BufferView(const Ref<Buffer>& buffer, const size_t stride, const size_t offset)
+  : buffer_(buffer), data_(nullptr), stride_(stride), offset_(offset), range_(buffer_->size() - offset) {
   // Validate buffer view.
   validate();
 
@@ -39,7 +39,7 @@ BufferView::BufferView(std::shared_ptr<Buffer> buffer, const size_t stride, cons
   data_ = buffer_->data() + offset_;
 }
 
-const std::shared_ptr<Buffer>& BufferView::buffer() const {
+const Ref<Buffer>& BufferView::buffer() const {
   return buffer_;
 }
 

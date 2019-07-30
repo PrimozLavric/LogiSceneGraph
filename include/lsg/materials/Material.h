@@ -20,6 +20,7 @@
 #define LSG_MATERIALS_MATERIAL_H
 
 #include "lsg/core/Identifiable.h"
+#include "lsg/core/Ref.h"
 #include "lsg/core/VersionTracker.h"
 #include "lsg/resources/Texture.h"
 
@@ -30,7 +31,7 @@ static constexpr uint32_t k_uv_index_unspecified = std::numeric_limits<uint32_t>
 /**
  * @brief Base class for all materials.
  */
-class Material : public Identifiable, public VersionTracker {
+class Material : public Identifiable, public RefCounter<Material>, public VersionTracker {
  public:
   /**
    * Uses the same constructor as identifiable.
@@ -48,12 +49,12 @@ struct TextureUV {
    * @param	texture   Texture.
    * @param	uv_index  Uv coordinates index.
    */
-  explicit TextureUV(std::shared_ptr<Texture> texture = {}, uint32_t uv_index = k_uv_index_unspecified);
+  explicit TextureUV(Ref<Texture> texture = {}, uint32_t uv_index = k_uv_index_unspecified);
 
   /**
    * Texture.
    */
-  std::shared_ptr<Texture> texture;
+  Ref<Texture> texture;
 
   /**
    * Index of UV coordinates (references geometry).

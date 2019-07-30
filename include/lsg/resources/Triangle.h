@@ -86,7 +86,7 @@ class Triangle {
  * @tparam	T Type of triangle vertex components.
  */
 template <typename T>
-class TriangleAccessor {
+class TriangleAccessor : public RefCounter<TriangleAccessor<T>> {
  public:
   /**
    * @brief	  Get number of triangles.

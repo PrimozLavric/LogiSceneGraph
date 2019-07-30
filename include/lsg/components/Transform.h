@@ -32,7 +32,7 @@ class Transform : public Component {
    *
    * @param	owner Owner of the transform component.
    */
-  explicit Transform(const std::weak_ptr<Object>& owner);
+  explicit Transform(Object& owner);
 
   /**
    * @brief   Retrieve local transform matrix.

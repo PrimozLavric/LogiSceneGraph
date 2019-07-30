@@ -22,12 +22,11 @@
 
 namespace lsg {
 
-Transform::Transform(const std::weak_ptr<Object>& owner)
+Transform::Transform(Object& owner)
   : Component("Transform", owner), world_matrix_(1.0), world_matrix_dirty_(false), loc_matrix_(1.0),
     loc_matrix_dirty_(false), loc_position_(), loc_rotation_(), loc_scale_(1.0f) {
-  auto locked_owner = owner_.lock();
   // Traverse ancestors.
-  locked_owner->traverseUpExcl([this](const std::shared_ptr<Object>& object) {
+  owner_.traverseUpExcl([this](const Ref<Object>& object) {
     const auto transform = object->getComponent<Transform>();
 
     // Check if the ancestor has transform component.
@@ -45,8 +44,7 @@ Transform::Transform(const std::weak_ptr<Object>& owner)
   });
 
   // When the parent changes mark the world matrix dirty.
-  locked_owner->setOnParentChangeCallback(*this,
-                                          [this](const std::shared_ptr<Object>&) { this->markWorldMatrixDirty(); });
+  owner_.setOnParentChangeCallback(*this, [this](const Ref<Object>&) { this->markWorldMatrixDirty(); });
 }
 
 const glm::mat4x4& Transform::matrix() {
@@ -160,14 +158,12 @@ void Transform::updateWorldMatrix() {
     return;
   }
 
-  std::shared_ptr<Transform> transform;
+  Ref<Transform> transform;
   // Find first ancestor with transform.
-  if (auto locked_owner = owner_.lock()) {
-    locked_owner->traverseUpExcl([this, &transform](const std::shared_ptr<Object>& object) {
-      transform = object->getComponent<Transform>();
-      return !static_cast<bool>(transform);
-    });
-  }
+  owner_.traverseUpExcl([this, &transform](const Ref<Object>& object) {
+    transform = object->getComponent<Transform>();
+    return !static_cast<bool>(transform);
+  });
 
   // Update ancestor transform and compute the world matrix.
   if (transform) {
@@ -193,17 +189,15 @@ void Transform::markWorldMatrixDirty() {
 
   world_matrix_dirty_ = true;
   // Mark all child objects world matrices as dirty.
-  if (auto locked_owner = owner_.lock()) {
-    locked_owner->traverseDownExcl([](const std::shared_ptr<Object> object) {
-      const auto transform = object->getComponent<Transform>();
-      if (transform) {
-        transform->world_matrix_dirty_ = true;
-      }
+  owner_.traverseDownExcl([](const Ref<Object>& object) {
+    const Ref<Transform>& transform = object->getComponent<Transform>();
+    if (transform) {
+      transform->world_matrix_dirty_ = true;
+    }
 
-      // Descend.
-      return true;
-    });
-  }
+    // Descend.
+    return true;
+  });
 }
 
 } // namespace lsg
