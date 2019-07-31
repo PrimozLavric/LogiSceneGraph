@@ -20,6 +20,7 @@
 #define LSG_MATH_AABB_H
 
 #include <algorithm>
+#include <array>
 #include <glm/glm.hpp>
 #include <ostream>
 
@@ -184,7 +185,24 @@ AABB<T> AABB<T>::intersect(const AABB<T>& aabb) const {
 
 template <typename T>
 AABB<T> AABB<T>::transform(const glm::tmat4x4<T>& matrix) const {
-  return AABB<T>(matrix * glm::vec4(min_, 1.0), matrix * glm::vec4(max_, 1.0));
+  std::array<glm::vec3, 8> points{};
+
+  points[0] = matrix * glm::vec4(min_.x, min_.y, min_.z, 1.0f);
+  points[1] = matrix * glm::vec4(min_.x, min_.y, max_.z, 1.0f);
+  points[2] = matrix * glm::vec4(min_.x, max_.y, min_.z, 1.0f);
+  points[3] = matrix * glm::vec4(min_.x, max_.y, max_.z, 1.0f);
+  points[4] = matrix * glm::vec4(max_.x, min_.y, min_.z, 1.0f);
+  points[5] = matrix * glm::vec4(max_.x, min_.y, max_.z, 1.0f);
+  points[6] = matrix * glm::vec4(max_.x, max_.y, min_.z, 1.0f);
+  points[7] = matrix * glm::vec4(max_.x, max_.y, max_.z, 1.0f);
+
+  AABB<float> transformed_bb_;
+
+  for (const auto& point : points) {
+    transformed_bb_.expand(point);
+  }
+
+  return transformed_bb_;
 }
 
 template <typename T>
