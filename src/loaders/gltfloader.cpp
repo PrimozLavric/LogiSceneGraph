@@ -187,7 +187,7 @@ std::vector<Ref<Object>> GLTFLoader::loadObjects(const tinygltf::Model& model) {
               TextureUV(tex, (jt->second.has_number_value) ? static_cast<uint32_t>(jt->second.number_value) : 0u));
           }
 
-          if (auto jt = gltf_material.values.find("metalicFactor"); jt != gltf_material.values.end()) {
+          if (auto jt = gltf_material.values.find("metallicFactor"); jt != gltf_material.values.end()) {
             lsg_material->setMetalicFactor(static_cast<float>(jt->second.Factor()));
           } else {
             lsg_material->setMetalicFactor(1.0f);
