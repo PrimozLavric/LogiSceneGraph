@@ -181,6 +181,8 @@ class Transform : public Component {
    */
   void updateWorldMatrix();
 
+  bool isWorldMatrixDirty();
+
  protected:
   void markLocalMatrixDirty();
 

@@ -122,7 +122,9 @@ class Ref {
       ptr_->release();
     }
     ptr_ = rhs.ptr_;
-    ptr_->addRef();
+    if (ptr_ != nullptr) {
+      ptr_->addRef();
+    }
     return *this;
   }
 
@@ -131,7 +133,9 @@ class Ref {
       ptr_->release();
     }
     ptr_ = rhs;
-    ptr_->addRef();
+    if (ptr_ != nullptr) {
+      ptr_->addRef();
+    }
     return *this;
   }
 

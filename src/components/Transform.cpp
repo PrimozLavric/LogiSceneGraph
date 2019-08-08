@@ -200,4 +200,8 @@ void Transform::markWorldMatrixDirty() {
   });
 }
 
+bool Transform::isWorldMatrixDirty() {
+  return world_matrix_dirty_;
+}
+
 } // namespace lsg
