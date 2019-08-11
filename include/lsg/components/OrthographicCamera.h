@@ -63,14 +63,14 @@ class OrthographicCamera : public Camera {
    *
    * @return	Distance to the far clipping plane.
    */
-  float far() const;
+  float farPlane() const;
 
   /**
    * @brief	  Retrieve distance to the near clipping plane.
    *
    * @return	Distance to the near clipping plane.
    */
-  float near() const;
+  float nearPlane() const;
 
   /**
    * @brief	Set horizontal magnification of the view.
@@ -91,14 +91,14 @@ class OrthographicCamera : public Camera {
    *
    * @param	far	Distance to the far clipping plane to be set.
    */
-  void setFar(float far);
+  void setFarPlane(float far);
 
   /**
    * @brief	Set distance to the near clipping plane.
    *
    * @param	near	Distance to the near clipping plane to be set.
    */
-  void setNear(float near);
+  void setNearPlane(float near);
 
   /**
    * @brief	Update projection matrix.

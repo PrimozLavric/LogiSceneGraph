@@ -38,11 +38,11 @@ float PerspectiveCamera::fov() const {
   return fov_;
 }
 
-float PerspectiveCamera::far() const {
+float PerspectiveCamera::farPlane() const {
   return far_;
 }
 
-float PerspectiveCamera::near() const {
+float PerspectiveCamera::nearPlane() const {
   return near_;
 }
 
@@ -56,12 +56,12 @@ void PerspectiveCamera::setFov(const float fov) {
   dirty_ = true;
 }
 
-void PerspectiveCamera::setFar(const float far) {
+void PerspectiveCamera::setFarPlane(const float far) {
   far_ = far;
   dirty_ = true;
 }
 
-void PerspectiveCamera::setNear(const float near) {
+void PerspectiveCamera::setNearPlane(const float near) {
   near_ = near;
   dirty_ = true;
 }
