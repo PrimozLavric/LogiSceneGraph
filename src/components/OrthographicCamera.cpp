@@ -38,11 +38,11 @@ float OrthographicCamera::ymag() const {
   return ymag_;
 }
 
-float OrthographicCamera::far() const {
+float OrthographicCamera::farPlane() const {
   return far_;
 }
 
-float OrthographicCamera::near() const {
+float OrthographicCamera::nearPlane() const {
   return near_;
 }
 
@@ -56,12 +56,12 @@ void OrthographicCamera::setYmag(float ymag) {
   dirty_ = true;
 }
 
-void OrthographicCamera::setFar(float far) {
+void OrthographicCamera::setFarPlane(float far) {
   far_ = far;
   dirty_ = true;
 }
 
-void OrthographicCamera::setNear(float near) {
+void OrthographicCamera::setNearPlane(float near) {
   near_ = near;
   dirty_ = true;
 }
