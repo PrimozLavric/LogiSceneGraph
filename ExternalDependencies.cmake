@@ -17,10 +17,3 @@ if (NOT TARGET Vulkan::Vulkan)
 else()
 	message(STATUS "[LogiSceneGraph] Target Vulkan::Vulkan is already defined. Using existing target.")
 endif()
-
-# TinyGLTF
-if (NOT TARGET tinygltf)
-	add_subdirectory(libs/tinygltf)
-else()
-	message(STATUS "[LogiSceneGraph] Target tinygltf is already defined. Using existing target.")
-endif()

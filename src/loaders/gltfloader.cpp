@@ -16,16 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "lsg/loaders/GLTFLoader.h"
 #include <algorithm>
-#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <glm/gtc/type_ptr.hpp>
+#include "lsg/loaders/GLTFLoader.h"
 #include "lsg/components/Mesh.h"
 #include "lsg/components/OrthographicCamera.h"
 #include "lsg/components/PerspectiveCamera.h"
 #include "lsg/components/Transform.h"
 #include "lsg/materials/MetallicRoughnessMaterial.h"
 #include "lsg/resources/Buffer.h"
+
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <tiny_gltf.h>
 
 namespace lsg {
 
