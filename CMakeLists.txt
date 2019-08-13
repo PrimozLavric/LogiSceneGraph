@@ -23,11 +23,16 @@ file(GLOB_RECURSE SRC_LIST "src/*.cpp")
 add_library(LogiSceneGraph STATIC ${SRC_LIST})
 
 target_include_directories(LogiSceneGraph PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs/tinygltf>
+        $<INSTALL_INTERFACE:include>
+        )
+
+target_include_directories(LogiSceneGraph PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
         )
 
-target_link_libraries(LogiSceneGraph GLM::glm Vulkan::Vulkan tinygltf)
+target_link_libraries(LogiSceneGraph GLM::glm Vulkan::Vulkan)
 
 ##########################################################
 ####################### DOXYGEN ##########################

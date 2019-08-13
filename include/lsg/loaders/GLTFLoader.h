@@ -19,7 +19,7 @@
 #ifndef LSG_LOADERS_GLTFLOADER_H
 #define LSG_LOADERS_GLTFLOADER_H
 
-#include <tinygltf/tiny_gltf.h>
+#include <tiny_gltf.h>
 #include "lsg/components/Camera.h"
 #include "lsg/core/Object.h"
 #include "lsg/core/Scene.h"
