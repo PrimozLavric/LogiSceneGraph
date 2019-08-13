@@ -107,7 +107,7 @@ std::vector<Ref<Object>> GLTFLoader::loadObjects(const tinygltf::Model& model) {
     } else {
       // Check if the rotation, translation and scale are set individualy.
       if (!node.rotation.empty()) {
-        transform->setRotation(glm::quat(glm::make_quat(node.rotation.data())));
+        transform->setRotation(glm::quat(node.rotation[3], node.rotation[0], node.rotation[1], node.rotation[2]));
       }
       if (!node.translation.empty()) {
         transform->setPosition(glm::vec3(glm::make_vec3(node.translation.data())));
