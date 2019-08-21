@@ -35,17 +35,22 @@ class MetallicRoughnessMaterial : public Material {
    * @param	metalic_factor          Metalness of the material.
    * @param	roughness_factor        Roughness of the material.
    * @param	emissive_factor         Intensity of the light being emitted by the material.
+   * @param transmission_factor     The base percentage of light transmitted through the surface.
+   * @param ior                     Index of refraction of the material.
    * @param	base_color_tex          Base color texture.
    * @param	metalic_roughness_tex   Metallic roughness texture.
    * @param	normal_tex              Normal texture.
    * @param	emissive_tex            Emissive texture.
+   * @param transmission_tex        Transmission texture.
    */
   explicit MetallicRoughnessMaterial(const std::string& name = "MetalicRoughnessMaterial",
                                      glm::vec4 base_color_factor = glm::vec4(1.0f), float metalic_factor = 1.0f,
                                      float roughness_factor = 1.0f, glm::vec3 emissive_factor = glm::vec3(0.0f),
+                                     float transmission_factor = 1.0f, float ior = 1.33f,
                                      TextureUV base_color_tex = TextureUV(),
                                      TextureUV metalic_roughness_tex = TextureUV(), TextureUV normal_tex = TextureUV(),
-                                     TextureUV emissive_tex = TextureUV());
+                                     TextureUV emissive_tex = TextureUV(),
+                                     TextureUV transmission_tex = TextureUV());
 
   /**
    * @brief   Retrieve material's base color.
@@ -76,6 +81,20 @@ class MetallicRoughnessMaterial : public Material {
   glm::vec3 emissiveFactor() const;
 
   /**
+   * @brief   Retrive the base percentage of light transmitted through the surface.
+   *
+   * @return  Base percentage of light transmitted through the surface.
+   */
+  float transmissionFactor() const;
+
+  /**
+   * @brief   Retrive the index of refraction of the material.
+   *
+   * @return  The index of refraction of the material.
+   */
+  float ior() const;
+
+  /**
    * @brief	  Retrieve reference to the base color texture.
    *
    * @return	Reference to the base color texture. Null reference if not set.
@@ -102,6 +121,13 @@ class MetallicRoughnessMaterial : public Material {
    * @return	Reference to the emissive texture. Null reference if not set.
    */
   const Ref<Texture>& emissiveTex() const;
+
+  /**
+   * @brief	  Retrieve reference to the transmission texture.
+   *
+   * @return	Reference to the transmission texture. Null reference if not set.
+   */
+  const Ref<Texture>& transmissionTexture() const;
 
   /**
    * @brief	Set material's base color.
@@ -132,6 +158,16 @@ class MetallicRoughnessMaterial : public Material {
   void setEmissiveFactor(const glm::vec3& emissive_factor);
 
   /**
+   * @brief   Set the base percentage of light transmitted through the surface.
+   */
+  void setTransmissionFactor(float transmission_factor);
+
+  /**
+   * @brief   Set the index of refraction of the material.
+   */
+  void setIor(float ior);
+
+  /**
    * @brief	Set base color texture.
    *
    * @param	base_color_tex  Base color texture.
@@ -159,6 +195,13 @@ class MetallicRoughnessMaterial : public Material {
    */
   void setEmissiveTex(const TextureUV& emissive_tex);
 
+  /**
+   * @brief Set transmission texture.
+   *
+   * @param transmission_tex  Transmission texture.
+   */
+  void setTransmissionTex(const TextureUV& transmission_tex);
+
  private:
   /**
    * Material's base color.
@@ -181,6 +224,16 @@ class MetallicRoughnessMaterial : public Material {
   glm::vec3 emissive_factor_;
 
   /**
+ * The base percentage of light transmitted through the surface.
+ */
+  float transmission_factor_;
+
+  /**
+   * The index of refraction of the material.
+   */
+  float ior_;
+
+  /**
    * Base color texture.
    */
   TextureUV base_color_tex_;
@@ -199,6 +252,11 @@ class MetallicRoughnessMaterial : public Material {
    * Emissive texture.
    */
   TextureUV emissive_tex_;
+
+  /**
+   * A greyscale texture that defines the transmission percentage of the surface. This will be multiplied by transmissionFactor.
+   */
+  TextureUV transmission_tex_;
 };
 
 } // namespace lsg
