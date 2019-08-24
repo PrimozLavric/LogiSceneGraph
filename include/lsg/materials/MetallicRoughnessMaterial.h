@@ -46,11 +46,10 @@ class MetallicRoughnessMaterial : public Material {
   explicit MetallicRoughnessMaterial(const std::string& name = "MetalicRoughnessMaterial",
                                      glm::vec4 base_color_factor = glm::vec4(1.0f), float metalic_factor = 1.0f,
                                      float roughness_factor = 1.0f, glm::vec3 emissive_factor = glm::vec3(0.0f),
-                                     float transmission_factor = 1.0f, float ior = 1.33f,
+                                     float transmission_factor = 0.0f, float ior = 1.33f,
                                      TextureUV base_color_tex = TextureUV(),
                                      TextureUV metalic_roughness_tex = TextureUV(), TextureUV normal_tex = TextureUV(),
-                                     TextureUV emissive_tex = TextureUV(),
-                                     TextureUV transmission_tex = TextureUV());
+                                     TextureUV emissive_tex = TextureUV(), TextureUV transmission_tex = TextureUV());
 
   /**
    * @brief   Retrieve material's base color.
@@ -224,8 +223,8 @@ class MetallicRoughnessMaterial : public Material {
   glm::vec3 emissive_factor_;
 
   /**
- * The base percentage of light transmitted through the surface.
- */
+   * The base percentage of light transmitted through the surface.
+   */
   float transmission_factor_;
 
   /**
@@ -254,7 +253,8 @@ class MetallicRoughnessMaterial : public Material {
   TextureUV emissive_tex_;
 
   /**
-   * A greyscale texture that defines the transmission percentage of the surface. This will be multiplied by transmissionFactor.
+   * A greyscale texture that defines the transmission percentage of the surface. This will be multiplied by
+   * transmissionFactor.
    */
   TextureUV transmission_tex_;
 };

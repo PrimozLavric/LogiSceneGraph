@@ -31,7 +31,6 @@ struct SplitBVHConfig {
    * Maximum depth of the BVH where spatial split will still be used.
    */
   double split_alpha = 1.0e-5;
-  ;
 
   /**
    * Maximum depth of the BVH where spatial split will still be used.
@@ -202,7 +201,7 @@ uint32_t SplitBVHBuilder<T>::buildNode(const NodeSpec<T>& spec, size_t level) {
 
   // Find best object split.
   const ObjectSplit obj_split = findObjectSplit(spec, node_sah);
-  SpatialSplit<T> spatial_split;
+  SpatialSplit<T> spatial_split{};
 
   if (level < split_config_.max_spatial_depth) {
     // Check if there is a sufficiently large bounds overlap.
