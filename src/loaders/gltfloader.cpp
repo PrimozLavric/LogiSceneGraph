@@ -16,10 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
-#include <iostream>
-#include <glm/gtc/type_ptr.hpp>
 #include "lsg/loaders/GLTFLoader.h"
+#include <algorithm>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 #include "lsg/components/Mesh.h"
 #include "lsg/components/OrthographicCamera.h"
 #include "lsg/components/PerspectiveCamera.h"
@@ -202,6 +202,19 @@ std::vector<Ref<Object>> GLTFLoader::loadObjects(const tinygltf::Model& model) {
             lsg_material->setRoughnessFactor(static_cast<float>(jt->second.Factor()));
           } else {
             lsg_material->setRoughnessFactor(1.0f);
+          }
+          auto thin_transparency_it = gltf_material.extensions.find("ADOBE_materials_thin_transparency");
+
+          if (thin_transparency_it != gltf_material.extensions.end()) {
+            if (thin_transparency_it->second.Has("ior")) {
+              lsg_material->setIor(thin_transparency_it->second.Get("ior").Get<double>());
+            }
+
+            if (thin_transparency_it->second.Has("transmissionFactor")) {
+              lsg_material->setTransmissionFactor(thin_transparency_it->second.Get("transmissionFactor").Get<double>());
+            }
+
+            // TODO: Add texture.
           }
 
           if (auto jt = gltf_material.values.find("metallicRoughnessTexture"); jt != gltf_material.values.end()) {
