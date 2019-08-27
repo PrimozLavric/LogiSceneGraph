@@ -86,6 +86,8 @@ class Geometry : public Identifiable, public RefCounter<Geometry> {
 
   Ref<TriangleAccessor<glm::vec3>> getTriangleNormalAccessor() const;
 
+  Ref<TriangleAccessor<glm::vec2>> getTriangleUVAccessor(size_t index) const;
+
   Ref<TriangleAccessor<glm::vec4>> getTriangleTangentAccessor() const;
 
  protected:

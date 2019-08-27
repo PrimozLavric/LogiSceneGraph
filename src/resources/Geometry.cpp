@@ -178,6 +178,26 @@ Ref<TriangleAccessor<glm::vec3>> Geometry::getTriangleNormalAccessor() const {
   return makeRef<TriAccessor<glm::vec3>>(normals_.value());
 }
 
+Ref<TriangleAccessor<glm::vec2>> Geometry::getTriangleUVAccessor(const size_t index) const {
+  throwIf<IllegalInvocation>(!hasUv(index), "Tried to create TriangleAccessor for geometry without vertex positions.");
+
+  if (indices_.has_value()) {
+    if (indices_.value().elementSize() == sizeof(uint16_t)) {
+      return makeRef<IndexedTriAccessor<uint16_t, glm::vec2>>(TBufferAccessor<glm::vec2>(uv_[index].value()),
+                                                              TBufferAccessor<uint16_t>(indices_.value()));
+    }
+
+    if (indices_.value().elementSize() == sizeof(uint32_t)) {
+      return makeRef<IndexedTriAccessor<uint32_t, glm::vec2>>(TBufferAccessor<glm::vec2>(uv_[index].value()),
+                                                              TBufferAccessor<uint32_t>(indices_.value()));
+    }
+
+    throw IllegalInvocation("Unknown index type.");
+  }
+
+  return makeRef<TriAccessor<glm::vec2>>(TBufferAccessor<glm::vec2>(uv_[index].value()));
+}
+
 Ref<TriangleAccessor<glm::vec4>> Geometry::getTriangleTangentAccessor() const {
   throwIf<IllegalInvocation>(!tangents_.has_value(),
                              "Tried to create TriangleAccessor for geometry without vertex tangents.");
