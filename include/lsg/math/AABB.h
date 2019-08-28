@@ -113,6 +113,16 @@ class AABB {
   const glm::tvec3<T>& max() const;
 
   /**
+   * @brief   Set minimum bounding box point at axis.
+   */
+  void setMinAtAxis(const T& value, size_t axis);
+
+  /**
+   * @brief   Set maximum bounding box point at axis.
+   */
+  void setMaxAtAxis(const T& value, size_t axis);
+
+  /**
    * @brief	  Compute center of the bounding box.
    *
    * @return	Center of the bounding box.
@@ -230,6 +240,16 @@ const glm::tvec3<T>& AABB<T>::min() const {
 template <typename T>
 const glm::tvec3<T>& AABB<T>::max() const {
   return max_;
+}
+
+template <typename T>
+void AABB<T>::setMinAtAxis(const T& value, size_t axis) {
+  min_[axis] = value;
+}
+
+template <typename T>
+void AABB<T>::setMaxAtAxis(const T& value, size_t axis) {
+  max_[axis] = value;
 }
 
 template <typename T>

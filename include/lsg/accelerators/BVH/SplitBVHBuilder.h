@@ -40,7 +40,7 @@ struct SplitBVHConfig {
   /**
    * Number of spatial bins per node in each axis.
    */
-  size_t num_spatial_bins = 128;
+  size_t num_spatial_bins = 256;
 };
 
 #pragma region StateStructures
@@ -73,17 +73,17 @@ struct SpatialBin final {
   /**
    * Bounding box of the bin.
    */
-  AABB<T> bounds;
+  AABB<T> bounds = {};
 
   /**
    * Number of triangles entering the bin.
    */
-  size_t enter;
+  size_t enter = 0;
 
   /**
    * Number of triangles leaving the bin.
    */
-  size_t exit;
+  size_t exit = 0;
 };
 #pragma endregion
 
@@ -222,6 +222,7 @@ uint32_t SplitBVHBuilder<T>::buildNode(const NodeSpec<T>& spec, size_t level) {
   // Perform the split.
   std::pair<NodeSpec<T>, NodeSpec<T>> child_spec;
   if (min_sah == spatial_split.sah) {
+    std::cout << "Chose Spatial" << std::endl;
     child_spec = performSpatialSplit(spec, spatial_split);
   }
 
@@ -256,15 +257,13 @@ SpatialSplit<T> SplitBVHBuilder<T>::findSpatialSplit(const NodeSpec<T>& spec, fl
     t_spatial_bins_[axis].resize(split_config_.num_spatial_bins);
   }
 
-  for (auto it = t_reference_stack_.begin() + (t_reference_stack_.size() - spec.num_refs);
-       it != t_reference_stack_.end(); it++) {
+  for (auto it = t_reference_stack_.end() - spec.num_refs; it != t_reference_stack_.end(); it++) {
     const Reference<T>& ref = *it;
     glm::tvec3<size_t> first_bin =
       glm::clamp(glm::tvec3<size_t>((ref.bounds.min() - origin) * inv_bin_size), glm::tvec3<size_t>(0u),
                  glm::tvec3<size_t>(split_config_.num_spatial_bins - 1u));
-    glm::tvec3<size_t> last_bin =
-      glm::clamp(glm::tvec3<size_t>((ref.bounds.max() - origin) * inv_bin_size), glm::tvec3<size_t>(0u),
-                 glm::tvec3<size_t>(split_config_.num_spatial_bins - 1u));
+    glm::tvec3<size_t> last_bin = glm::clamp(glm::tvec3<size_t>((ref.bounds.max() - origin) * inv_bin_size), first_bin,
+                                             glm::tvec3<size_t>(split_config_.num_spatial_bins - 1u));
 
     // Chop and bin the references.
     for (size_t axis = 0u; axis < 3u; axis++) {
@@ -274,7 +273,7 @@ SpatialSplit<T> SplitBVHBuilder<T>::findSpatialSplit(const NodeSpec<T>& spec, fl
         std::pair<Reference<T>, Reference<T>> split_refs =
           splitReference(current_ref, axis, origin[axis] + bin_size[axis] * T(i + 1));
         t_spatial_bins_[axis][i].bounds.expand(split_refs.first.bounds);
-        current_ref.bounds = split_refs.second.bounds;
+        current_ref = split_refs.second;
       }
 
       t_spatial_bins_[axis][first_bin[axis]].enter++;
@@ -322,7 +321,8 @@ template <typename T>
 std::pair<Reference<T>, Reference<T>> SplitBVHBuilder<T>::splitReference(const Reference<T>& ref, size_t axis,
                                                                          T split_pos) const {
   Reference<T> left = ref;
-  Reference<T> right = ref;
+  left.bounds.reset();
+  Reference<T> right = left;
 
   Triangle<glm::tvec3<T>> tri = (*t_triangle_accessor_)[ref.index];
 
@@ -336,7 +336,7 @@ std::pair<Reference<T>, Reference<T>> SplitBVHBuilder<T>::splitReference(const R
       left.bounds.expand(v0);
     }
     if (v0[axis] >= split_pos) {
-      right.bounds.expand(v1);
+      right.bounds.expand(v0);
     }
 
     // If edge intersects split plane insert interpolated vertex in both bounding boxes.
@@ -347,6 +347,12 @@ std::pair<Reference<T>, Reference<T>> SplitBVHBuilder<T>::splitReference(const R
       right.bounds.expand(pt);
     }
   }
+
+  // Intersect with original bounds.
+  left.bounds.setMaxAtAxis(split_pos, axis);
+  right.bounds.setMinAtAxis(split_pos, axis);
+  left.bounds.intersect(ref.bounds);
+  right.bounds.intersect(ref.bounds);
 
   return {left, right};
 }
