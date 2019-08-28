@@ -46,7 +46,9 @@ class Image : public Identifiable, public RefCounter<Image> {
 
   size_t depth() const;
 
-  Format getFormat() const;
+  inline Format getFormat() const {
+    return format_;
+  }
 
   size_t pixelSize() const;
 

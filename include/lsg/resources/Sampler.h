@@ -54,57 +54,122 @@ class Sampler : public Identifiable, public RefCounter<Sampler>, public VersionT
                    bool enable_compare = false, CompareOp compare_op = CompareOp::eAlways, float min_lod = 0.0f,
                    float max_lod = 0.0f);
 
-  Filter magFilter() const;
+  inline Filter magFilter() const {
+    return mag_filter_;
+  }
 
-  void setMagFilter(Filter mag_filter);
+  inline void setMagFilter(const Filter mag_filter) {
+    mag_filter_ = mag_filter;
+    incrementVersion();
+  }
 
-  Filter minFilter() const;
+  inline Filter minFilter() const {
+    return min_filter_;
+  }
 
-  void setMinFilter(Filter min_filter);
+  inline void setMinFilter(const Filter min_filter) {
+    min_filter_ = min_filter;
+    incrementVersion();
+  }
 
-  Wrapping wrappingU() const;
+  inline Wrapping wrappingU() const {
+    return wrapping_u_;
+  }
 
-  void setWrappingU(Wrapping wrapping_u);
+  inline void setWrappingU(const Wrapping wrapping_u) {
+    wrapping_u_ = wrapping_u;
+    incrementVersion();
+  }
 
-  Wrapping wrappingV() const;
+  inline Wrapping wrappingV() const {
+    return wrapping_v_;
+  }
 
-  void setWrappingV(Wrapping wrapping_v);
+  inline void setWrappingV(const Wrapping wrapping_v) {
+    wrapping_v_ = wrapping_v;
+    incrementVersion();
+  }
 
-  Wrapping wrappingW() const;
+  inline Wrapping wrappingW() const {
+    return wrapping_w_;
+  }
 
-  void setWrappingW(Wrapping wrapping_w);
+  inline void setWrappingW(const Wrapping wrapping_w) {
+    wrapping_w_ = wrapping_w;
+    incrementVersion();
+  }
 
-  MipmapMode mipmapMode() const;
+  inline MipmapMode mipmapMode() const {
+    return mipmap_mode_;
+  }
 
-  void setMipmapMode(MipmapMode mipmap_mode);
+  inline void setMipmapMode(const MipmapMode mipmap_mode) {
+    mipmap_mode_ = mipmap_mode;
+    incrementVersion();
+  }
 
-  float mipLodBias() const;
+  inline float mipLodBias() const {
+    return mip_lod_bias_;
+  }
 
-  void setMipLodBias(float mip_lod_bias);
+  inline void setMipLodBias(const float mip_lod_bias) {
+    mip_lod_bias_ = mip_lod_bias;
+    incrementVersion();
+  }
 
-  bool enableAnisotropy() const;
+  inline bool enableAnisotropy() const {
+    return enable_anisotropy_;
+  }
 
-  void setEnableAnisotropy(bool enable_anisotropy);
+  inline void setEnableAnisotropy(const bool enable_anisotropy) {
+    enable_anisotropy_ = enable_anisotropy;
+    incrementVersion();
+  }
 
-  float maxAnisotropy() const;
+  inline float maxAnisotropy() const {
+    return max_anisotropy_;
+  }
 
-  void setMaxAnisotropy(float max_anisotropy);
+  inline void setMaxAnisotropy(const float max_anisotropy) {
+    max_anisotropy_ = max_anisotropy;
+    incrementVersion();
+  }
 
-  bool enableCompare() const;
+  inline bool enableCompare() const {
+    return enable_compare_;
+  }
 
-  void setEnableCompare(bool enable_compare);
+  inline void setEnableCompare(const bool enable_compare) {
+    enable_compare_ = enable_compare;
+    incrementVersion();
+  }
 
-  CompareOp compareOp() const;
+  inline CompareOp compareOp() const {
+    return compare_op_;
+  }
 
-  void setCompareOp(CompareOp compare_op);
+  inline void setCompareOp(const CompareOp compare_op) {
+    compare_op_ = compare_op;
+    incrementVersion();
+  }
 
-  float minLod() const;
+  inline float minLod() const {
+    return min_lod_;
+  }
 
-  void setMinLod(float min_lod);
+  inline void setMinLod(const float min_lod) {
+    min_lod_ = min_lod;
+    incrementVersion();
+  }
 
-  float maxLod() const;
+  inline float maxLod() const {
+    return max_lod_;
+  }
 
-  void setMaxLod(float max_lod);
+  inline void setMaxLod(const float max_lod) {
+    max_lod_ = max_lod;
+    incrementVersion();
+  }
 
  private:
   Filter mag_filter_;
