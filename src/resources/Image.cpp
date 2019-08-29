@@ -38,10 +38,6 @@ size_t Image::depth() const {
   return depth_;
 }
 
-Format Image::getFormat() const {
-  return format_;
-}
-
 size_t Image::pixelSize() const {
   return format_info_.size;
 }
