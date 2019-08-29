@@ -222,7 +222,6 @@ uint32_t SplitBVHBuilder<T>::buildNode(const NodeSpec<T>& spec, size_t level) {
   // Perform the split.
   std::pair<NodeSpec<T>, NodeSpec<T>> child_spec;
   if (min_sah == spatial_split.sah) {
-    std::cout << "Chose Spatial" << std::endl;
     child_spec = performSpatialSplit(spec, spatial_split);
   }
 
